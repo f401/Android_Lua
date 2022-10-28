@@ -1,4 +1,4 @@
-package net.fred.lua.common.lua;
+package net.fred.lua.jni.lua;
 
 import java.io.Closeable;
 import java.io.IOException;
