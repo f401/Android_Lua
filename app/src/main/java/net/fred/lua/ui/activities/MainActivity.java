@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.view.View;
 import android.widget.EditText;
-import net.fred.lua.common.lua.LuaJavaBridge;
+import net.fred.lua.jni.lua.LuaJavaBridge;
 
 public class MainActivity extends BaseActivity {
 
