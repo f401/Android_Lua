@@ -1,9 +1,22 @@
 apply plugin: 'com.android.application'
 
+def keystoreProperties = new Properties()
+keystoreProperties.load(new FileInputStream(
+    rootProject.file("keystore.properties")))
+
 android {
     compileSdkVersion 33
     buildToolsVersion "33.0.0"
     ndkVersion '23.2.8568313'
+    
+    signingConfigs {
+        config {
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+        }
+    }
 
     defaultConfig {
         applicationId "net.fred.lua"
@@ -22,8 +35,12 @@ android {
 
     buildTypes {
         release {
+            signingConfig signingConfigs.config
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            signingConfig signingConfigs.config
         }
     }
     externalNativeBuild {
