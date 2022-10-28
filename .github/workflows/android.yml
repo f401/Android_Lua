@@ -35,7 +35,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
           name: app-release
-          path: app/build/outputs/apk/debug/app-release.apk
+          path: app/build/outputs/apk/release/app-release.apk
     - name: Upload Debug AAB
       uses: actions/upload-artifact@v2
       with:
@@ -44,7 +44,7 @@ jobs:
     - name: Upload Release AAB
       uses: actions/upload-artifact@v2
       with:
-          name: app-release-bundle-AAB
+          name: app-release-bundle-aab
           path: app/build/outputs/bundle/release/app-release.aab
     
 
