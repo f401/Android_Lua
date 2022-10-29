@@ -1,9 +1,5 @@
 apply plugin: 'com.android.application'
 
-def keystoreProperties = new Properties()
-keystoreProperties.load(new FileInputStream(
-    rootProject.file("keystore.properties")))
-
 android {
     compileSdkVersion 33
     buildToolsVersion "33.0.0"
@@ -11,10 +7,10 @@ android {
     
     signingConfigs {
         config {
-            keyAlias keystoreProperties['keyAlias']
-            keyPassword keystoreProperties['keyPassword']
-            storeFile file(keystoreProperties['storeFile'])
-            storePassword keystoreProperties['storePassword']
+            keyAlias NDKLua
+            keyPassword 123456
+            storeFile file("../NDKLua.keystore")
+            storePassword 123456
         }
     }
 
