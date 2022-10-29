@@ -7,10 +7,10 @@ android {
     
     signingConfigs {
         config {
-            keyAlias NDKLua
-            keyPassword 123456
+            keyAlias "NDKLua"
+            keyPassword "123456"
             storeFile file("../NDKLua.keystore")
-            storePassword 123456
+            storePassword "123456"
         }
     }
 
