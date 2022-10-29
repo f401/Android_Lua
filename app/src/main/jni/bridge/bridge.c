@@ -2,8 +2,8 @@
 #include "../lua/lauxlib.h"
 #include "../lua/lualib.h"
 #include <jni.h>
+#include "../common.h"
 
-#define ptr_to_jlong(ptr) ((jlong)ptr)
 #define jlong_to_luastate(ptr) ((lua_State*)ptr)
 
 JNIEXPORT jlong JNICALL Java_net_fred_lua_jni_lua_LuaJavaBridge_nativeNewState

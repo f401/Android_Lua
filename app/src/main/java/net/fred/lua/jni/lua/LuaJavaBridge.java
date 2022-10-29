@@ -73,6 +73,6 @@ public class LuaJavaBridge implements Closeable {
     private native void nativeDofile(long ptr, String path);
     
     static {
-        System.loadLibrary("lua_bridge");
+        System.loadLibrary("bridge");
     }
 }
