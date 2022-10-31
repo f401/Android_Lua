@@ -33,8 +33,8 @@ public class LuaJavaBridge implements Closeable {
         opened = true;
     }
     
-    public void getGlobal(String name) {
-        nativeGetGlobal(ptr, name);
+    public int getGlobal(String name) {
+        return nativeGetGlobal(ptr, name);
     }
     
     public void pushNumber(int number) {
@@ -57,20 +57,20 @@ public class LuaJavaBridge implements Closeable {
        nativeOpenlibs(ptr);
     }
     
-    public void dofile(String file) {
-        nativeDofile(ptr, file);
+    public int dofile(String file) {
+        return nativeDofile(ptr, file);
     }
     
     private native void nativeClose(long ptr);
     private native long nativeNewState();
-    private native void nativeGetGlobal(long ptr, String name);
+    private native int nativeGetGlobal(long ptr, String name);
     private native void nativePushNumber(long ptr, int number);
     private native int nativeToInteger(long ptr, int stack);
     private native void nativeCall(long ptr, int paramsNums, int returnNums);
     private native void nativePop(long ptr, int stack);
     
     private native void nativeOpenlibs(long ptr);
-    private native void nativeDofile(long ptr, String path);
+    private native int nativeDofile(long ptr, String path);
     
     static {
         System.loadLibrary("bridge");

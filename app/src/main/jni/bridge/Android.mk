@@ -4,5 +4,5 @@ include $(CLEAR_VARS)
 #LOCAL_STATIC_LIBRARIES := liblua
 LOCAL_SHARED_LIBRARIES := liblua
 LOCAL_MODULE    := bridge
-LOCAL_SRC_FILES := bridge.c
+LOCAL_SRC_FILES := bridge.c cstdouterr.c
 include $(BUILD_SHARED_LIBRARY)

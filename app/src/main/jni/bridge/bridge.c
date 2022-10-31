@@ -17,11 +17,12 @@ JNIEXPORT void JNICALL Java_net_fred_lua_jni_lua_LuaJavaBridge_nativeClose
 	  lua_close(jlong_to_luastate(ptr));
   }
 
-JNIEXPORT void JNICALL Java_net_fred_lua_jni_lua_LuaJavaBridge_nativeGetGlobal
+JNIEXPORT jint JNICALL Java_net_fred_lua_jni_lua_LuaJavaBridge_nativeGetGlobal
   (JNIEnv *env, jobject thiz, jlong ptr, jstring name) {
 	const char* n = (*env)->GetStringUTFChars(env, name, 0);
-	lua_getglobal(jlong_to_luastate(ptr), n);
+	int result = lua_getglobal(jlong_to_luastate(ptr), n);
 	(*env)->ReleaseStringUTFChars(env, name, n);
+    return result;
   }
 
 JNIEXPORT void JNICALL Java_net_fred_lua_jni_lua_LuaJavaBridge_nativePushNumber
@@ -50,9 +51,10 @@ JNIEXPORT void JNICALL Java_net_fred_lua_jni_lua_LuaJavaBridge_nativeOpenlibs
 	luaL_openlibs(jlong_to_luastate(ptr));
   }
 
-JNIEXPORT void JNICALL Java_net_fred_lua_jni_lua_LuaJavaBridge_nativeDofile
+JNIEXPORT int JNICALL Java_net_fred_lua_jni_lua_LuaJavaBridge_nativeDofile
   (JNIEnv * env, jobject thiz, jlong ptr, jstring name) {
 	  const char* n = (*env)->GetStringUTFChars(env, name, 0);
-	  luaL_dofile(jlong_to_luastate(ptr), n);
+	  int result = luaL_dofile(jlong_to_luastate(ptr), n);
 	  (*env)->ReleaseStringUTFChars(env, name, n);
+      return result;
   }

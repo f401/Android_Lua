@@ -1,59 +1,28 @@
-#include "CStandardOutputInput.h"
+#include <jni.h>
 #include <stdio.h>
 #include "../common.h"
-
-
-JNIEXPORT jlong JNICALL Java_net_fred_lua_jni_CStandardOutputInput_getStandardOutPointer
-  (JNIEnv *env, jobject thiz) {
-	return ptr_to_jlong(stdout);
-  }
-
-JNIEXPORT jlong JNICALL Java_net_fred_lua_jni_CStandardOutputInput_getStandardErrPointer
-  (JNIEnv *env, jobject thiz) {
-	  return ptr_to_jlong(stderr);
-  }
-JNIEXPORT jlong JNICALL Java_net_fred_lua_jni_CStandardOutputInput_getStandardInPointer
-  (JNIEnv *env, jobject thiz) {
-	  return ptr_to_jlong(stdin);
-  }
-  
-  //set stdout ptr
-JNIEXPORT void JNICALL Java_net_fred_lua_jni_CStandardOutputInput_setStandardOutPointer
-  (JNIEnv *env, jobject thiz, jlong ptr) {
-	  stdout = jlong_to_ptr(ptr, FILE);
-  }
-  
-//set stderr ptr
-JNIEXPORT void JNICALL Java_net_fred_lua_jni_CStandardOutputInput_setStandardErrPointer
-  (JNIEnv *env, jobject thiz, jlong ptr) {
-      stderr = jlong_to_ptr(ptr, FILE);
-  }
-  
-//set stdin ptr
-JNIEXPORT void JNICALL Java_net_fred_lua_jni_CStandardOutputInput_setStandardInPointer
-  (JNIEnv *env, jobject thiz, jlong ptr) {
-      stdin = jlong_to_ptr(ptr, FILE);
-  }
 
 //redirect stdout
 JNIEXPORT void JNICALL Java_net_fred_lua_jni_CStandardOutputInput_redirectStandardOutTo
 (JNIEnv *env, jobject thiz, jstring path) {
-    
+	const char* cpath = (*env)->GetStringUTFChars(env, path, 0);
+	freopen(cpath, "w", stdout);
+	(*env)->ReleaseStringUTFChars(env, path, cpath);
 }
 
 //redirect stderr
 JNIEXPORT void JNICALL Java_net_fred_lua_jni_CStandardOutputInput_redirectStandardErrTo
   (JNIEnv *env, jobject thiz, jstring path) {
-      
+      const char* cpath = (*env)->GetStringUTFChars(env, path, 0);
+      freopen(cpath, "w", stderr);
+      (*env)->ReleaseStringUTFChars(env, path, cpath);
   }
 
 //redirect stdin
 JNIEXPORT void JNICALL Java_net_fred_lua_jni_CStandardOutputInput_redirectStandardInTo
   (JNIEnv *env, jobject thiz, jstring path) {
-      
+      const char* cpath = (*env)->GetStringUTFChars(env, path, 0);
+      freopen(cpath, "r", stdin);
+      (*env)->ReleaseStringUTFChars(env, path, cpath);
   }
 
-JNIEXPORT void JNICALL Java_net_fred_lua_jni_CStandardOutputInput_closePointer
-  (JNIEnv *env, jobject thiz, jlong ptr) {
-      fclose(jlong_to_ptr(ptr, FILE));
-  }
