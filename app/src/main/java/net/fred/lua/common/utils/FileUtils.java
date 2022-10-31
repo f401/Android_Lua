@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import net.fred.lua.common.CrashHandler;
+import java.io.FileInputStream;
 
 public class FileUtils {
     
@@ -33,6 +34,33 @@ public class FileUtils {
                 }
             }
         }
+    }
+    
+    public static String readFile(File file) {
+        FileInputStream fis = null;
+        String result = "";
+        try {
+            fis = new FileInputStream(file);
+            StringBuilder sb = new StringBuilder();
+            int size;
+            byte[] buffer = new byte[1024];
+            while((size = fis.read(buffer)) > 0) {
+                sb.append(new String(buffer, 0, size));
+            }
+            result = sb.toString();
+        } catch(IOException e) {
+            CrashHandler.getInstance().uncaughtException(
+            Thread.currentThread(), e);
+        } finally {
+            try {
+                fis.close();
+            } catch (IOException e) {
+                CrashHandler.getInstance().uncaughtException(
+           
+                Thread.currentThread(), e);
+            }
+        }
+        return result;
     }
     
 }
