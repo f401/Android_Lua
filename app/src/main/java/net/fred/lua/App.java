@@ -29,14 +29,16 @@ public class App extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        CrashHandler.getInstance().install(this);
-        CrashHandler.getInstance().showError(false);
+        //CrashHandler.getInstance().install(this);
+        //CrashHandler.getInstance().showError(false);
         redirectOutAndErrStream(getExternalCacheDir() + "/out.log", getExternalCacheDir() + "/err.log");
     }
 
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
+        CrashHandler.getInstance().install(this);
+        CrashHandler.getInstance().showError(false);
         MultiDex.install(this);
     }
     
