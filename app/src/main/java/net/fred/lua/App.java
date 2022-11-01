@@ -37,7 +37,7 @@ public class App extends Application {
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
-        MultiDex.install(base);
+        MultiDex.install(this);
     }
     
     public void redirectOutAndErrStream(String out, String err) {
