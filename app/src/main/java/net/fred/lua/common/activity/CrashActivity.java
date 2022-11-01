@@ -6,18 +6,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.HorizontalScrollView;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import androidx.appcompat.app.AppCompatActivity;
+import android.widget.Toast;
 import net.fred.lua.App;
+import net.fred.lua.R;
 import net.fred.lua.common.CrashHandler;
 import net.fred.lua.common.utils.MathUtils;
-import net.fred.lua.R;
-import android.widget.Toast;
 
 public class CrashActivity extends AppCompatActivity {
     private String content;

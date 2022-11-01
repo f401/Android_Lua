@@ -10,7 +10,6 @@ import net.fred.lua.jni.lua.LuaJavaBridge;
 import net.fred.lua.jni.CStandardOutputInput;
 
 public class MainActivity extends BaseActivity {
-
     private Button btn;
     private EditText editText;
     private LuaJavaBridge bridge;

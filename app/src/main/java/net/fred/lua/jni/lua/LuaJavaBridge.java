@@ -3,7 +3,8 @@ package net.fred.lua.jni.lua;
 import java.io.Closeable;
 import java.io.IOException;
 
-public class LuaJavaBridge implements Closeable {
+//LuaState
+public class LuaJavaBridge implements AutoCloseable {
     
     private long ptr;
     private boolean opened;

@@ -1,11 +1,8 @@
 package net.fred.lua.common.activity;
 
-import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
-import android.content.BroadcastReceiver;
-import android.content.Intent;
-import android.content.Context;
 import android.content.IntentFilter;
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import net.fred.lua.App;
 
 public class BaseActivity extends AppCompatActivity {

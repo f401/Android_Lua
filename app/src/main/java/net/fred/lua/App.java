@@ -29,8 +29,8 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         CrashHandler.getInstance().install(this);
+        CrashHandler.getInstance().showError(false);
         redirectOutAndErrStream(getExternalCacheDir() + "/out.log", getExternalCacheDir() + "/err.log");
-        
     }
     
     public void redirectOutAndErrStream(String out, String err) {

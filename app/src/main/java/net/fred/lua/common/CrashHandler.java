@@ -17,17 +17,22 @@ import net.fred.lua.common.utils.FileUtils;
 public class CrashHandler implements Thread.UncaughtExceptionHandler {
     public static final String EXTRA_ERROR_CONTENT = "ErrorContent";
     
-    
     public File errorSavePath;
     private Context ctx;
     private Thread.UncaughtExceptionHandler defaultExceptionHandler;
     private static CrashHandler instance;
+    private boolean showError;
 
     public void install(Context ctx) {
         this.ctx = ctx;
         this.defaultExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler(this);
         errorSavePath = ctx.getExternalFilesDir("errors");
+        showError = true;
+    }
+    
+    public void showError(boolean bool) {
+        this.showError = bool;
     }
 
     public static CrashHandler getInstance() {
@@ -85,7 +90,8 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
             sb.append(getThrowableMessages(p2));
 
             FileUtils.writeFile(new File(errorSavePath, time + "-crash.log"), sb.toString());
-            startCrashActivity(sb.toString());
+            if (showError)
+                startCrashActivity(sb.toString());
         } catch (Throwable e) {
             if (this.defaultExceptionHandler != null)
                 this.defaultExceptionHandler.uncaughtException(p1, p2);

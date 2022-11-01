@@ -15,6 +15,7 @@ public final class CStandardOutputInput {
     
     public native void redirectStandardOutTo(String path);
     public native void redirectStandardErrTo(String path);
+    //no block
     public native void redirectStandardInTo(String path);
     
     static {

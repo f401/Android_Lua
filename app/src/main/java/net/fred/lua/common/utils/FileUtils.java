@@ -7,7 +7,7 @@ import java.io.IOException;
 import net.fred.lua.common.CrashHandler;
 import java.io.FileInputStream;
 
-public class FileUtils {
+public final class FileUtils {
     
     
     public static void writeFile(String file, String content) {
