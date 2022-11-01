@@ -8,6 +8,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import net.fred.lua.common.CrashHandler;
+import androidx.multidex.MultiDex;
 
 public class App extends Application {
 	
@@ -31,6 +32,12 @@ public class App extends Application {
         CrashHandler.getInstance().install(this);
         CrashHandler.getInstance().showError(false);
         redirectOutAndErrStream(getExternalCacheDir() + "/out.log", getExternalCacheDir() + "/err.log");
+    }
+
+    @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
+        MultiDex.install(base);
     }
     
     public void redirectOutAndErrStream(String out, String err) {
