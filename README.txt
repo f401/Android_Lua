@@ -1,2 +1,2 @@
-仅供个人学习使用
+仅供个人学习娱乐使用
 (Only Lua on Android)

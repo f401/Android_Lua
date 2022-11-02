@@ -8,9 +8,10 @@ import android.view.View;
 import android.widget.EditText;
 import net.fred.lua.jni.lua.LuaJavaBridge;
 import net.fred.lua.jni.CStandardOutputInput;
+import net.fred.lua.common.Logger;
 
 public class MainActivity extends BaseActivity {
-    private Button btn;
+    private Button btn, throwException;
     private EditText editText;
     private LuaJavaBridge bridge;
     private CStandardOutputInput cstdio;
@@ -21,6 +22,7 @@ public class MainActivity extends BaseActivity {
         setContentView(R.layout.activity_main);
         btn = (Button)findViewById(R.id.activity_main_Button1);
         editText = (EditText)findViewById(R.id.activity_main_EditText1);
+        throwException = (Button) findViewById(R.id.activity_main_throw);
         bridge = new LuaJavaBridge();
         cstdio = CStandardOutputInput.getInstance();
         
@@ -33,6 +35,15 @@ public class MainActivity extends BaseActivity {
                     System.out.println("Finish!");
                 }
             });
+        throwException.setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View p1) {
+                    Logger.e("Making exception");
+                    throw new RuntimeException();
+                }
+            
+        });
     }
 
     @Override

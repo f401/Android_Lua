@@ -3,4 +3,5 @@
     <string name="restart">重启</string>
     <string name="copied">已复制</string>
     <string name="unknow_exception_happenned">发生未知异常</string>
+    <string name="splash_activity_show">一个敷衍的启动界面</string>
 </resources>

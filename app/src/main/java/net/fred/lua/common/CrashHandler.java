@@ -29,6 +29,7 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
         Thread.setDefaultUncaughtExceptionHandler(this);
         errorSavePath = ctx.getExternalFilesDir("errors");
         showError = true;
+        Logger.i("Crash handler installed in package: " + ctx.getPackageName());
     }
     
     public void showError(boolean bool) {
@@ -57,24 +58,25 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
         Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.putExtra(EXTRA_ERROR_CONTENT, content);
         ctx.startActivity(intent);
-        App.forceKillSelf();
     }
     
     @Override
     public void uncaughtException(Thread p1, Throwable p2) {
         try {
+            Logger.e("--Making Crash--");
             StringBuilder sb = new StringBuilder();
 
             String versionName = "Unknow";
-            long versionCode = 0;
-            try {
-                PackageInfo packageInfo = ctx.getPackageManager().getPackageInfo(ctx.getPackageName(), 0);
-                versionName = packageInfo.packageName;
-                versionCode = Build.VERSION.SDK_INT >= 28 ? 
-                    packageInfo.getLongVersionCode() :
-                    packageInfo.versionCode;
-            } catch (PackageManager.NameNotFoundException ignored) {}
-
+            long versionCode = 0; 
+            if (ctx != null) { //可能在没有install时调用
+                try {
+                    PackageInfo packageInfo = ctx.getPackageManager().getPackageInfo(ctx.getPackageName(), 0);
+                    versionName = packageInfo.packageName;
+                    versionCode = Build.VERSION.SDK_INT >= 28 ? 
+                        packageInfo.getLongVersionCode() :
+                        packageInfo.versionCode;
+                } catch (PackageManager.NameNotFoundException ignored) {}
+            }
             String time = new SimpleDateFormat("yyyy_MM_dd-HH_mm_ss").format(new Date());
 
             sb.append("************* Crash Head ****************\n");
@@ -90,8 +92,13 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
             sb.append(getThrowableMessages(p2));
 
             FileUtils.writeFile(new File(errorSavePath, time + "-crash.log"), sb.toString());
-            if (showError)
+            if (showError && ctx != null) {
+                Logger.i("Starting a new activity");
                 startCrashActivity(sb.toString());
+                showError = false;
+            }
+            Logger.i("Killing self");
+            App.forceKillSelf();
         } catch (Throwable e) {
             if (this.defaultExceptionHandler != null)
                 this.defaultExceptionHandler.uncaughtException(p1, p2);

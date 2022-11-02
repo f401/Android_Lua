@@ -18,5 +18,11 @@
 		android:text="Run"
 		android:id="@+id/activity_main_Button1"/>
 
+	<Button
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:text="throw"
+		android:id="@+id/activity_main_throw"/>
+
 </LinearLayout>
 
