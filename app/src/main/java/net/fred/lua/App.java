@@ -64,7 +64,8 @@ public class App extends Application {
     }
     
     public String autoGetProcessName() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        if (Build.VERSION.SDK_INT >= //Build.VERSION_CODES.P
+        28) {
             return getProcessName();
         } else {
             int pid = android.os.Process.myPid();
