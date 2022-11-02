@@ -1,15 +1,11 @@
 package net.fred.lua.common;
 
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.icu.text.SimpleDateFormat;
-import android.os.Build;
 import java.io.File;
-import java.util.Date;
-import net.fred.lua.App;
-import android.content.Context;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import net.fred.lua.App;
 
 public class Logger implements AutoCloseable {
 
