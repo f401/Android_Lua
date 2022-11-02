@@ -11,6 +11,7 @@ import java.io.PrintStream;
 import java.util.List;
 import net.fred.lua.common.CrashHandler;
 import net.fred.lua.common.Logger;
+import android.os.Build;
 
 public class App extends Application {
 	
@@ -62,24 +63,28 @@ public class App extends Application {
         }
     }
     
-    public String getProcessName() {
-        int pid = android.os.Process.myPid();
-        ActivityManager manager = (ActivityManager) 
-        getSystemService(ACTIVITY_SERVICE);
-        List<ActivityManager.RunningAppProcessInfo> runningApps = manager.getRunningAppProcesses();
-        if (runningApps == null) return null;
-        for (ActivityManager.RunningAppProcessInfo process : runningApps) {
-            if (process.pid == pid) {
-                return process.processName;
+    public String autoGetProcessName() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            return getProcessName();
+        } else {
+            int pid = android.os.Process.myPid();
+            ActivityManager manager = (ActivityManager) 
+            getSystemService(ACTIVITY_SERVICE);
+            List<ActivityManager.RunningAppProcessInfo> runningApps = manager.getRunningAppProcesses();
+            if (runningApps == null) return null;
+            for (ActivityManager.RunningAppProcessInfo process : runningApps) {
+                if (process.pid == pid) {
+                    return process.processName;
+                }
             }
-        }
         return null;
+        }
     }
     
     public boolean isMainProcess() {
         try {
             return getPackageName(). //prevent java.lang.NullPointerException
-            equals(getProcessName());
+            equals(autoGetProcessName());
         } catch (Exception e) {
             return false;
         }
