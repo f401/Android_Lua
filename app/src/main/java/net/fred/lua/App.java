@@ -31,7 +31,6 @@ public class App extends Application {
     public static void forceKillSelf() {
         android.os.Process.killProcess(android.os.Process.myPid());
         System.exit(0);
-        
     }
     
     @Override
@@ -78,7 +77,7 @@ public class App extends Application {
                     return process.processName;
                 }
             }
-        return null;
+            return null;
         }
     }
     

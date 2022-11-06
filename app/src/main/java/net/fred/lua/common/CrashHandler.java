@@ -104,4 +104,8 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
                 this.defaultExceptionHandler.uncaughtException(p1, p2);
         }
     }
+
+    public static void fastHandleException(Throwable exception) {
+        getInstance().uncaughtException(Thread.currentThread(), exception);
+    }
 }
