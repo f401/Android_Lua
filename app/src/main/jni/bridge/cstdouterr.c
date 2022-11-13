@@ -3,7 +3,7 @@
 #include "../common.h"
 
 //redirect stdout
-JNIEXPORT void JNICALL Java_net_fred_lua_jni_CStandardOutputInput_redirectStandardOutTo
+JNIEXPORT void JNICALL Java_net_fred_lua_io_CStandardOutputInput_redirectStandardOutTo
 (JNIEnv *env, jobject thiz, jstring path) {
 	const char* cpath = (*env)->GetStringUTFChars(env, path, 0);
 	freopen(cpath, "w", stdout);
@@ -11,7 +11,7 @@ JNIEXPORT void JNICALL Java_net_fred_lua_jni_CStandardOutputInput_redirectStanda
 }
 
 //redirect stderr
-JNIEXPORT void JNICALL Java_net_fred_lua_jni_CStandardOutputInput_redirectStandardErrTo
+JNIEXPORT void JNICALL Java_net_fred_lua_io_CStandardOutputInput_redirectStandardErrTo
   (JNIEnv *env, jobject thiz, jstring path) {
       const char* cpath = (*env)->GetStringUTFChars(env, path, 0);
       freopen(cpath, "w", stderr);
@@ -19,7 +19,7 @@ JNIEXPORT void JNICALL Java_net_fred_lua_jni_CStandardOutputInput_redirectStanda
   }
 
 //redirect stdin
-JNIEXPORT void JNICALL Java_net_fred_lua_jni_CStandardOutputInput_redirectStandardInTo
+JNIEXPORT void JNICALL Java_net_fred_lua_io_CStandardOutputInput_redirectStandardInTo
   (JNIEnv *env, jobject thiz, jstring path) {
       const char* cpath = (*env)->GetStringUTFChars(env, path, 0);
       freopen(cpath, "r", stdin);

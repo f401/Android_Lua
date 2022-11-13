@@ -1,4 +1,4 @@
-package net.fred.lua.jni;
+package net.fred.lua.io;
 
 public final class CStandardOutputInput {
     

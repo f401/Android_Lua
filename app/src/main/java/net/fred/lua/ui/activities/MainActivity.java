@@ -6,14 +6,14 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.view.View;
 import android.widget.EditText;
-import net.fred.lua.jni.lua.LuaJavaBridge;
-import net.fred.lua.jni.CStandardOutputInput;
+import net.fred.lua.LuaState;
+import net.fred.lua.io.CStandardOutputInput;
 import net.fred.lua.common.Logger;
 
 public class MainActivity extends BaseActivity {
     private Button btn, throwException;
     private EditText editText;
-    private LuaJavaBridge bridge;
+    private LuaState bridge;
     private CStandardOutputInput cstdio;
     
     @Override
@@ -23,7 +23,7 @@ public class MainActivity extends BaseActivity {
         btn = (Button)findViewById(R.id.activity_main_Button1);
         editText = (EditText)findViewById(R.id.activity_main_EditText1);
         throwException = (Button) findViewById(R.id.activity_main_throw);
-        bridge = new LuaJavaBridge();
+        bridge = new LuaState();
         cstdio = CStandardOutputInput.getInstance();
         
         btn.setOnClickListener(new View.OnClickListener() {

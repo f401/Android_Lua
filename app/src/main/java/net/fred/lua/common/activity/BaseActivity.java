@@ -4,6 +4,7 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import net.fred.lua.App;
+import net.fred.lua.common.ExitReceiver;
 
 public class BaseActivity extends AppCompatActivity {
 	

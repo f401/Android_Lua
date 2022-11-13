@@ -1,23 +1,23 @@
-package net.fred.lua.jni.lua;
+package net.fred.lua;
 
 import java.io.Closeable;
 import java.io.IOException;
 
 //LuaState
-public class LuaJavaBridge implements AutoCloseable {
+public class LuaState implements AutoCloseable {
     
     private long ptr;
     private boolean opened;
     
-    public LuaJavaBridge() {
+    public LuaState() {
         this(true);
     }
     
-    public LuaJavaBridge(boolean newState) {
+    public LuaState(boolean newState) {
         this(newState, true);
     }
     
-    public LuaJavaBridge(boolean newState, boolean openLibs) {
+    public LuaState(boolean newState, boolean openLibs) {
         if (newState) newState();
         if (openLibs) openlibs();
     }

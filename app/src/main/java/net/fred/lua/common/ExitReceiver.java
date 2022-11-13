@@ -1,4 +1,4 @@
-package net.fred.lua.common.activity;
+package net.fred.lua.common;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
