@@ -4,14 +4,19 @@ import android.app.ActivityManager;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PermissionInfo;
+import android.os.Build;
+import android.util.Log;
 import androidx.multidex.MultiDex;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
 import net.fred.lua.common.CrashHandler;
-import net.fred.lua.common.Logger;
-import android.os.Build;
+import net.fred.lua.io.LogScanner;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 
 public class App extends Application {
 	
@@ -37,12 +42,14 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         instance = this;
+		PathConstants.init(this);
+		LogScanner.getInstance().start();
         if (isMainProcess()) {
             CrashHandler.getInstance().install(this);
             //CrashHandler.getInstance().showError(false);
         }
-        Logger.i("outputstream");
-        redirectOutAndErrStream(getExternalCacheDir() + "/out.log", getExternalCacheDir() + "/err.log");
+        Log.i("Application", "redirecting stream");
+        redirectOutAndErrStream(PathConstants.STDOUT, PathConstants.STDERR);
     }
 
     @Override
@@ -89,6 +96,5 @@ public class App extends Application {
             return false;
         }
     }
-    
 }
    

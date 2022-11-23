@@ -6,6 +6,8 @@ import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import net.fred.lua.App;
+import net.fred.lua.common.utils.StringUtils;
+import net.fred.lua.PathConstants;
 
 public class Logger implements AutoCloseable {
 
@@ -17,8 +19,7 @@ public class Logger implements AutoCloseable {
         String fileName = new SimpleDateFormat("yyyy_MM_dd-HH_mm_ss").format(new Date())
         + ".log";
         
-        logFile = new File(App.getInstance()
-        .getExternalFilesDir("logs") + File.separator + fileName);
+        logFile = new File(StringUtils.fixLastSeparator(PathConstants.LOGGER_FILE_SAVE_DIR) + fileName);
         
         if (logFile.exists()) {
             logFile.delete();

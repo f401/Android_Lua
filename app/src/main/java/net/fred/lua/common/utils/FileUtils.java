@@ -8,13 +8,36 @@ import net.fred.lua.common.CrashHandler;
 import java.io.FileInputStream;
 
 public final class FileUtils {
+	
+	public static boolean makeDirs(String dir) {
+		if (dir != null) {
+			File file = new File(dir);
+			if (!file.exists())
+				return file.mkdirs();
+		}
+		return false;
+	}
     
+	public static boolean makeParentDir(String dir) {
+		return dir != null ? makeParentDir(new File(dir)) : false;
+	}
+	
+	public static boolean makeParentDir(File dir) {
+		if (dir != null) {
+			File parent = dir.getParentFile();
+			if (!parent.exists())
+				return parent.mkdirs();
+		}
+		return false;
+	}
     
     public static void writeFile(String file, String content) {
-        writeFile(new File(file), content);
+		if (file != null) 
+       		 writeFile(new File(file), content);
     }
     
     public static void writeFile(File file, String content) {
+		if (file == null || content == null) return;
         File parent = file.getParentFile();
         if (!parent.exists()) {
             parent.mkdirs();
@@ -37,6 +60,7 @@ public final class FileUtils {
     }
     
     public static String readFile(File file) {
+		if (file == null) return null;
         FileInputStream fis = null;
         String result = "";
         try {

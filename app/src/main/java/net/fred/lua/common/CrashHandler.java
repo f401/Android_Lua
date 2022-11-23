@@ -13,6 +13,8 @@ import java.util.Date;
 import net.fred.lua.App;
 import net.fred.lua.common.activity.CrashActivity;
 import net.fred.lua.common.utils.FileUtils;
+import net.fred.lua.common.utils.DateUtils;
+import net.fred.lua.PathConstants;
 
 public class CrashHandler implements Thread.UncaughtExceptionHandler {
     public static final String EXTRA_ERROR_CONTENT = "ErrorContent";
@@ -27,7 +29,7 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
         this.ctx = ctx;
         this.defaultExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler(this);
-        errorSavePath = ctx.getExternalFilesDir("errors");
+        errorSavePath = new File(PathConstants.CRASH_FILE_SAVE_DIR);
         showError = true;
         Logger.i("Crash handler installed in package: " + ctx.getPackageName());
     }
@@ -77,7 +79,7 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
                         packageInfo.versionCode;
                 } catch (PackageManager.NameNotFoundException ignored) {}
             }
-            String time = new SimpleDateFormat("yyyy_MM_dd-HH_mm_ss").format(new Date());
+            String time = DateUtils.getCurrentTimeString();
 
             sb.append("************* Crash Head ****************\n");
             sb.append("Time Of Crash      : ").append(time).append("\n");

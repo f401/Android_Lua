@@ -9,12 +9,13 @@ import android.widget.EditText;
 import net.fred.lua.LuaState;
 import net.fred.lua.io.CStandardOutputInput;
 import net.fred.lua.common.Logger;
+import java.util.Arrays;
 
 public class MainActivity extends BaseActivity {
     private Button btn, throwException;
     private EditText editText;
-    private LuaState bridge;
-    private CStandardOutputInput cstdio;
+   // private LuaState bridge;
+    //private CStandardOutputInput cstdio;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,15 +24,15 @@ public class MainActivity extends BaseActivity {
         btn = (Button)findViewById(R.id.activity_main_Button1);
         editText = (EditText)findViewById(R.id.activity_main_EditText1);
         throwException = (Button) findViewById(R.id.activity_main_throw);
-        bridge = new LuaState();
-        cstdio = CStandardOutputInput.getInstance();
+        //bridge = new LuaState();
+        //cstdio = CStandardOutputInput.getInstance();
         
         btn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View p1) {
-                    cstdio.redirectStandardOutTo(MainActivity.this.getExternalFilesDir("") + "/luaout.txt");
-                    cstdio.redirectStandardInTo(MainActivity.this.getExternalFilesDir("") + "/luain.txt");
-                    bridge.dofile(editText.getText().toString());
+                    //cstdio.redirectStandardOutTo(MainActivity.this.getExternalFilesDir("") + "/luaout.txt");
+                    //cstdio.redirectStandardInTo(MainActivity.this.getExternalFilesDir("") + "/luain.txt");
+                    //bridge.dofile(editText.getText().toString());
                     System.out.println("Finish!");
                 }
             });
@@ -49,7 +50,7 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        bridge.close();
+        //bridge.close();
     }
     
 }
