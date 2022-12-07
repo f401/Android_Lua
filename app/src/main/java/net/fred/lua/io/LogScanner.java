@@ -65,7 +65,7 @@ public class LogScanner {
 						outputStream.flush();
 					}
 				}
-			} catch (InterruptedException | IOException e) {
+			} catch (IOException e) {
 				e.printStackTrace();
 				Log.e("Scanner", ExceptionUtils.getThrowableMessage(e));
 			} finally {
