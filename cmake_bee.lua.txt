@@ -1,0 +1,45 @@
+cmake_minimum_required(VERSION 3.12)
+project(bee.lua)
+
+set(CMAKE_CXX_FLAGS "-fno-rtti -fPIC -O2 -I. -std=c++17")
+set(LINK_FLAGS "-Wl,-E -pthread -lstdc++fs -lm -ldl")
+
+set(SOURCES_BEE "${PROJECT_SOURCE_DIR}/3rd/lua-seri/lua-seri.c"
+                "${PROJECT_SOURCE_DIR}/3rd/fmt/format.cc")
+
+file(GLOB_RECURSE BEE_SRCS ${PROJECT_SOURCE_DIR}/bee/*.cpp
+     ${PROJECT_SOURCE_DIR}/binding/*.cpp)
+
+file(GLOB_RECURSE BOOTSTRAP_SRCS ${PROJECT_SOURCE_DIR}/bootstrap/*.cpp)
+
+list(FILTER BEE_SRCS EXCLUDE REGEX ".*(win|osx|bsd).*")
+list(FILTER BEE_SRCS EXCLUDE REGEX ".*binding\/lua_unicode\.cpp")
+list(APPEND BEE_SRCS ${SOURCES_BEE})
+
+add_definitions(-DNDEBUG)
+
+set(LUA_SRCS
+    "${PROJECT_SOURCE_DIR}/3rd/lua/utf8_crt.c"
+    "${PROJECT_SOURCE_DIR}/3rd/lua/onelua.c"
+    "${PROJECT_SOURCE_DIR}/3rd/lua/linit.c")
+
+list(APPEND BOOTSTRAP_SRCS ${LUA_SRCS})
+
+include_directories(${PROJECT_SOURCE_DIR})
+
+add_library(bee ${BEE_SRCS})
+target_link_libraries(bee PRIVATE -llua)
+
+target_compile_options(bee PRIVATE "-fvisibility=hidden")
+
+add_executable(bootstrap ${BOOTSTRAP_SRCS})
+target_link_libraries(bootstrap PRIVATE bee)
+
+target_include_directories(
+  bootstrap
+  PRIVATE ${PROJECT_SOURCE_DIR}/3rd/lua ${PROJECT_SOURCE_DIR}/bootstrap
+          ${PROJECT_SOURCE_DIR}/binding ${PROJECT_SOURCE_DIR})
+
+target_compile_definitions(bootstrap PRIVATE -DUSE_LINUX -DBEE_STATIC
+                                             -DMAKE_LIB -D_GNU_SOURCE)
+
