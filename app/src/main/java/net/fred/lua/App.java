@@ -20,7 +20,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 
 public class App extends Application {
 	
-	public static final String EXIT_ACTION = "net.lua.exit.all";
+    public static final String EXIT_ACTION = "net.lua.exit.all";
     private static App instance;
     
     public static App getInstance() {
@@ -28,10 +28,10 @@ public class App extends Application {
     }
     
     public static void killSelf(Context ctx) {
-		Intent intent = new Intent("net.fred.lua.common.activity.BaseActivity");
-		intent.putExtra(EXIT_ACTION, 1);
+	Intent intent = new Intent("net.fred.lua.common.activity.BaseActivity");
+	intent.putExtra(EXIT_ACTION, 1);
         ctx.sendBroadcast(intent);
-	}
+    }
     
     public static void forceKillSelf() {
         android.os.Process.killProcess(android.os.Process.myPid());
@@ -42,8 +42,8 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         instance = this;
-		PathConstants.init(this);
-		LogScanner.getInstance().start();
+	PathConstants.init(this);
+	LogScanner.getInstance().start();
         if (isMainProcess()) {
             CrashHandler.getInstance().install(this);
             //CrashHandler.getInstance().showError(false);
@@ -76,7 +76,7 @@ public class App extends Application {
         } else {
             int pid = android.os.Process.myPid();
             ActivityManager manager = (ActivityManager) 
-            getSystemService(ACTIVITY_SERVICE);
+	            getSystemService(ACTIVITY_SERVICE);
             List<ActivityManager.RunningAppProcessInfo> runningApps = manager.getRunningAppProcesses();
             if (runningApps == null) return null;
             for (ActivityManager.RunningAppProcessInfo process : runningApps) {
@@ -91,7 +91,7 @@ public class App extends Application {
     public boolean isMainProcess() {
         try {
             return getPackageName(). //prevent java.lang.NullPointerException
-            equals(autoGetProcessName());
+            	equals(autoGetProcessName());
         } catch (Exception e) {
             return false;
         }

@@ -6,7 +6,11 @@ import java.util.Date;
 public class DateUtils {
     
     public static String getCurrentTimeString() {
-		return new SimpleDateFormat("yyyy_MM_dd-HH_mm_ss").format(new Date());
-	}
+		return getCurrentTimeString("yyyy_MM_dd-HH_mm_ss");
+    }
+
+    public static String getCurrentTimeString(String fmt) {
+		return new SimpleDateFormat(fmt).format(new Date());
+    }
     
 }

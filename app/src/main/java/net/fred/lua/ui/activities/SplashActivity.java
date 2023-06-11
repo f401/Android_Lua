@@ -27,7 +27,6 @@ public class SplashActivity extends BaseActivity {
 
 	public static final int PERMISSION_REQUEST_CODE = 10101;
 	public static final int GOTO_SETTINGS_ACTIVITY = 368;
-	
 	public static final int START_TIME = 2000;	
 	
 	private TextView tv;
@@ -40,11 +39,10 @@ public class SplashActivity extends BaseActivity {
 		setContentView(R.layout.activity_splash);
 		tv = findViewById(R.id.activity_splash_tv);
 		startMainHandler = new Handler();
+
+		hideActionBar();
 		
-		if (getSupportActionBar() != null)
-			getSupportActionBar().hide();
-		
-	    tv.setHeight(MathUtils.dp2px(getWindowManager().getDefaultDisplay().getWidth() / 2));
+	        tv.setHeight(MathUtils.dp2px(getWindowManager().getDefaultDisplay().getWidth() / 2));
 		tv.setWidth(MathUtils.dp2px(getWindowManager().getDefaultDisplay().getHeight() / 2));
 		
 		handleRWPermission();
@@ -63,6 +61,11 @@ public class SplashActivity extends BaseActivity {
 				}
 
 			}, START_TIME);
+	}
+
+	private void hideActionBar() {
+		if (getSupportActionBar() != null)
+			getSupportActionBar().hide();
 	}
 	
 	private boolean hasRWPermission() {
@@ -92,58 +95,60 @@ public class SplashActivity extends BaseActivity {
 			isPermissionRequestFinished.setFlag(true);
 	}
 
+	private List<String> getNotAllowedPermissionList(String[] permissions, int[] grantResults) {
+		List<String> notAllowed = new ArrayList<>();
+		if (permissions.length != 0 && grantResults.length != 0) {
+		        for (int i = 0; i < grantResults.length; ++i) {
+				    if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+						notAllowed.add(permissions[i]);
+				    }
+	     		}
+		}
+		return notAllowed;
+	}
+
+	private void requestRWPermission() {
+		ActivityCompat.requestPermissions(this, new String[] {READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
+	}
+
 	@Override
 	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-		if (requestCode == PERMISSION_REQUEST_CODE) {
-			List<String> notAllowed = new ArrayList<>();
-	        for (int i = 0; i < grantResults.length; ++i) {
-			    if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
-					notAllowed.add(permissions[i]);
-				}
-	     	}
-			if (notAllowed.size() != 0) {
-			    List<String> ban = new ArrayList<>();
-		    	List<String> can = new ArrayList<>();
-			    for (String permission : notAllowed) {
+		List<String> notAllowed = null;
+		if (requestCode == PERMISSION_REQUEST_CODE && (notAllowed = 
+					getNotAllowedPermissionList(permissions, grantResults))
+				.size() != 0) {
+			List<String> ban = new ArrayList<>();
+			List<String> can = new ArrayList<>();
+			for (String permission : notAllowed) {
 				if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission))
 				    	can.add(permission);
 			    	else
 		     			ban.add(permission);
-			    }
-				if (can.size() != 0)
-			        ActivityCompat.requestPermissions(this, can.toArray(new String[can.size()]), PERMISSION_REQUEST_CODE);
-			    if (ban.size() != 0) {
-					AlertDialog alert = new AlertDialog.Builder(this)
-						.setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
-
-							@Override
-							public void onClick(DialogInterface p1, int p2) {
-								gotoSettingsActivity();
-								p1.dismiss();
-							}
-						})
-						.setTitle(R.string.warning)
-						.setMessage(R.string.request_permission_failed_content)
-						.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-
-							@Override
-							public void onClick(DialogInterface p1, int p2) {
-								p1.dismiss();
-								isPermissionRequestFinished.setFlag(true);
-							}
-						})
-						.create();
-						alert.show();
-				}
-			} else {
-				isPermissionRequestFinished.setFlag(true);
 			}
+			if (can.size() != 0)
+				ActivityCompat.requestPermissions(this, can.toArray(new String[can.size()]), PERMISSION_REQUEST_CODE);
+			if (ban.size() != 0) {
+				AlertDialog alert = new AlertDialog.Builder(this)
+					.setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface p1, int p2) {
+							gotoSettingsActivity();
+							p1.dismiss();							}
+						})
+					.setTitle(R.string.warning)
+					.setMessage(R.string.request_permission_failed_content)
+					.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface p1, int p2) {
+							p1.dismiss();
+							isPermissionRequestFinished.setFlag(true);
+						}
+					}).create();
+					alert.show();
+			}
+		} else {
+			isPermissionRequestFinished.setFlag(true);
 		}
 	}
-	
-	private void requestRWPermission() {
-		ActivityCompat.requestPermissions(this, new String[] {READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
-	}
-	
 }

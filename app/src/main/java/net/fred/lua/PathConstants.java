@@ -24,7 +24,7 @@ public class PathConstants {
 						 , "std/") + DateUtils.getCurrentTimeString() + "-out.log";
 		STDERR = makeDir(EXTERNAL_CACHE_DIR
 						 , "std/") + DateUtils.getCurrentTimeString() + "-err.log";
-	    CRASH_FILE_SAVE_DIR = makeDir(EXTERNAL_CACHE_DIR, "crash/" );
+	        CRASH_FILE_SAVE_DIR = makeDir(EXTERNAL_CACHE_DIR, "crash/" );
 		LOGGER_FILE_SAVE_DIR = makeDir(EXTERNAL_CACHE_DIR, "loggers/");
 	}
 	

@@ -35,16 +35,16 @@ public class CrashActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.string.copy: 
-                ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+	long id = item.getItemId();
+	if (id == android.R.string.copy) {
+       		ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
                 cm.setPrimaryClip(ClipData.newPlainText(getPackageName(), content));
                 Toast.makeText(this, R.string.copied, Toast.LENGTH_SHORT).show();
                 return true;
-            case R.string.restart:
+	} else if (id == R.string.restart) {
                 restart();
                 return true;
-        }
+	}
         return super.onOptionsItemSelected(item);
     }
     
@@ -72,9 +72,8 @@ public class CrashActivity extends AppCompatActivity {
         Intent intent = pm.getLaunchIntentForPackage(getPackageName());
         if (intent != null) {
             intent.addFlags(
-                Intent.FLAG_ACTIVITY_NEW_TASK
-
-                | Intent.FLAG_ACTIVITY_CLEAR_TOP | 
+                Intent.FLAG_ACTIVITY_NEW_TASK  |
+		Intent.FLAG_ACTIVITY_CLEAR_TOP | 
                 Intent.FLAG_ACTIVITY_CLEAR_TASK
             );
 
