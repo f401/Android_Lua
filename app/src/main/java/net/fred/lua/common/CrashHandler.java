@@ -107,6 +107,10 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
         }
     }
 
+    /**
+     * Usually use in try-catch
+     * @param exception The exception you want to deal.
+     */
     public static void fastHandleException(Throwable exception) {
         getInstance().uncaughtException(Thread.currentThread(), exception);
     }

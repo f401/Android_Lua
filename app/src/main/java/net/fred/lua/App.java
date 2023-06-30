@@ -26,13 +26,20 @@ public class App extends Application {
     public static App getInstance() {
         return instance;
     }
-    
+
+    /**
+     * Exit app by broadcast
+     * @param ctx required
+     */
     public static void killSelf(Context ctx) {
-	Intent intent = new Intent("net.fred.lua.common.activity.BaseActivity");
-	intent.putExtra(EXIT_ACTION, 1);
+	    Intent intent = new Intent("net.fred.lua.common.activity.BaseActivity");
+	    intent.putExtra(EXIT_ACTION, 1);
         ctx.sendBroadcast(intent);
     }
-    
+
+    /**
+     * Exit app by kill self.
+     */
     public static void forceKillSelf() {
         android.os.Process.killProcess(android.os.Process.myPid());
         System.exit(0);
@@ -42,11 +49,10 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         instance = this;
-	PathConstants.init(this);
-	LogScanner.getInstance().start();
+	    PathConstants.init(this);
+	    LogScanner.getInstance().start();
         if (isMainProcess()) {
             CrashHandler.getInstance().install(this);
-            //CrashHandler.getInstance().showError(false);
         }
         Log.i("Application", "redirecting stream");
         redirectOutAndErrStream(PathConstants.STDOUT, PathConstants.STDERR);
@@ -68,7 +74,11 @@ public class App extends Application {
             CrashHandler.getInstance().uncaughtException(Thread.currentThread(), e);
         }
     }
-    
+
+    /**
+     * Get process name in the best way.
+     * @return current process name.
+     */
     public String autoGetProcessName() {
         if (Build.VERSION.SDK_INT >= //Build.VERSION_CODES.P
         28) {
@@ -87,7 +97,11 @@ public class App extends Application {
             return null;
         }
     }
-    
+
+    /**
+     * Check whether current is main process.
+     * @return For main process, true.
+     */
     public boolean isMainProcess() {
         try {
             return getPackageName(). //prevent java.lang.NullPointerException

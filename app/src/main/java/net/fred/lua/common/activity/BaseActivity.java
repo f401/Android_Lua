@@ -6,8 +6,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import net.fred.lua.App;
 import net.fred.lua.common.ExitReceiver;
 
+/**
+ * All the Android_Lua activity's parent.
+ * Implements exiting by broadcast. @{link App#killSelf}
+ */
 public class BaseActivity extends AppCompatActivity {
-	
     private final ExitReceiver receiver = new ExitReceiver(this);
     
     @Override

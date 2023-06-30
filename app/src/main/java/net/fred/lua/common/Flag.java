@@ -1,5 +1,8 @@
 package net.fred.lua.common;
 
+/**
+ * A thread safety flag
+ */
 public class Flag {
     
     private boolean flag;

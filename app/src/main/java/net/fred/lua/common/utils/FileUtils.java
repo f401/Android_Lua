@@ -8,7 +8,7 @@ import net.fred.lua.common.CrashHandler;
 import java.io.FileInputStream;
 
 public final class FileUtils {
-	
+
 	public static boolean makeDirs(String dir) {
 		if (dir != null) {
 			File file = new File(dir);
