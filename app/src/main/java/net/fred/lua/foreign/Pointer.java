@@ -1,4 +1,4 @@
-package net.fred.lua.common.foreign;
+package net.fred.lua.foreign;
 
 public class Pointer {
     private long addr;
