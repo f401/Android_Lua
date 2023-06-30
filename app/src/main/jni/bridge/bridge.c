@@ -7,13 +7,13 @@
 #define jlong_to_luastate(ptr) ((lua_State*)ptr)
 
 JNIEXPORT jlong JNICALL Java_net_fred_lua_LuaState_nativeNewState
-  (JNIEnv * env, jobject thiz) {
+  (JNIEnv * env, jobject) {
 	  lua_State* state = luaL_newstate();
 	  return ptr_to_jlong(state);
   }
 
 JNIEXPORT void JNICALL Java_net_fred_lua_LuaState_nativeClose
-  (JNIEnv *env, jobject thiz, jlong ptr) {
+  (JNIEnv *env, jobject , jlong ptr) {
 	  lua_close(jlong_to_luastate(ptr));
   }
 
