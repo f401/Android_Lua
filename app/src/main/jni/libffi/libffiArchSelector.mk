@@ -16,3 +16,4 @@ FFI_ARCH__RUNNER := {          \
 FFI_ARCH := $(shell $(FFI_ARCH__RUNNER))
 FFI_INCLUDES := -I$(LIBFFI_ROOT_DIR)/include \
 		-I$(LIBFFI_ROOT_DIR)/include/$(FFI_ARCH)
+FFI_C_INCLUDES := $(LIBFFI_ROOT_DIR)/include $(LIBFFI_ROOT_DIR)/include/$(FFI_ARCH)

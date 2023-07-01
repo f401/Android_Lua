@@ -4,6 +4,7 @@ import net.fred.lua.App;
 import net.fred.lua.PathConstants;
 import net.fred.lua.common.utils.DateUtils;
 import net.fred.lua.common.utils.StringUtils;
+import net.fred.lua.common.utils.ThrowableUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,47 +51,33 @@ public class Logger implements AutoCloseable {
 
     public static void i(String msg) {
         StringBuilder sb = new StringBuilder();
-        sb.append("INFO ").append(getOtherInfos()).append(getInvokerClassInfo())
+        sb.append("INFO ").append(getOtherInfo()).append(ThrowableUtils.getInvokerInfoString())
                 .append(" :").append(msg);
         write(sb.toString());
     }
 
     public static void e(String msg) {
         StringBuilder sb = new StringBuilder();
-        sb.append("ERROR ").append(getOtherInfos()).append(getInvokerClassInfo())
+        sb.append("ERROR ").append(getOtherInfo()).append(ThrowableUtils.getInvokerInfoString())
                 .append(" :").append(msg);
         write(sb.toString());
     }
 
     public static void w(String msg) {
         StringBuilder sb = new StringBuilder();
-        sb.append("WARN ").append(getOtherInfos()).append(getInvokerClassInfo())
+        sb.append("WARN ").append(getOtherInfo()).append(ThrowableUtils.getInvokerInfoString())
                 .append(" :").append(msg);
         write(sb.toString());
     }
 
-    private static String getInvokerClassInfo() {
-        StackTraceElement info = // 0-1 system 2 current, 3 上一级(Logger#i/e)
-                Thread.currentThread().getStackTrace()[4];
-        String fileName = info.getFileName();
-        StringBuilder sb = new StringBuilder();
-        sb.append("[")
-                .append(info.getClassName())
-                .append("] ").append(info.getMethodName())
-                .append("(").append(fileName == null ? "unknow" : fileName)
-                .append(": ").append(info.isNativeMethod() ? "native method" : info.getLineNumber())
-                .append(")");
-        return sb.toString();
-    }
-
-    private static String getOtherInfos() {
+    private static String getOtherInfo() {
         StringBuilder sb = new StringBuilder();
         sb.append(DateUtils.getCurrentTimeString("yyyy_MM_dd-HH_mm_ss"))
                 .append(" ").append(Thread.currentThread().getName())
                 .append(" ").append(Thread.currentThread().getId())
                 .append("/").append(android.os.Process.myPid());
         App instance = App.getInstance();
-        sb.append("(").append(instance != null ? instance.getPackageName() : "Unknow")
+        sb.append("(").append(instance != null ? instance.getPackageName() : "Unknown")
                 .append(") ");
         return sb.toString();
     }

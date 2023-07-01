@@ -9,6 +9,22 @@ import java.io.IOException;
 
 public final class FileUtils {
 
+    public static boolean exists(String file) {
+        return file != null && new File(file).exists();
+    }
+
+    public static void checkExistsOrThrow(String file) {
+        if (file != null) {
+            checkExistsOrThrow(new File(file));
+        }
+    }
+
+    public static void checkExistsOrThrow(File file) {
+        if (file != null && !file.exists()) {
+            throw new RuntimeException("File doesn't exists: " + file);
+        }
+    }
+
     public static boolean makeDirs(String dir) {
         if (dir != null) {
             File file = new File(dir);
@@ -19,7 +35,7 @@ public final class FileUtils {
     }
 
     public static boolean makeParentDir(String dir) {
-        return dir != null ? makeParentDir(new File(dir)) : false;
+        return dir != null && makeParentDir(new File(dir));
     }
 
     public static boolean makeParentDir(File dir) {
@@ -38,16 +54,13 @@ public final class FileUtils {
 
     public static void writeFile(File file, String content) {
         if (file == null || content == null) return;
-        File parent = file.getParentFile();
-        if (!parent.exists()) {
-            parent.mkdirs();
-        }
+        makeParentDir(file);
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(file);
             fos.write(content.getBytes());
         } catch (IOException e) {
-            CrashHandler.getInstance().uncaughtException(Thread.currentThread(), e);
+            CrashHandler.fastHandleException(e);
         } finally {
             ThrowableUtils.closes(fos);
         }
@@ -55,6 +68,7 @@ public final class FileUtils {
 
     public static String readFile(File file) {
         if (file == null) return null;
+        FileUtils.checkExistsOrThrow(file);
         FileInputStream fis = null;
         String result = "";
         try {
@@ -67,8 +81,7 @@ public final class FileUtils {
             }
             result = sb.toString();
         } catch (IOException e) {
-            CrashHandler.getInstance().uncaughtException(
-                    Thread.currentThread(), e);
+            CrashHandler.fastHandleException(e);
         } finally {
             ThrowableUtils.closes(fis);
         }

@@ -22,7 +22,7 @@ import java.io.StringWriter;
 public class CrashHandler implements Thread.UncaughtExceptionHandler {
     public static final String EXTRA_ERROR_CONTENT = "ErrorContent";
 
-    public File errorSavePath;
+    public File errorSaveDir;
     private Context ctx;
     private Thread.UncaughtExceptionHandler defaultExceptionHandler;
     private static CrashHandler instance;
@@ -32,7 +32,7 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
         this.ctx = ctx;
         this.defaultExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler(this);
-        errorSavePath = new File(PathConstants.CRASH_FILE_SAVE_DIR);
+        errorSaveDir = new File(PathConstants.CRASH_FILE_SAVE_DIR);
         showError = true;
         Logger.i("Crash handler installed in package: " + ctx.getPackageName());
     }
@@ -67,7 +67,7 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
 
     private StringBuilder writeInfoToSdCard(Thread p1, Throwable p2) {
         StringBuilder sb = new StringBuilder();
-        String versionName = "Unknow";
+        String versionName = "Unknown";
         long versionCode = 0;
         if (ctx != null) { //可能在没有install时调用
             try {
@@ -93,7 +93,7 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
         sb.append("************* Crash Head ****************\n\n");
         sb.append(getThrowableMessages(p2));
 
-        FileUtils.writeFile(new File(errorSavePath, time + "-crash.log"), sb.toString());
+        FileUtils.writeFile(new File(errorSaveDir, time + "-crash.log"), sb.toString());
         return sb;
     }
 
@@ -124,7 +124,7 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
         StringBuilder sb = getInstance().writeInfoToSdCard(Thread.currentThread(), exception);
         Context ctx = getInstance().ctx;
         new AlertDialog.Builder(ctx)
-                .setTitle(ctx.getString(R.string.unknow_exception_happenned))
+                .setTitle(ctx.getString(R.string.unknown_exception_happened))
                 .setMessage(sb.toString())
                 .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                     @Override

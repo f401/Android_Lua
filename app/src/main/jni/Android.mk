@@ -5,3 +5,4 @@ FFI := $(APP_PATH)/libffi/libffiArchSelector.mk
 include $(APP_PATH)/lua/Android.mk
 include $(APP_PATH)/bridge/Android.mk
 include $(APP_PATH)/libffi/Android.mk
+include $(APP_PATH)/foreign/Android.mk

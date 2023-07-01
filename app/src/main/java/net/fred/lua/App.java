@@ -76,7 +76,7 @@ public class App extends Application {
     }
 
     /**
-     * Get process name in the best way.
+     * Obtain the process name in the best way.
      *
      * @return current process name.
      */

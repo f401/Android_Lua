@@ -19,7 +19,6 @@ public class LogScanner {
     private static LogScanner instance;
     private Flag flag;
 
-
     private LogScanner() {
         flag = new Flag(true);
     }
@@ -52,7 +51,7 @@ public class LogScanner {
                 outputStream = new PrintWriter(PathConstants.LOG_FILE_PATH);
                 while (flag.getFlag()) {
                     Process process = new ProcessBuilder("logcat").redirectErrorStream(true).start();
-                    Process pro = new ProcessBuilder().command("logcat", "-c").redirectErrorStream(true).start();
+//                    Process pro = new ProcessBuilder().command("logcat", "-c").redirectErrorStream(true).start();
                     System.out.println("Log scanner started");
                     InputStream is = process.getInputStream();
                     int len = -1;

@@ -9,7 +9,7 @@ import java.io.StringWriter;
 public class ThrowableUtils {
 
     /**
-     * Obtain exception information for throwable and call stack
+     * Obtain exception information for throwable and call stack.
      *
      * @param th
      * @return The message
@@ -34,4 +34,17 @@ public class ThrowableUtils {
         }
     }
 
+    public static String getInvokerInfoString() {
+        StackTraceElement info = // 0-1 system, 2 current, 3 supper
+                Thread.currentThread().getStackTrace()[4];
+        String fileName = info.getFileName();
+        StringBuilder sb = new StringBuilder();
+        sb.append("[")
+                .append(info.getClassName())
+                .append("] ").append(info.getMethodName())
+                .append("(").append(fileName == null ? "unknown" : fileName)
+                .append(": ").append(info.isNativeMethod() ? "native method" : info.getLineNumber())
+                .append(")");
+        return sb.toString();
+    }
 }

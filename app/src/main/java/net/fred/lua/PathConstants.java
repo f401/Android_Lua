@@ -18,10 +18,8 @@ public class PathConstants {
 
     public static void init(Context ctx) {
         EXTERNAL_CACHE_DIR = ctx.getExternalCacheDir().toString();
-
         LOG_FILE_PATH = makeDir(EXTERNAL_CACHE_DIR
                 , "logs/") + DateUtils.getCurrentTimeString() + "-log.log";
-
         STDOUT = makeDir(EXTERNAL_CACHE_DIR
                 , "std/") + DateUtils.getCurrentTimeString() + "-out.log";
         STDERR = makeDir(EXTERNAL_CACHE_DIR
@@ -35,6 +33,10 @@ public class PathConstants {
                 first) + StringUtils.fixLastSeparator(second);
         FileUtils.makeDirs(path);
         return path;
+    }
+
+    public static String getNativeLibraryPath(Context ctx) {
+        return ctx.getApplicationInfo().nativeLibraryDir;
     }
 
 }

@@ -1,28 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-	xmlns:android="http://schemas.android.com/apk/res/android"
-	android:orientation="vertical"
-	android:layout_width="match_parent"
-	android:layout_height="match_parent">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-	<EditText
-		android:layout_width="match_parent"
-		android:ems="10"
-		android:layout_height="wrap_content"
-		android:id="@+id/activity_main_EditText1"
-		android:hint="@string/hint_lua_file_path"/>
+    <EditText
+        android:layout_width="match_parent"
+        android:ems="10"
+        android:layout_height="wrap_content"
+        android:id="@+id/activity_main_EditText1"
+        android:hint="@string/hint_lua_file_path" />
 
-	<Button
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:text="Run"
-		android:id="@+id/activity_main_Button1"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Run"
+        android:id="@+id/activity_main_Button1" />
 
-	<Button
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:text="throw"
-		android:id="@+id/activity_main_throw"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="throw"
+        android:id="@+id/activity_main_throw" />
 
 </LinearLayout>
 

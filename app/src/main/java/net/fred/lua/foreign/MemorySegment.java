@@ -1,41 +1,43 @@
 package net.fred.lua.foreign;
 
-import net.fred.lua.common.Flag;
+import net.fred.lua.foreign.util.ForeignCloseable;
+import net.fred.lua.foreign.util.Pointer;
 
-public class MemorySegment implements AutoCloseable {
-    private Pointer src;
-    private Flag freed;
+public class MemorySegment extends ForeignCloseable {
     private long size;
 
+    /**
+     * See {@link MemorySegment#create}
+     */
     private MemorySegment(Pointer src, long size) {
-        this.src = src;
+        super(src);
         this.size = size;
-        this.freed = new Flag(false);
-    }
-
-    public static MemorySegment create(long size) {
-        return new MemorySegment(new Pointer(ForeignFunctions.alloc(size)), size);
     }
 
     /**
-     * Get the size of the segment
+     * Create a memory segment of size {@code size}.
+     *
+     * @param size The size of the memory segment needs to be created.
+     * @return This object.
+     * @throws NativeMethodException When creation fails
+     */
+    public static MemorySegment create(long size) throws NativeMethodException {
+        long ptr = ForeignFunctions.alloc(size);
+        if (ptr == ForeignValues.NULL) {
+            throw new NativeMethodException(
+                    "Failed to alloc size: " + size + ".Reason: " +
+                            ForeignFunctions.strerror());
+        }
+        return new MemorySegment(new Pointer(ptr), size);
+    }
+
+    /**
+     * Get the size of the segment.
+     *
      * @return the size of the segment
      */
     public long size() {
         return size;
     }
 
-    public Pointer getPointer() {
-        return src;
-    }
-
-    @Override
-    public void close() throws Exception {
-        if (!this.freed.getFlag()) {
-            ForeignFunctions.free(src.get());
-            freed.setFlag(true);
-        } else {
-            throw new RuntimeException("Pointer freed twice!");
-        }
-    }
 }

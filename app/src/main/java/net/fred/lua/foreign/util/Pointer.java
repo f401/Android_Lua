@@ -1,10 +1,23 @@
-package net.fred.lua.foreign;
+package net.fred.lua.foreign.util;
+
+import androidx.annotation.NonNull;
 
 public class Pointer {
     private long addr;
 
     public Pointer(long addr) {
+        if (addr < 0) {
+            throw new RuntimeException(
+                    "Cannot create a pointer with an address less than 0. (" + addr + ")");
+        }
         this.addr = addr;
+    }
+
+    /**
+     * Another method for creating @{code Pointer}.
+     */
+    public static Pointer from(long address) {
+        return new Pointer(address);
     }
 
     public long get() {
@@ -28,5 +41,11 @@ public class Pointer {
     @Override
     public int hashCode() {
         return (int) (addr ^ (addr >>> 32));
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "0x" + Integer.toHexString((int) addr);
     }
 }
