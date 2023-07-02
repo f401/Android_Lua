@@ -26,7 +26,7 @@ public class ForeignCloseable implements AutoCloseable {
     }
 
     @Override
-    public final void close() throws Exception {
+    public final void close() throws RuntimeException {
         if (!this.freed.getFlag()) {
             onFree();
             freed.setFlag(true);

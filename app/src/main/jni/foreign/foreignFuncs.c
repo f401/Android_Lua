@@ -43,6 +43,42 @@ static jlong dllSymbolLookup(JNIEnv* env, jclass clazz, jlong handle, jstring na
     return ptr_to_jlong(result);
 }
 
+static void duplicateStringTo(JNIEnv *env, jclass clazz, jlong handle, jstring string) {
+    const char* str = (*env)->GetStringUTFChars(env, string, 0);
+    size_t string_length = (*env)->GetStringUTFLength(env, string);
+    memcpy(jlong_to_ptr(handle, void), str, string_length + 1);
+    (*env)->ReleaseStringUTFChars(env, string, str);
+}
+
+//----------------------------------------------------------value handles-----------------------------------------------//
+
+//Macro is a good thing.
+#define DEF_PUT_FUNCS(TYPE)                                                         \
+static void putJava##TYPE(JNIEnv *env, jclass clazz, jlong ptr, j##TYPE value) {    \
+    memcpy(jlong_to_ptr(ptr, void), &value, sizeof(j##TYPE));                       \
+}                                                                                   \
+static void putJava##TYPE(JNIEnv *env, jclass clazz, jlong ptr, j##TYPE value)
+DEF_PUT_FUNCS(byte);
+DEF_PUT_FUNCS(int);
+DEF_PUT_FUNCS(short);
+DEF_PUT_FUNCS(char);
+DEF_PUT_FUNCS(long);
+#undef DEF_PUT_FUNCS
+
+#define DEF_PEEK_FUNCS(TYPE)                                                         \
+static j##TYPE peekJava##TYPE(JNIEnv *env, jclass clazz, jlong ptr) {                \
+    j##TYPE result = 0;                                                                  \
+    memcpy(jlong_to_ptr(ptr, void), &result, sizeof(result));                        \
+    return result;                                                                   \
+}                                                                                    \
+static j##TYPE peekJava##TYPE(JNIEnv *env, jclass clazz, jlong ptr)
+DEF_PEEK_FUNCS(byte);
+DEF_PEEK_FUNCS(int);
+DEF_PEEK_FUNCS(short);
+DEF_PEEK_FUNCS(char);
+DEF_PEEK_FUNCS(long);
+#undef DEF_PEEK_FUNCS
+
 const static JNINativeMethod methods[] = {
         {"alloc", "(J)J", &alloc},
         {"free", "(J)V", &freePointer},
@@ -50,7 +86,20 @@ const static JNINativeMethod methods[] = {
         {"dlopen", "(Ljava/lang/String;I)J", &dllOpen},
         {"dlerror", "()Ljava/lang/String;", &dllError},
         {"dlclose", "(J)I", &dllClose},
-        {"dlsym", "(JLjava/lang/String;)J", &dllSymbolLookup}
+        {"dlsym", "(JLjava/lang/String;)J", &dllSymbolLookup},
+
+        {"putByte", "(JB)V", &putJavabyte},
+        {"putChar", "(JC)V", &putJavachar},
+        {"putShort", "(JS)V", &putJavashort},
+        {"putInt", "(JI)V", &putJavaint},
+        {"putLong", "(JJ)V", &putJavalong},
+
+        {"peekByte", "(J)B", &peekJavabyte},
+        {"peekChar", "(J)C", &peekJavachar},
+        {"peekShort", "(J)S", &peekJavashort},
+        {"peekInt", "(J)I", &peekJavaint},
+        {"peekLong", "(J)J", &peekJavalong},
+        {"duplicateStringTo", "(JLjava/lang/String;)V", &duplicateStringTo}
 };
 
 static int registerMethods(JNIEnv* env) {
@@ -64,7 +113,7 @@ static int registerMethods(JNIEnv* env) {
 }
 
 jint JNI_OnLoad(JavaVM* vm, void* reversed) {
-    int version = JNI_ERR;
+    jint version = JNI_ERR;
     JNIEnv *env = NULL;
 
     if ((*vm)->GetEnv(vm, (void **) &env, JNI_VERSION_1_1) == JNI_OK) {
@@ -72,6 +121,7 @@ jint JNI_OnLoad(JavaVM* vm, void* reversed) {
             version = JNI_VERSION_1_4;
         }
     }
+
     return version;
 }
 

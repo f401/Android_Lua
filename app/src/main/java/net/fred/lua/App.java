@@ -21,7 +21,6 @@ public class App extends Application {
 
     public static final String EXIT_ACTION = "net.lua.exit.all";
     private static App instance;
-
     public static App getInstance() {
         return instance;
     }

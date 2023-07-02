@@ -18,7 +18,7 @@ public final class CStandardOutputInput {
 
     public native void redirectStandardErrTo(String path);
 
-    //no block
+    //this one should be no block by fcntl.
     public native void redirectStandardInTo(String path);
 
     static {

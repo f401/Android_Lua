@@ -16,6 +16,8 @@ public class PathConstants {
     public static String CRASH_FILE_SAVE_DIR;
     public static String LOGGER_FILE_SAVE_DIR;
 
+    public static String NATIVE_LIBRARY_DIR;
+
     public static void init(Context ctx) {
         EXTERNAL_CACHE_DIR = ctx.getExternalCacheDir().toString();
         LOG_FILE_PATH = makeDir(EXTERNAL_CACHE_DIR
@@ -26,6 +28,9 @@ public class PathConstants {
                 , "std/") + DateUtils.getCurrentTimeString() + "-err.log";
         CRASH_FILE_SAVE_DIR = makeDir(EXTERNAL_CACHE_DIR, "crash/");
         LOGGER_FILE_SAVE_DIR = makeDir(EXTERNAL_CACHE_DIR, "loggers/");
+
+        NATIVE_LIBRARY_DIR = StringUtils.fixLastSeparator(
+                ctx.getApplicationInfo().nativeLibraryDir);
     }
 
     private static String makeDir(String first, String second) {
@@ -33,10 +38,6 @@ public class PathConstants {
                 first) + StringUtils.fixLastSeparator(second);
         FileUtils.makeDirs(path);
         return path;
-    }
-
-    public static String getNativeLibraryPath(Context ctx) {
-        return ctx.getApplicationInfo().nativeLibraryDir;
     }
 
 }

@@ -11,6 +11,14 @@ public class ForeignValues {
     public static final int RTLD_GLOBAL;
     public static final int RTLD_LOCAL;
 
+    //libffi
+
+    public static final long FFI_TYPE_INT8;
+    public static final long FFI_TYPE_INT16;
+    public static final long FFI_TYPE_INT32;
+    public static final long FFI_TYPE_INT64;
+    public static final long FFI_TYPE_POINTER;
+
     static {
         System.loadLibrary("foreign");
         NULL = getNULL();
@@ -18,6 +26,12 @@ public class ForeignValues {
         RTLD_GLOBAL = getRTLD_GLOBAL();
         RTLD_NOW = getRTLD_NOW();
         RTLD_LOCAL = getRTLD_LOCAL();
+
+        FFI_TYPE_INT8 = getFFI_TYPE_INT8();
+        FFI_TYPE_INT16 = getFFI_TYPE_INT16();
+        FFI_TYPE_INT32 = getFFI_TYPE_INT32();
+        FFI_TYPE_INT64 = getFFI_TYPE_INT64();
+        FFI_TYPE_POINTER = getFFI_TYPE_POINTER();
     }
 
     /**
@@ -32,4 +46,14 @@ public class ForeignValues {
     private static native int getRTLD_NOW();
 
     private static native int getRTLD_LOCAL();
+
+    private static native long getFFI_TYPE_INT8();
+
+    private static native long getFFI_TYPE_INT16();
+
+    private static native long getFFI_TYPE_INT32();
+
+    private static native long getFFI_TYPE_INT64();
+
+    private static native long getFFI_TYPE_POINTER();
 }

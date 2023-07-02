@@ -11,3 +11,4 @@
 jniLibs
 objs
 .settings
+.clang-tidy

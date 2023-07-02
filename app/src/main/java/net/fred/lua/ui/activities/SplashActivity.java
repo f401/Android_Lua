@@ -49,7 +49,6 @@ public class SplashActivity extends BaseActivity {
 
         handleRWPermission();
         startMainHandler.postDelayed(new Runnable() {
-
             @Override
             public void run() {
                 if (isPermissionRequestFinished.getFlag()) {
@@ -61,7 +60,6 @@ public class SplashActivity extends BaseActivity {
                     startMainHandler.postDelayed(this, START_TIME);
                 }
             }
-
         }, START_TIME);
     }
 

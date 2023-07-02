@@ -9,7 +9,7 @@ public class MemorySegment extends ForeignCloseable {
     /**
      * See {@link MemorySegment#create}
      */
-    private MemorySegment(Pointer src, long size) {
+    protected MemorySegment(Pointer src, long size) {
         super(src);
         this.size = size;
     }
@@ -20,8 +20,12 @@ public class MemorySegment extends ForeignCloseable {
      * @param size The size of the memory segment needs to be created.
      * @return This object.
      * @throws NativeMethodException When creation fails
+     * @throws IllegalArgumentException When {@code size} is less than or equal to 0.
      */
-    public static MemorySegment create(long size) throws NativeMethodException {
+    public static MemorySegment create(long size) {
+        if (size <= 0) {
+            throw new IllegalArgumentException("`Size 'cannot be less than or equal to 0");
+        }
         long ptr = ForeignFunctions.alloc(size);
         if (ptr == ForeignValues.NULL) {
             throw new NativeMethodException(

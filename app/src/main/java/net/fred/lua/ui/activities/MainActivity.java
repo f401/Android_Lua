@@ -5,15 +5,18 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import net.fred.lua.PathConstants;
 import net.fred.lua.R;
 import net.fred.lua.common.Logger;
 import net.fred.lua.common.activity.BaseActivity;
+import net.fred.lua.foreign.DynamicLoadingLibrary;
+
+import java.nio.ByteBuffer;
 
 public class MainActivity extends BaseActivity {
     private Button btn, throwException;
     private EditText editText;
-    // private LuaState bridge;
-    //private CStandardOutputInput cstdio;
+    private DynamicLoadingLibrary luaDll;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,20 +25,15 @@ public class MainActivity extends BaseActivity {
         btn = (Button) findViewById(R.id.activity_main_Button1);
         editText = (EditText) findViewById(R.id.activity_main_EditText1);
         throwException = (Button) findViewById(R.id.activity_main_throw);
-        //bridge = new LuaState();
-        //cstdio = CStandardOutputInput.getInstance();
+        luaDll = DynamicLoadingLibrary.open(PathConstants.NATIVE_LIBRARY_DIR + "liblua.so");
 
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View p1) {
-                //cstdio.redirectStandardOutTo(MainActivity.this.getExternalFilesDir("") + "/luaout.txt");
-                //cstdio.redirectStandardInTo(MainActivity.this.getExternalFilesDir("") + "/luain.txt");
-                //bridge.dofile(editText.getText().toString());
                 System.out.println("Finish!");
             }
         });
         throwException.setOnClickListener(new View.OnClickListener() {
-
             @Override
             public void onClick(View p1) {
                 Logger.e("Making exception");
@@ -48,7 +46,7 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //bridge.close();
+        luaDll.close();
     }
 
 }

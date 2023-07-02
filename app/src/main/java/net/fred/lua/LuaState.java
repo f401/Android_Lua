@@ -1,6 +1,7 @@
 package net.fred.lua;
 
 //LuaState
+@Deprecated
 public class LuaState implements AutoCloseable {
 
     private long ptr;
