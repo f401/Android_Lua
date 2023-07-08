@@ -3,6 +3,7 @@ package net.fred.lua.common.activity;
 import android.content.IntentFilter;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import net.fred.lua.App;
@@ -13,6 +14,7 @@ import net.fred.lua.common.ExitReceiver;
  * Implements exiting by broadcast. @{link App#killSelf}
  */
 public class BaseActivity extends AppCompatActivity {
+    @NonNull
     private final ExitReceiver receiver = new ExitReceiver(this);
 
     @Override

@@ -15,6 +15,7 @@ public final class ForeignString extends MemorySegment {
      * @throws NativeMethodException    When allocating space for it fails.
      * @throws IllegalArgumentException Attempting to construct a string with a length of 0.
      */
+    @NonNull
     public static ForeignString from(final @NonNull String str) throws NativeMethodException {
         long length;
         if ((length = str.length()) == 0) {

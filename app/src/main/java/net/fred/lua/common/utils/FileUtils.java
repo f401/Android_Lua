@@ -10,21 +10,8 @@ import java.io.IOException;
 public final class FileUtils {
 
     public static boolean exists(String file) {
-        return file != null && new File(file).exists();
+        return !StringUtils.isEmpty(file) && new File(file).exists();
     }
-
-    public static void checkExistsOrThrow(String file) {
-        if (file != null) {
-            checkExistsOrThrow(new File(file));
-        }
-    }
-
-    public static void checkExistsOrThrow(File file) {
-        if (file != null && !file.exists()) {
-            throw new RuntimeException("File doesn't exists: " + file);
-        }
-    }
-
     public static boolean makeDirs(String dir) {
         if (dir != null) {
             File file = new File(dir);
@@ -34,14 +21,10 @@ public final class FileUtils {
         return false;
     }
 
-    public static boolean makeParentDir(String dir) {
-        return dir != null && makeParentDir(new File(dir));
-    }
-
     public static boolean makeParentDir(File dir) {
         if (dir != null) {
             File parent = dir.getParentFile();
-            if (!parent.exists())
+            if (parent != null && !parent.exists())
                 return parent.mkdirs();
         }
         return false;
@@ -86,6 +69,11 @@ public final class FileUtils {
             ThrowableUtils.closes(fis);
         }
         return result;
+    }
+
+    public static void checkExistsOrThrow(File file) {
+        if (!file.exists())
+            throw new RuntimeException("File path are null.");
     }
 
 }

@@ -8,6 +8,8 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 
+import androidx.annotation.NonNull;
+
 import net.fred.lua.App;
 import net.fred.lua.PathConstants;
 import net.fred.lua.R;
@@ -28,19 +30,7 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
     private static CrashHandler instance;
     private boolean showError;
 
-    public void install(Context ctx) {
-        this.ctx = ctx;
-        this.defaultExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
-        Thread.setDefaultUncaughtExceptionHandler(this);
-        errorSaveDir = new File(PathConstants.CRASH_FILE_SAVE_DIR);
-        showError = true;
-        Logger.i("Crash handler installed in package: " + ctx.getPackageName());
-    }
-
-    public void showError(boolean bool) {
-        this.showError = bool;
-    }
-
+    @NonNull
     public static CrashHandler getInstance() {
         if (instance == null) {
             instance = new CrashHandler();
@@ -48,12 +38,32 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
         return instance;
     }
 
-    private String getThrowableMessages(Throwable ta) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        ta.printStackTrace(pw);
-        pw.close();
-        return sw.toString();
+    /**
+     * Usually use in try-catch
+     *
+     * @param exception The exception you want to deal.
+     */
+    public static void fastHandleException(@NonNull Throwable exception) {
+        StringBuilder sb = getInstance().writeInfoToSdCard(Thread.currentThread(), exception);
+        Context ctx = getInstance().ctx;
+        new AlertDialog.Builder(ctx)
+                .setTitle(ctx.getString(R.string.unknown_exception_happened))
+                .setMessage(sb.toString())
+                .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                }).show();
+    }
+
+    public void install(@NonNull Context ctx) {
+        this.ctx = ctx;
+        this.defaultExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
+        Thread.setDefaultUncaughtExceptionHandler(this);
+        errorSaveDir = new File(PathConstants.CRASH_FILE_SAVE_DIR);
+        showError = true;
+        Logger.i("Crash handler installed in package: " + ctx.getPackageName());
     }
 
     private void startCrashActivity(String content) {
@@ -65,6 +75,19 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
         ctx.startActivity(intent);
     }
 
+    @NonNull
+    private String getThrowableMessages(@NonNull Throwable ta) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        ta.printStackTrace(pw);
+        pw.close();
+        return sw.toString();
+    }
+
+    /**
+     * @return Information writes to sdcard.
+     */
+    @NonNull
     private StringBuilder writeInfoToSdCard(Thread p1, Throwable p2) {
         StringBuilder sb = new StringBuilder();
         String versionName = "Unknown";
@@ -98,7 +121,7 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
     }
 
     @Override
-    public void uncaughtException(Thread p1, Throwable p2) {
+    public void uncaughtException(@NonNull Thread p1, @NonNull Throwable p2) {
         try {
             Logger.e("--Making Crash--");
             StringBuilder sb = writeInfoToSdCard(p1, p2);
@@ -113,24 +136,5 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
             if (this.defaultExceptionHandler != null)
                 this.defaultExceptionHandler.uncaughtException(p1, p2);
         }
-    }
-
-    /**
-     * Usually use in try-catch
-     *
-     * @param exception The exception you want to deal.
-     */
-    public static void fastHandleException(Throwable exception) {
-        StringBuilder sb = getInstance().writeInfoToSdCard(Thread.currentThread(), exception);
-        Context ctx = getInstance().ctx;
-        new AlertDialog.Builder(ctx)
-                .setTitle(ctx.getString(R.string.unknown_exception_happened))
-                .setMessage(sb.toString())
-                .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.dismiss();
-                    }
-                }).show();
     }
 }

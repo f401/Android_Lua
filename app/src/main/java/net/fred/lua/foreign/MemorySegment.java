@@ -1,5 +1,7 @@
 package net.fred.lua.foreign;
 
+import androidx.annotation.NonNull;
+
 import net.fred.lua.foreign.util.ForeignCloseable;
 import net.fred.lua.foreign.util.Pointer;
 
@@ -22,6 +24,7 @@ public class MemorySegment extends ForeignCloseable {
      * @throws NativeMethodException    When creation fails
      * @throws IllegalArgumentException When {@code size} is less than or equal to 0.
      */
+    @NonNull
     public static MemorySegment create(long size) throws NativeMethodException {
         if (size <= 0) {
             throw new IllegalArgumentException("`Size 'cannot be less than or equal to 0");

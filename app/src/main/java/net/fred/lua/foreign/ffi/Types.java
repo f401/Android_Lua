@@ -1,5 +1,7 @@
 package net.fred.lua.foreign.ffi;
 
+import androidx.annotation.NonNull;
+
 import net.fred.lua.foreign.ForeignValues;
 import net.fred.lua.foreign.util.Pointer;
 
@@ -7,16 +9,16 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Types {
     private static final ConcurrentHashMap<Class<?>, Pointer> primaryTypes;
-    private static ConcurrentHashMap<Class<?>, Pointer> customTypes;
+    private static final ConcurrentHashMap<Class<?>, Pointer> customTypes;
 
-    public static Pointer get(Class<?> clazz) {
+    public static Pointer get(@NonNull Class<?> clazz) {
         if (!primaryTypes.containsKey(clazz)) {
             return primaryTypes.get(clazz);
         }
         return customTypes.get(clazz);
     }
 
-    public static void put(Class<?> clazz, Pointer ptr) {
+    public static void put(@NonNull Class<?> clazz, @NonNull Pointer ptr) {
         customTypes.put(clazz, ptr);
     }
 

@@ -3,29 +3,30 @@ package net.fred.lua.foreign.util;
 import androidx.annotation.NonNull;
 
 public class Pointer {
-    private long addr;
+    private long address;
 
-    public Pointer(long addr) {
-        if (addr < 0) {
+    public Pointer(long address) {
+        if (address < 0) {
             throw new RuntimeException(
-                    "Cannot create a pointer with an address less than 0. (" + addr + ")");
+                    "Cannot create a pointer with an address less than 0. (" + address + ")");
         }
-        this.addr = addr;
+        this.address = address;
     }
 
     /**
      * Another method for creating @{code Pointer}.
      */
+    @NonNull
     public static Pointer from(long address) {
         return new Pointer(address);
     }
 
     public final long get() {
-        return addr;
+        return address;
     }
 
     public final void set(long addr) {
-        this.addr = addr;
+        this.address = addr;
     }
 
     @Override
@@ -35,17 +36,17 @@ public class Pointer {
 
         Pointer pointer = (Pointer) o;
 
-        return addr == pointer.addr;
+        return address == pointer.address;
     }
 
     @Override
     public final int hashCode() {
-        return (int) (addr ^ (addr >>> 32));
+        return (int) (address ^ (address >>> 32));
     }
 
     @NonNull
     @Override
     public final String toString() {
-        return "0x" + Integer.toHexString((int) addr);
+        return "0x" + Integer.toHexString((int) address);
     }
 }

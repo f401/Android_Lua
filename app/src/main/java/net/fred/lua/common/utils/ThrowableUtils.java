@@ -1,6 +1,7 @@
 package net.fred.lua.common.utils;
 
-import net.fred.lua.common.CrashHandler;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.io.Closeable;
 import java.io.PrintWriter;
@@ -11,9 +12,10 @@ public class ThrowableUtils {
     /**
      * Obtain exception information for throwable and call stack.
      *
-     * @param th
+     * @param th Throwable what you want
      * @return The message
      */
+    @NonNull
     public static String getThrowableMessage(Throwable th) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
@@ -22,29 +24,30 @@ public class ThrowableUtils {
         return sw.toString();//StringWriter doesn't need close
     }
 
-    public static void closes(Closeable... target) {
-        for (Closeable c : target) {
-            try {
-                if (c != null) {
-                    c.close();
+    public static void closes(@Nullable Closeable... target) {
+        if (target != null) {
+            for (Closeable c : target) {
+                try {
+                    if (c != null) {
+                        c.close();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            } catch (Exception e) {
-                CrashHandler.fastHandleException(e);
             }
         }
     }
 
+    @NonNull
     public static String getInvokerInfoString() {
         StackTraceElement info = // 0-1 system, 2 current, 3 supper
                 Thread.currentThread().getStackTrace()[4];
         String fileName = info.getFileName();
-        StringBuilder sb = new StringBuilder();
-        sb.append("[")
-                .append(info.getClassName())
-                .append("] ").append(info.getMethodName())
-                .append("(").append(fileName == null ? "unknown" : fileName)
-                .append(": ").append(info.isNativeMethod() ? "native method" : info.getLineNumber())
-                .append(")");
-        return sb.toString();
+        return "[" +
+                info.getClassName() +
+                "] " + info.getMethodName() +
+                "(" + (fileName == null ? "unknown" : fileName) +
+                ": " + (info.isNativeMethod() ? "native method" : info.getLineNumber()) +
+                ")";
     }
 }

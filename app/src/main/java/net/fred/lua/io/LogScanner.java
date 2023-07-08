@@ -2,6 +2,8 @@ package net.fred.lua.io;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import net.fred.lua.PathConstants;
 import net.fred.lua.common.Flag;
 import net.fred.lua.common.utils.ThrowableUtils;
@@ -17,12 +19,13 @@ import java.io.PrintWriter;
 public class LogScanner {
 
     private static LogScanner instance;
-    private Flag flag;
+    private final Flag flag;
 
     private LogScanner() {
         flag = new Flag(true);
     }
 
+    @NonNull
     public static LogScanner getInstance() {
         if (instance == null) {
             instance = new LogScanner();
@@ -54,7 +57,7 @@ public class LogScanner {
 //                    Process pro = new ProcessBuilder().command("logcat", "-c").redirectErrorStream(true).start();
                     System.out.println("Log scanner started");
                     InputStream is = process.getInputStream();
-                    int len = -1;
+                    int len;
                     byte[] buffer = new byte[1024];
                     while (flag.getFlag() && (len = is.read(buffer)) > -1) {
                         outputStream.print(new String(buffer, 0, len));
@@ -65,7 +68,7 @@ public class LogScanner {
                 e.printStackTrace();
                 Log.e("Scanner", ThrowableUtils.getThrowableMessage(e));
             } finally {
-                outputStream.close();
+                ThrowableUtils.closes(outputStream);
             }
         }
 

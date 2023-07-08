@@ -7,10 +7,6 @@ public class Flag {
 
     private boolean flag;
 
-    public Flag() {
-        this(false);
-    }
-
     public Flag(boolean initVal) {
         flag = initVal;
     }

@@ -7,7 +7,7 @@ import android.content.Intent;
 
 public class ExitReceiver extends BroadcastReceiver {
 
-    private Activity activity;
+    private final Activity activity;
 
     public ExitReceiver(Activity activity) {
         this.activity = activity;

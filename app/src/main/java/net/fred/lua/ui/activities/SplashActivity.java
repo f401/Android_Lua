@@ -33,7 +33,7 @@ public class SplashActivity extends BaseActivity {
 
     private TextView tv;
     private Handler startMainHandler;
-    private Flag isPermissionRequestFinished = new Flag(false);
+    private final Flag isPermissionRequestFinished = new Flag(false);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,7 +114,7 @@ public class SplashActivity extends BaseActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        List<String> notAllowed = null;
+        List<String> notAllowed;
         if (requestCode == PERMISSION_REQUEST_CODE && (notAllowed =
                 getNotAllowedPermissionList(permissions, grantResults))
                 .size() != 0) {

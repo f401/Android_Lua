@@ -1,5 +1,7 @@
 package net.fred.lua.common;
 
+import androidx.annotation.NonNull;
+
 import net.fred.lua.App;
 import net.fred.lua.PathConstants;
 import net.fred.lua.common.utils.DateUtils;
@@ -34,12 +36,14 @@ public class Logger implements AutoCloseable {
         }
     }
 
+    @NonNull
     public static Logger getInstance() {
-        if (logger == null) {
-            synchronized (Logger.class) {
-                if (logger == null) {
-                    logger = new Logger();
-                }
+        if (logger != null) {
+            return logger;
+        }
+        synchronized (Logger.class) {
+            if (logger == null) {
+                logger = new Logger();
             }
         }
         return logger;
@@ -67,6 +71,7 @@ public class Logger implements AutoCloseable {
         writeLine(sb);
     }
 
+    @NonNull
     private static String getOtherInfo() {
         StringBuilder sb = new StringBuilder();
         sb.append(DateUtils.getCurrentTimeString("yyyy_MM_dd-HH_mm_ss"))
