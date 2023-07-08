@@ -63,32 +63,9 @@ public class ForeignFunctions {
         return Double.longBitsToDouble(peekLong(ptr));
     }
 
-/*    //--------------------------------------------------------------Unsigned--------------------------------------------------------------------//
+    /*    //--------------------------------------------------------------Unsigned--------------------------------------------------------------------//
 
-    *//**
-     * Tip: These methods do not check whether the provided value is less than or greater than 0.
-     *//*
-
-    public static native void putUnsignedByte(long ptr, byte value);
-
-    public static native void putUnsignedChar(long ptr, char value);
-
-    public static native void putUnsignedShort(long ptr, short value);
-
-    public static native void putUnsignedInt(long ptr, int value);
-
-    public static native void putUnsignedLong(long ptr, long value);
-
-
-    public static native byte peekUnsignedByte(long ptr);
-
-    public static native char peekUnsignedChar(long ptr);
-
-    public static native short peekUnsignedShort(long ptr);
-
-    public static native int peekUnsignedInt(long ptr);
-
-    public static native long peekUnsignedLong(long ptr);*/
+     */
 
 
     static {

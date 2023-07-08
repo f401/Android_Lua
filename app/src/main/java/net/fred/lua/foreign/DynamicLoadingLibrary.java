@@ -7,7 +7,7 @@ import net.fred.lua.common.utils.ThrowableUtils;
 import net.fred.lua.foreign.util.ForeignCloseable;
 import net.fred.lua.foreign.util.Pointer;
 
-public class DynamicLoadingLibrary extends ForeignCloseable {
+public final class DynamicLoadingLibrary extends ForeignCloseable {
     private DynamicLoadingLibrary(Pointer ptr) {
         super(ptr);
     }

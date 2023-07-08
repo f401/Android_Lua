@@ -10,8 +10,7 @@ import net.fred.lua.R;
 import net.fred.lua.common.Logger;
 import net.fred.lua.common.activity.BaseActivity;
 import net.fred.lua.foreign.DynamicLoadingLibrary;
-
-import java.nio.ByteBuffer;
+import net.fred.lua.foreign.NativeMethodException;
 
 public class MainActivity extends BaseActivity {
     private Button btn, throwException;
@@ -25,7 +24,12 @@ public class MainActivity extends BaseActivity {
         btn = (Button) findViewById(R.id.activity_main_Button1);
         editText = (EditText) findViewById(R.id.activity_main_EditText1);
         throwException = (Button) findViewById(R.id.activity_main_throw);
-        luaDll = DynamicLoadingLibrary.open(PathConstants.NATIVE_LIBRARY_DIR + "liblua.so");
+
+        try {
+            luaDll = DynamicLoadingLibrary.open(PathConstants.NATIVE_LIBRARY_DIR + "liblua.so");
+        } catch (NativeMethodException e) {
+            throw new RuntimeException(e);
+        }
 
         btn.setOnClickListener(new View.OnClickListener() {
             @Override

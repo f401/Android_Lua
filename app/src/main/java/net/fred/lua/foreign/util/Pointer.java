@@ -20,16 +20,16 @@ public class Pointer {
         return new Pointer(address);
     }
 
-    public long get() {
+    public final long get() {
         return addr;
     }
 
-    public void set(long addr) {
+    public final void set(long addr) {
         this.addr = addr;
     }
 
     @Override
-    public boolean equals(Object o) {
+    public final boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Pointer)) return false;
 
@@ -39,13 +39,13 @@ public class Pointer {
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
         return (int) (addr ^ (addr >>> 32));
     }
 
     @NonNull
     @Override
-    public String toString() {
+    public final String toString() {
         return "0x" + Integer.toHexString((int) addr);
     }
 }

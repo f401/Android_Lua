@@ -7,13 +7,15 @@ import android.content.Intent;
 import android.os.Build;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.multidex.MultiDex;
 
 import net.fred.lua.common.CrashHandler;
+import net.fred.lua.common.Logger;
 import net.fred.lua.io.LogScanner;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.List;
 
@@ -21,6 +23,7 @@ public class App extends Application {
 
     public static final String EXIT_ACTION = "net.lua.exit.all";
     private static App instance;
+
     public static App getInstance() {
         return instance;
     }
@@ -30,7 +33,7 @@ public class App extends Application {
      *
      * @param ctx required
      */
-    public static void killSelf(Context ctx) {
+    public static void killSelf(@NonNull Context ctx) {
         Intent intent = new Intent("net.fred.lua.common.activity.BaseActivity");
         intent.putExtra(EXIT_ACTION, 1);
         ctx.sendBroadcast(intent);
@@ -44,6 +47,35 @@ public class App extends Application {
         System.exit(0);
     }
 
+    private static void redirectOutAndErrStreamToLog() {
+        class Injector extends PrintStream {
+            public Injector(String name) {
+                super(new OutputStream() {
+                    boolean printHeader = true;
+
+                    @Override
+                    public void write(int b) {
+                        if (printHeader) {
+                            Logger.write("[" + name + "]");
+                            printHeader = false;
+                        } else if (b == '\n') {
+                            printHeader = true;
+                        }
+                        Logger.write(b);
+                    }
+                });
+            }
+        }
+        System.setErr(new Injector("STDERR"));
+        System.setOut(new Injector("STDOUT"));
+    }
+
+    @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
+        MultiDex.install(this);
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -54,24 +86,7 @@ public class App extends Application {
             CrashHandler.getInstance().install(this);
         }
         Log.i("Application", "redirecting stream");
-        redirectOutAndErrStream(PathConstants.STDOUT, PathConstants.STDERR);
-    }
-
-    @Override
-    protected void attachBaseContext(Context base) {
-        super.attachBaseContext(base);
-        MultiDex.install(this);
-    }
-
-    public static void redirectOutAndErrStream(String out, String err) {
-        try {
-            PrintStream outStream = new PrintStream(new File(out));
-            PrintStream errStream = new PrintStream(new File(err));
-            System.setOut(outStream);
-            System.setErr(errStream);
-        } catch (IOException e) {
-            CrashHandler.fastHandleException(e);
-        }
+        redirectOutAndErrStreamToLog();
     }
 
     /**
@@ -79,6 +94,7 @@ public class App extends Application {
      *
      * @return current process name.
      */
+    @Nullable
     public String autoGetProcessName() {
         if (Build.VERSION.SDK_INT >= //Build.VERSION_CODES.P
                 28) {

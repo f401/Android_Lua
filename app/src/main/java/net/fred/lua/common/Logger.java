@@ -13,14 +13,14 @@ import java.io.PrintStream;
 public class Logger implements AutoCloseable {
 
     private static Logger logger;
-    private final File logFile;
     private PrintStream stream;
 
     private Logger() {
         String fileName = DateUtils.getCurrentTimeString("yyyy_MM_dd-HH_mm_ss")
                 + ".log";
 
-        logFile = new File(StringUtils.fixLastSeparator(PathConstants.LOGGER_FILE_SAVE_DIR) + fileName);
+        File logFile =
+                new File(StringUtils.fixLastSeparator(PathConstants.LOGGER_FILE_SAVE_DIR) + fileName);
 
         if (logFile.exists()) {
             logFile.delete();
@@ -50,24 +50,21 @@ public class Logger implements AutoCloseable {
     }
 
     public static void i(String msg) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("INFO ").append(getOtherInfo()).append(ThrowableUtils.getInvokerInfoString())
-                .append(" :").append(msg);
-        write(sb.toString());
+        String sb = "INFO " + getOtherInfo() + ThrowableUtils.getInvokerInfoString() +
+                " :" + msg;
+        writeLine(sb);
     }
 
     public static void e(String msg) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("ERROR ").append(getOtherInfo()).append(ThrowableUtils.getInvokerInfoString())
-                .append(" :").append(msg);
-        write(sb.toString());
+        String sb = "ERROR " + getOtherInfo() + ThrowableUtils.getInvokerInfoString() +
+                " :" + msg;
+        writeLine(sb);
     }
 
     public static void w(String msg) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("WARN ").append(getOtherInfo()).append(ThrowableUtils.getInvokerInfoString())
-                .append(" :").append(msg);
-        write(sb.toString());
+        String sb = "WARN " + getOtherInfo() + ThrowableUtils.getInvokerInfoString() +
+                " :" + msg;
+        writeLine(sb);
     }
 
     private static String getOtherInfo() {
@@ -82,9 +79,16 @@ public class Logger implements AutoCloseable {
         return sb.toString();
     }
 
-    private static void write(String msg) {
-        PrintStream ps = getInstance().stream;
-        ps.println(msg);
+    public static void write(String msg) {
+        stream().print(msg);
+    }
+
+    public static void write(int i) {
+        stream().write(i);
+    }
+
+    public static void writeLine(String msg) {
+        write(msg + "\n");
     }
 
     @Override

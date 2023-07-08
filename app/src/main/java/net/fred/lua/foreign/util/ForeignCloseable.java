@@ -1,5 +1,7 @@
 package net.fred.lua.foreign.util;
 
+import androidx.annotation.NonNull;
+
 import net.fred.lua.common.Flag;
 import net.fred.lua.common.Logger;
 import net.fred.lua.foreign.ForeignFunctions;
@@ -17,16 +19,17 @@ public class ForeignCloseable implements AutoCloseable {
         return pointer;
     }
 
+    @NonNull
     public final Flag getFreed() {
         return freed;
     }
 
-    public final void setFreed(Flag freed) {
+    public final void setFreed(@NonNull Flag freed) {
         this.freed = freed;
     }
 
     @Override
-    public final void close() throws RuntimeException {
+    public final void close() {
         if (!this.freed.getFlag()) {
             onFree();
             freed.setFlag(true);

@@ -9,10 +9,7 @@ import net.fred.lua.common.utils.StringUtils;
 public class PathConstants {
 
     public static String LOG_FILE_PATH;
-    public static String STDOUT;
-    public static String STDERR;
     public static String EXTERNAL_CACHE_DIR;
-    public static String LOGGER_FILE_PATH;
     public static String CRASH_FILE_SAVE_DIR;
     public static String LOGGER_FILE_SAVE_DIR;
 
@@ -22,10 +19,6 @@ public class PathConstants {
         EXTERNAL_CACHE_DIR = ctx.getExternalCacheDir().toString();
         LOG_FILE_PATH = makeDir(EXTERNAL_CACHE_DIR
                 , "logs/") + DateUtils.getCurrentTimeString() + "-log.log";
-        STDOUT = makeDir(EXTERNAL_CACHE_DIR
-                , "std/") + DateUtils.getCurrentTimeString() + "-out.log";
-        STDERR = makeDir(EXTERNAL_CACHE_DIR
-                , "std/") + DateUtils.getCurrentTimeString() + "-err.log";
         CRASH_FILE_SAVE_DIR = makeDir(EXTERNAL_CACHE_DIR, "crash/");
         LOGGER_FILE_SAVE_DIR = makeDir(EXTERNAL_CACHE_DIR, "loggers/");
 
