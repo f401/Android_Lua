@@ -17,7 +17,7 @@ public class Array<T> extends MemorySegment implements RandomAccess {
      */
     private Array(long totalSize, long length, Types.Type<T> clazz) throws NativeMethodException {
         super(MemorySegment.allocate(totalSize), length);
-        this.clazz = (Types.Type<T>) clazz;
+        this.clazz = clazz;
     }
 
     @NonNull
@@ -25,7 +25,7 @@ public class Array<T> extends MemorySegment implements RandomAccess {
         if (length <= 0) {
             throw new IllegalArgumentException("The length cannot be less than or equal to 0. (" + length + ").");
         }
-        Types.Type<T> type = (Types.Type<T>) Types.get(clazz);
+        Types.Type<T> type = Types.get(clazz);
         if (clazz == String.class) {
             throw new RuntimeException("Please use class `ForeignString` instead.");
         } else if (clazz == void.class) {

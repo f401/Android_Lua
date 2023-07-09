@@ -7,6 +7,7 @@ import android.widget.EditText;
 
 import net.fred.lua.PathConstants;
 import net.fred.lua.R;
+import net.fred.lua.common.CrashHandler;
 import net.fred.lua.common.Logger;
 import net.fred.lua.common.activity.BaseActivity;
 import net.fred.lua.foreign.DynamicLoadingLibrary;
@@ -50,7 +51,11 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        luaDll.close();
+        try {
+            luaDll.close();
+        } catch (Exception e) {
+            CrashHandler.fastHandleException(e);
+        }
     }
 
 }

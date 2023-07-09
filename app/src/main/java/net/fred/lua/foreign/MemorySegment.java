@@ -5,16 +5,8 @@ import androidx.annotation.NonNull;
 import net.fred.lua.foreign.util.ForeignCloseable;
 import net.fred.lua.foreign.util.Pointer;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class MemorySegment extends ForeignCloseable {
     private final long size;
-
-    /**
-     * Contains objects that need to be released together when this object is released.
-     */
-    private List<MemorySegment> subMemorySegment;
 
     /**
      * See {@link MemorySegment#create}
@@ -58,15 +50,6 @@ public class MemorySegment extends ForeignCloseable {
         return Pointer.from(ptr);
     }
 
-    public void addSubSegment(@NonNull MemorySegment segment) {
-        if (segment != this) {
-            if (subMemorySegment == null) {
-                subMemorySegment = new ArrayList<>(2);
-            }
-            subMemorySegment.add(segment);
-        }
-    }
-
     /**
      * Get the size of the segment.
      *
@@ -74,25 +57,5 @@ public class MemorySegment extends ForeignCloseable {
      */
     public long size() {
         return size;
-    }
-
-    /**
-     * You must call this method in your own @ {code onFree} when overriding.
-     */
-    protected void freeSubSegments() {
-        if (subMemorySegment != null) {
-            for (MemorySegment mem : subMemorySegment) {
-                mem.close();
-            }
-        }
-    }
-
-    /**
-     * @see MemorySegment#freeSubSegments()
-     */
-    @Override
-    protected void onFree() {
-        super.onFree();
-        freeSubSegments();
     }
 }
