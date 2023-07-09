@@ -14,9 +14,6 @@ import java.util.List;
 
 //TODO: FINISH.
 
-/**
- * @param <T> The return type of the function.
- */
 public class FunctionCaller extends ForeignCloseable {
 
     @NonNull

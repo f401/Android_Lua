@@ -12,9 +12,6 @@ public class Array<T> extends MemorySegment implements RandomAccess {
 
     private final Types.Type<T> clazz;
 
-    /**
-     * See {@link Array#create}
-     */
     private Array(long totalSize, long length, Types.Type<T> clazz) throws NativeMethodException {
         super(MemorySegment.allocate(totalSize), length);
         this.clazz = clazz;
