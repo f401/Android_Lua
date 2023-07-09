@@ -83,11 +83,17 @@ public class Types {
         customTypes = new ConcurrentHashMap<>();
     }
 
-    public static Type<?> get(@NonNull Class<?> clazz) {
+    /**
+     * @param clazz The key.
+     * @param <T>   the type of the class modeled by this Type.Types object. For example, the type of String.class is Type<String>. Use Type<?> if the class being modeled is unknown.
+     * @return The result obtained, if unknown, returns @{code null}.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> Type<T> get(@NonNull Class<T> clazz) {
         if (!primaryTypes.containsKey(clazz)) {
-            return primaryTypes.get(clazz);
+            return (Type<T>) primaryTypes.get(clazz);
         }
-        return customTypes.get(clazz);
+        return (Type<T>) customTypes.get(clazz);
     }
 
     public static void put(@NonNull Class<?> clazz, @NonNull Type<?> ptr) {
