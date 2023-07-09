@@ -4,6 +4,7 @@
 #include <string.h>
 #include <errno.h>
 #include "../common.h"
+#include <ffi.h>
 
 /*
  * These functions may be called multiple times, so dynamic registration is used.
@@ -44,10 +45,17 @@ static jlong dllSymbolLookup(JNIEnv* env, jclass clazz, jlong handle, jstring na
 }
 
 static void duplicateStringTo(JNIEnv *env, jclass clazz, jlong handle, jstring string) {
-    const char* str = (*env)->GetStringUTFChars(env, string, 0);
+    const char *str = (*env)->GetStringUTFChars(env, string, 0);
     size_t string_length = (*env)->GetStringUTFLength(env, string);
     memcpy(jlong_to_ptr(handle, void), str, string_length + 1);
     (*env)->ReleaseStringUTFChars(env, string, str);
+}
+
+static jint ffiPrepareCIF(JNIEnv *env, jclass clazz, jlong cif, jint argsCount, jlong returnType,
+                          jlong paramsType) {
+    return ffi_prep_cif(jlong_to_ptr(cif, ffi_cif),
+                        FFI_DEFAULT_ABI, argsCount, jlong_to_ptr(returnType, ffi_type),
+                        jlong_to_ptr(paramsType, ffi_type*));
 }
 
 //----------------------------------------------------------value handles-----------------------------------------------//
@@ -58,6 +66,7 @@ static void putJava##TYPE(JNIEnv *env, jclass clazz, jlong ptr, j##TYPE value) {
     memcpy(jlong_to_ptr(ptr, void), &value, sizeof(j##TYPE));                       \
 }                                                                                   \
 static void putJava##TYPE(JNIEnv *env, jclass clazz, jlong ptr, j##TYPE value)
+
 DEF_PUT_FUNCS(byte);
 DEF_PUT_FUNCS(int);
 DEF_PUT_FUNCS(short);
@@ -80,26 +89,28 @@ DEF_PEEK_FUNCS(long);
 #undef DEF_PEEK_FUNCS
 
 const static JNINativeMethod methods[] = {
-        {"alloc", "(J)J", &alloc},
-        {"free", "(J)V", &freePointer},
-        {"strerror", "()Ljava/lang/String;", &getSystemError},
-        {"dlopen", "(Ljava/lang/String;I)J", &dllOpen},
-        {"dlerror", "()Ljava/lang/String;", &dllError},
-        {"dlclose", "(J)I", &dllClose},
-        {"dlsym", "(JLjava/lang/String;)J", &dllSymbolLookup},
+        {"alloc",             "(J)J",                   &alloc},
+        {"free",              "(J)V",                   &freePointer},
+        {"strerror",          "()Ljava/lang/String;",   &getSystemError},
+        {"dlopen",            "(Ljava/lang/String;I)J", &dllOpen},
+        {"dlerror",           "()Ljava/lang/String;",   &dllError},
+        {"dlclose",           "(J)I",                   &dllClose},
+        {"dlsym",             "(JLjava/lang/String;)J", &dllSymbolLookup},
 
-        {"putByte", "(JB)V", &putJavabyte},
-        {"putChar", "(JC)V", &putJavachar},
-        {"putShort", "(JS)V", &putJavashort},
-        {"putInt", "(JI)V", &putJavaint},
-        {"putLong", "(JJ)V", &putJavalong},
+        {"putByte",           "(JB)V",                  &putJavabyte},
+        {"putChar",           "(JC)V",                  &putJavachar},
+        {"putShort",          "(JS)V",                  &putJavashort},
+        {"putInt",            "(JI)V",                  &putJavaint},
+        {"putLong",           "(JJ)V",                  &putJavalong},
 
-        {"peekByte", "(J)B", &peekJavabyte},
-        {"peekChar", "(J)C", &peekJavachar},
-        {"peekShort", "(J)S", &peekJavashort},
-        {"peekInt", "(J)I", &peekJavaint},
-        {"peekLong", "(J)J", &peekJavalong},
-        {"duplicateStringTo", "(JLjava/lang/String;)V", &duplicateStringTo}
+        {"peekByte",          "(J)B",                   &peekJavabyte},
+        {"peekChar",          "(J)C",                   &peekJavachar},
+        {"peekShort",         "(J)S",                   &peekJavashort},
+        {"peekInt",           "(J)I",                   &peekJavaint},
+        {"peekLong",          "(J)J",                   &peekJavalong},
+        {"duplicateStringTo", "(JLjava/lang/String;)V", &duplicateStringTo},
+
+        {"ffi_prep_cif",      "(JIJJ)I",                &ffiPrepareCIF}
 };
 
 static int registerMethods(JNIEnv* env) {

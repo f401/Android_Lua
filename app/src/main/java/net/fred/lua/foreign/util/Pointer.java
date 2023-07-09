@@ -2,6 +2,8 @@ package net.fred.lua.foreign.util;
 
 import androidx.annotation.NonNull;
 
+import net.fred.lua.foreign.ffi.Types;
+
 public class Pointer {
     private long address;
 
@@ -41,12 +43,22 @@ public class Pointer {
 
     @Override
     public final int hashCode() {
-        return (int) (address ^ (address >>> 32));
+        return (int) address;
     }
 
     @NonNull
     @Override
     public final String toString() {
         return "0x" + Integer.toHexString((int) address);
+    }
+
+    @NonNull
+    public final Pointer plus(Types.Type<?> type, long need) {
+        return new Pointer(address + (type.size * need));
+    }
+
+    @NonNull
+    public final Pointer plus(long size) {
+        return new Pointer(address + size);
     }
 }

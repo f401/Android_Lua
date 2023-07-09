@@ -53,3 +53,23 @@ JNIEXPORT jlong JNICALL
 Java_net_fred_lua_foreign_ForeignValues_getFFI_1TYPE_1POINTER(JNIEnv *env, jclass clazz) {
     return ptr_to_jlong(&ffi_type_pointer);
 }
+
+JNIEXPORT jlong JNICALL
+Java_net_fred_lua_foreign_ForeignValues_getFFI_1TYPE_1VOID(JNIEnv *env, jclass clazz) {
+    return ptr_to_jlong(&ffi_type_void);
+}
+
+JNIEXPORT jlong JNICALL
+Java_net_fred_lua_foreign_ForeignValues_sizeOfFFI_1CIF(JNIEnv *env, jclass clazz) {
+    return sizeof(ffi_cif);
+}
+
+JNIEXPORT jlong JNICALL
+Java_net_fred_lua_foreign_ForeignValues_sizeOfPointer(JNIEnv *env, jclass clazz) {
+    return sizeof(void *);
+}
+
+JNIEXPORT jint JNICALL
+Java_net_fred_lua_foreign_ForeignValues_getFFI_1STATUS_1OK(JNIEnv *env, jclass clazz) {
+    return FFI_OK;
+}

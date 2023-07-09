@@ -1,6 +1,7 @@
 package net.fred.lua.foreign.util;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import net.fred.lua.common.Flag;
 import net.fred.lua.common.Logger;
@@ -11,7 +12,7 @@ public class ForeignCloseable implements AutoCloseable {
     private Flag freed;
     protected Pointer pointer;
 
-    protected ForeignCloseable(Pointer pointer) {
+    protected ForeignCloseable(@Nullable Pointer pointer) {
         this.pointer = pointer;
     }
 
@@ -47,7 +48,9 @@ public class ForeignCloseable implements AutoCloseable {
      * Rewrite and implement your own release function.
      */
     protected void onFree() {
-        ForeignFunctions.free(pointer.get());
+        if (pointer != null) {
+            ForeignFunctions.free(pointer.get());
+        }
     }
 
 }

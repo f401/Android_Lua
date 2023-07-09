@@ -63,10 +63,10 @@ public class ForeignFunctions {
         return Double.longBitsToDouble(peekLong(ptr));
     }
 
-    /*    //--------------------------------------------------------------Unsigned--------------------------------------------------------------------//
+    //--------------------------------------------------------------libffi--------------------------------------------------------------------//
 
-     */
 
+    public static native int ffi_prep_cif(long cif, int argsCount, long returnType, long paramsType);
 
     static {
         System.loadLibrary("foreign");

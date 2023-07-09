@@ -18,6 +18,14 @@ public class ForeignValues {
     public static final long FFI_TYPE_INT32;
     public static final long FFI_TYPE_INT64;
     public static final long FFI_TYPE_POINTER;
+    public static final long FFI_TYPE_VOID;
+
+    //sizes
+
+    public static final long SIZE_OF_FFI_CIF;
+    public static final long SIZE_OF_POINTER;
+
+    public static final int FFI_STATUS_OK;
 
     static {
         System.loadLibrary("foreign");
@@ -32,6 +40,11 @@ public class ForeignValues {
         FFI_TYPE_INT32 = getFFI_TYPE_INT32();
         FFI_TYPE_INT64 = getFFI_TYPE_INT64();
         FFI_TYPE_POINTER = getFFI_TYPE_POINTER();
+        FFI_TYPE_VOID = getFFI_TYPE_VOID();
+        FFI_STATUS_OK = getFFI_STATUS_OK();
+
+        SIZE_OF_FFI_CIF = sizeOfFFI_CIF();
+        SIZE_OF_POINTER = sizeOfPointer();
     }
 
     /**
@@ -56,4 +69,12 @@ public class ForeignValues {
     private static native long getFFI_TYPE_INT64();
 
     private static native long getFFI_TYPE_POINTER();
+
+    private static native long getFFI_TYPE_VOID();
+
+    private static native int getFFI_STATUS_OK();
+
+    private static native long sizeOfFFI_CIF();
+
+    private static native long sizeOfPointer();
 }
