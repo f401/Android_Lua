@@ -80,8 +80,10 @@ public class MemorySegment extends ForeignCloseable {
      * You must call this method in your own @ {code onFree} when overriding.
      */
     protected void freeSubSegments() {
-        for (MemorySegment mem : subMemorySegment) {
-            mem.close();
+        if (subMemorySegment != null) {
+            for (MemorySegment mem : subMemorySegment) {
+                mem.close();
+            }
         }
     }
 
