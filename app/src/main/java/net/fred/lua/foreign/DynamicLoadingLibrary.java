@@ -19,7 +19,7 @@ public final class DynamicLoadingLibrary extends ForeignCloseable {
             return null;
         }
         long handle = ForeignFunctions.dlopen(path, ForeignValues.RTLD_LAZY);
-        if (handle == ForeignValues.NULL) {
+        if (handle == ForeignValues.NULL || handle < 0) {
             throw new NativeMethodException(
                     "Failed to open dll: " + path + ", reason: " +
                             ForeignFunctions.dlerror());
