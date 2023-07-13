@@ -31,7 +31,7 @@ public final class ForeignString extends MemorySegment {
             Logger.w(ThrowableUtils.getInvokerInfoString() + " passes null when creating a string. Using default size.");
             length = DEFAULT_SIZE;
         }
-        final long ptr = ForeignFunctions.alloc(length);
+        final long ptr = ForeignFunctions.alloc(length + 1);
         if (ptr == ForeignValues.NULL) {
             throw new NativeMethodException(
                     "Failed to alloc size: " + length + ".Reason: " +
