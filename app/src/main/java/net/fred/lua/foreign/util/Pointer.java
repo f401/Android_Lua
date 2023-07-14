@@ -3,14 +3,15 @@ package net.fred.lua.foreign.util;
 import androidx.annotation.NonNull;
 
 import net.fred.lua.foreign.ffi.Types;
+import net.fred.lua.common.Logger;
 
 public class Pointer {
     private long address;
 
     public Pointer(long address) {
         if (address < 0) {
-            throw new RuntimeException(
-                    "Cannot create a pointer with an address less than 0. (" + address + ")");
+            Logger.e(
+                    "Trying to create a pointer with an address less than 0. (" + address + ")");
         }
         this.address = address;
     }
