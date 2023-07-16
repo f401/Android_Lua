@@ -114,7 +114,7 @@ const static JNINativeMethod methods[] = {
 };
 
 static int registerMethods(JNIEnv* env) {
-    jclass clazz = (*env)->FindClass(env, "net/fred/lua/foreign/ForeignFunctions");
+    jclass clazz = (*env)->FindClass(env, "net/fred/lua/foreign/internal/ForeignFunctions");
     if (clazz != NULL && (*env)->
         RegisterNatives(env, clazz, methods, sizeof(methods) / sizeof(methods[0]))
             == JNI_OK) {

@@ -1,22 +1,22 @@
-package net.fred.lua.foreign.ffi;
+package net.fred.lua.foreign.types;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import net.fred.lua.foreign.ForeignFunctions;
-import net.fred.lua.foreign.ForeignValues;
-import net.fred.lua.foreign.util.Pointer;
+import net.fred.lua.common.ArgumentsChecker;
+import net.fred.lua.foreign.Pointer;
+import net.fred.lua.foreign.internal.ForeignFunctions;
+import net.fred.lua.foreign.internal.ForeignValues;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-public class Types {
+public class TypesRegistry {
     public static final int SIZE_UNKNOWN = -1;
-    private static final ConcurrentHashMap<Class<?>, Type<?>> primaryTypes;
-    private static final ConcurrentHashMap<Class<?>, Type<?>> customTypes;
+    private static final ConcurrentHashMap<Class<?>, Type<?>> typeMap;
 
     static {
-        primaryTypes = new ConcurrentHashMap<>(6);
-        primaryTypes.put(byte.class, Type.of(1, ForeignValues.FFI_TYPE_INT8,
+        typeMap = new ConcurrentHashMap<>(6);
+        typeMap.put(byte.class, Type.of(1, ForeignValues.FFI_TYPE_INT8,
                 new AssignableReadable<Byte>() {
                     @Override
                     public void assign(Pointer pointer, Object value) {
@@ -28,7 +28,7 @@ public class Types {
                         return ForeignFunctions.peekByte(pointer.get());
                     }
                 }));
-        primaryTypes.put(short.class, Type.of(2, ForeignValues.FFI_TYPE_INT16,
+        typeMap.put(short.class, Type.of(2, ForeignValues.FFI_TYPE_INT16,
                 new AssignableReadable<Short>() {
                     @Override
                     public void assign(Pointer pointer, Object value) {
@@ -40,7 +40,7 @@ public class Types {
                         return ForeignFunctions.peekShort(pointer.get());
                     }
                 }));
-        primaryTypes.put(int.class, Type.of(4, ForeignValues.FFI_TYPE_INT32,
+        typeMap.put(int.class, Type.of(4, ForeignValues.FFI_TYPE_INT32,
                 new AssignableReadable<Integer>() {
                     @Override
                     public void assign(Pointer pointer, Object value) {
@@ -52,7 +52,7 @@ public class Types {
                         return ForeignFunctions.peekInt(pointer.get());
                     }
                 }));
-        primaryTypes.put(long.class, Type.of(8, ForeignValues.FFI_TYPE_INT64,
+        typeMap.put(long.class, Type.of(8, ForeignValues.FFI_TYPE_INT64,
                 new AssignableReadable<Long>() {
                     @Override
                     public void assign(Pointer pointer, Object value) {
@@ -64,7 +64,7 @@ public class Types {
                         return ForeignFunctions.peekLong(pointer.get());
                     }
                 }));
-        primaryTypes.put(Pointer.class, Type.of(8, ForeignValues.FFI_TYPE_POINTER,
+        typeMap.put(Pointer.class, Type.of(8, ForeignValues.FFI_TYPE_POINTER,
                 new AssignableReadable<Pointer>() {
                     @Override
                     public void assign(Pointer pointer, Object value) {
@@ -77,10 +77,9 @@ public class Types {
                     }
                 }));
 
-        primaryTypes.put(String.class, Type.of(SIZE_UNKNOWN, ForeignValues.FFI_TYPE_POINTER, null));
-        primaryTypes.put(void.class, Type.of(0, ForeignValues.FFI_TYPE_VOID, null));
+        typeMap.put(String.class, Type.of(SIZE_UNKNOWN, ForeignValues.FFI_TYPE_POINTER, null));
+        typeMap.put(void.class, Type.of(0, ForeignValues.FFI_TYPE_VOID, null));
 
-        customTypes = new ConcurrentHashMap<>();
     }
 
     /**
@@ -90,14 +89,13 @@ public class Types {
      */
     @SuppressWarnings("unchecked")
     public static <T> Type<T> get(@NonNull Class<T> clazz) {
-        if (!primaryTypes.containsKey(clazz)) {
-            return (Type<T>) primaryTypes.get(clazz);
-        }
-        return (Type<T>) customTypes.get(clazz);
+        ArgumentsChecker.check(typeMap.containsKey(clazz), "Class has not been registered yet. (" + clazz + ").");
+        return (Type<T>) typeMap.get(clazz);
     }
 
-    public static void put(@NonNull Class<?> clazz, @NonNull Type<?> ptr) {
-        customTypes.put(clazz, ptr);
+    public static void register(@NonNull Class<?> clazz, @NonNull Type<?> ptr) {
+        ArgumentsChecker.checkOrWarning(typeMap.containsKey(clazz), "The object has already been registered. Attempting to replace.");
+        typeMap.put(clazz, ptr);
     }
 
     public interface AssignableReadable<T> {

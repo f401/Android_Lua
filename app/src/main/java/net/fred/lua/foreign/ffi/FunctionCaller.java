@@ -3,18 +3,19 @@ package net.fred.lua.foreign.ffi;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import net.fred.lua.foreign.MemorySegment;
 import net.fred.lua.foreign.NativeMethodException;
-import net.fred.lua.foreign.types.ForeignString;
-import net.fred.lua.foreign.util.ForeignCloseable;
-import net.fred.lua.foreign.util.Pointer;
+import net.fred.lua.foreign.Pointer;
+import net.fred.lua.foreign.core.ForeignString;
+import net.fred.lua.foreign.internal.BasicMemoryController;
+import net.fred.lua.foreign.internal.MemorySegment;
+import net.fred.lua.foreign.types.TypesRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
 
 //TODO: FINISH.
 
-public class FunctionCaller extends ForeignCloseable {
+public class FunctionCaller extends BasicMemoryController {
 
     @NonNull
     private final FunctionDescriber desc;
@@ -23,24 +24,25 @@ public class FunctionCaller extends ForeignCloseable {
     private MemorySegment cachedCif;
 
     protected FunctionCaller(@NonNull Pointer functionPointer,
-                             @Nullable List<Types.Type<?>> params,
-                             @NonNull Types.Type<?> returnType) throws NativeMethodException {
+                             @Nullable List<TypesRegistry.Type<?>> params,
+                             @NonNull TypesRegistry.Type<?> returnType) throws NativeMethodException {
         super(functionPointer);
         this.desc = new FunctionDescriber(params, returnType);
+        this.addChild(this.desc);
     }
 
     public static FunctionCaller create(@NonNull Pointer address, @NonNull Class<?> returnType,
                                         @Nullable Class<?>... params) throws NativeMethodException {
         return new FunctionCaller(address,
                 params != null ? classes2list(params) : null
-                , Types.get(returnType));
+                , TypesRegistry.get(returnType));
     }
 
     @NonNull
-    private static List<Types.Type<?>> classes2list(@NonNull Class<?>[] params) {
-        List<Types.Type<?>> result = new ArrayList<>(params.length);
+    private static List<TypesRegistry.Type<?>> classes2list(@NonNull Class<?>[] params) {
+        List<TypesRegistry.Type<?>> result = new ArrayList<>(params.length);
         for (Class<?> clazz : params) {
-            result.add(Types.get(clazz));
+            result.add(TypesRegistry.get(clazz));
         }
         return result;
     }
@@ -49,6 +51,7 @@ public class FunctionCaller extends ForeignCloseable {
     public MemorySegment getCif() throws NativeMethodException {
         if (cachedCif == null) {
             cachedCif = desc.prepare();
+            this.addChild(cachedCif);
         }
         return cachedCif;
     }
@@ -74,18 +77,10 @@ public class FunctionCaller extends ForeignCloseable {
             returnSegment = null;
         } else {
             final long sz = desc.getReturnType().size;
-            returnSegment = MemorySegment.create(sz == Types.SIZE_UNKNOWN ? ForeignString.DEFAULT_SIZE : sz);
+            returnSegment = MemorySegment.create(sz == TypesRegistry.SIZE_UNKNOWN ? ForeignString.DEFAULT_SIZE : sz);
         }
 
         //TODO: FINISH!
         return null;
-    }
-
-    @Override
-    protected void onFree() throws Exception {
-        desc.close();
-        if (cachedCif != null) {
-            cachedCif.close();
-        }
     }
 }

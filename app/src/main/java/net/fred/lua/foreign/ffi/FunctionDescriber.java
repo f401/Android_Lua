@@ -3,25 +3,25 @@ package net.fred.lua.foreign.ffi;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import net.fred.lua.foreign.ForeignFunctions;
-import net.fred.lua.foreign.ForeignValues;
-import net.fred.lua.foreign.MemorySegment;
 import net.fred.lua.foreign.NativeMethodException;
-import net.fred.lua.foreign.types.Array;
-import net.fred.lua.foreign.util.ForeignCloseable;
-import net.fred.lua.foreign.util.Pointer;
+import net.fred.lua.foreign.Pointer;
+import net.fred.lua.foreign.core.Array;
+import net.fred.lua.foreign.internal.ForeignFunctions;
+import net.fred.lua.foreign.internal.ForeignValues;
+import net.fred.lua.foreign.internal.MemoryController;
+import net.fred.lua.foreign.internal.MemorySegment;
+import net.fred.lua.foreign.types.TypesRegistry;
 
 import java.util.List;
 
-public class FunctionDescriber extends ForeignCloseable {
-    @Nullable
-    private List<Types.Type<?>> params;
+public class FunctionDescriber extends MemoryController {
+    private final TypesRegistry.Type<?> returnType;
     @Nullable
     private Array<Pointer> paramsNativeArray;
-    private final Types.Type<?> returnType;
+    @Nullable
+    private List<TypesRegistry.Type<?>> params;
 
-    public FunctionDescriber(@Nullable List<Types.Type<?>> params, @NonNull Types.Type<?> returnType) throws NativeMethodException {
-        super(null);
+    public FunctionDescriber(@Nullable List<TypesRegistry.Type<?>> params, @NonNull TypesRegistry.Type<?> returnType) throws NativeMethodException {
         this.returnType = returnType;
 
         if (params != null) {
@@ -30,26 +30,18 @@ public class FunctionDescriber extends ForeignCloseable {
             for (int curr = 0; curr < params.size(); ++curr) {
                 this.paramsNativeArray.insert(curr, params.get(curr).pointer);
             }
+            this.addChild(this.paramsNativeArray);
         }
     }
 
     @Nullable
-    public List<Types.Type<?>> getParams() {
+    public List<TypesRegistry.Type<?>> getParams() {
         return params;
     }
 
     @NonNull
-    public Types.Type<?> getReturnType() {
+    public TypesRegistry.Type<?> getReturnType() {
         return returnType;
-    }
-
-    public long evalParamsTotalSize() {
-        if (params == null) return 0;
-        long result = 0;
-        for (Types.Type<?> type : params) {
-            result += type.size;
-        }
-        return result;
     }
 
     /**
@@ -61,7 +53,7 @@ public class FunctionDescriber extends ForeignCloseable {
     @NonNull
     public MemorySegment prepare() throws NativeMethodException {
         MemorySegment cif = MemorySegment.create(ForeignValues.SIZE_OF_FFI_CIF);
-        addCloses(cif);
+        this.addChild(cif);
         ForeignFunctions.ffi_prep_cif(cif.getPointer().get(),
                 params != null ? params.size() : 0,
                 returnType.pointer.get(),
@@ -69,10 +61,4 @@ public class FunctionDescriber extends ForeignCloseable {
         return cif;
     }
 
-    @Override
-    protected void onFree() throws Exception {
-        if (paramsNativeArray != null) {
-            this.paramsNativeArray.close();
-        }
-    }
 }

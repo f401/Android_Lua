@@ -1,16 +1,16 @@
-package net.fred.lua.foreign.util;
+package net.fred.lua.foreign;
 
 import androidx.annotation.NonNull;
 
-import net.fred.lua.foreign.ffi.Types;
 import net.fred.lua.common.Logger;
+import net.fred.lua.foreign.types.TypesRegistry;
 
 public class Pointer {
     private long address;
 
     public Pointer(long address) {
         if (address < 0) {
-            Logger.e(
+            Logger.w(
                     "Trying to create a pointer with an address less than 0. (" + address + ")");
         }
         this.address = address;
@@ -28,8 +28,8 @@ public class Pointer {
         return address;
     }
 
-    public final void set(long addr) {
-        this.address = addr;
+    public final void set(long address) {
+        this.address = address;
     }
 
     @Override
@@ -50,11 +50,11 @@ public class Pointer {
     @NonNull
     @Override
     public final String toString() {
-        return "0x" + Integer.toHexString((int) address);
+        return "0x" + Long.toHexString(address);
     }
 
     @NonNull
-    public final Pointer plus(Types.Type<?> type, long need) {
+    public final Pointer plus(TypesRegistry.Type<?> type, long need) {
         return new Pointer(address + (type.size * need));
     }
 

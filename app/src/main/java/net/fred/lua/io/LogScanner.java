@@ -68,7 +68,7 @@ public class LogScanner {
                 e.printStackTrace();
                 Log.e("Scanner", ThrowableUtils.getThrowableMessage(e));
             } finally {
-                ThrowableUtils.closes(outputStream);
+                ThrowableUtils.closeAll(outputStream);
             }
         }
 

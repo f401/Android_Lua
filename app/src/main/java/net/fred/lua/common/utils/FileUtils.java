@@ -29,12 +29,6 @@ public final class FileUtils {
         }
         return false;
     }
-
-    public static void writeFile(String file, String content) {
-        if (file != null)
-            writeFile(new File(file), content);
-    }
-
     public static void writeFile(File file, String content) {
         if (file == null || content == null) return;
         makeParentDir(file);
@@ -45,7 +39,7 @@ public final class FileUtils {
         } catch (IOException e) {
             CrashHandler.fastHandleException(e);
         } finally {
-            ThrowableUtils.closes(fos);
+            ThrowableUtils.closeAll(fos);
         }
     }
 
@@ -66,7 +60,7 @@ public final class FileUtils {
         } catch (IOException e) {
             CrashHandler.fastHandleException(e);
         } finally {
-            ThrowableUtils.closes(fis);
+            ThrowableUtils.closeAll(fis);
         }
         return result;
     }

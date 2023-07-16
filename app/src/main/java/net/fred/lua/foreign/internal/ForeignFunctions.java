@@ -1,4 +1,4 @@
-package net.fred.lua.foreign;
+package net.fred.lua.foreign.internal;
 
 /**
  * Contains all native functions that this project need.

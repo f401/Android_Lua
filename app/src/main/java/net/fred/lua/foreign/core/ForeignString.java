@@ -1,4 +1,4 @@
-package net.fred.lua.foreign.types;
+package net.fred.lua.foreign.core;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -6,11 +6,11 @@ import androidx.annotation.Nullable;
 import net.fred.lua.common.Logger;
 import net.fred.lua.common.utils.StringUtils;
 import net.fred.lua.common.utils.ThrowableUtils;
-import net.fred.lua.foreign.ForeignFunctions;
-import net.fred.lua.foreign.ForeignValues;
-import net.fred.lua.foreign.MemorySegment;
 import net.fred.lua.foreign.NativeMethodException;
-import net.fred.lua.foreign.util.Pointer;
+import net.fred.lua.foreign.Pointer;
+import net.fred.lua.foreign.internal.ForeignFunctions;
+import net.fred.lua.foreign.internal.ForeignValues;
+import net.fred.lua.foreign.internal.MemorySegment;
 
 public final class ForeignString extends MemorySegment {
 

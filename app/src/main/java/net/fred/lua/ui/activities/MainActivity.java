@@ -10,8 +10,8 @@ import net.fred.lua.R;
 import net.fred.lua.common.CrashHandler;
 import net.fred.lua.common.Logger;
 import net.fred.lua.common.activity.BaseActivity;
-import net.fred.lua.foreign.DynamicLoadingLibrary;
 import net.fred.lua.foreign.NativeMethodException;
+import net.fred.lua.foreign.core.DynamicLoadingLibrary;
 
 public class MainActivity extends BaseActivity {
     private Button btn, throwException;

@@ -1,11 +1,12 @@
-package net.fred.lua.foreign;
+package net.fred.lua.foreign.internal;
 
 import androidx.annotation.NonNull;
 
-import net.fred.lua.foreign.util.ForeignCloseable;
-import net.fred.lua.foreign.util.Pointer;
+import net.fred.lua.common.ArgumentsChecker;
+import net.fred.lua.foreign.NativeMethodException;
+import net.fred.lua.foreign.Pointer;
 
-public class MemorySegment extends ForeignCloseable {
+public class MemorySegment extends BasicMemoryController {
     private final long size;
 
     /**
@@ -38,9 +39,7 @@ public class MemorySegment extends ForeignCloseable {
      */
     @NonNull
     public static Pointer allocate(long size) throws NativeMethodException {
-        if (size <= 0) {
-            throw new IllegalArgumentException("`Size 'cannot be less than or equal to 0");
-        }
+        ArgumentsChecker.checkNotLessZero((int) size);
         final long ptr = ForeignFunctions.alloc(size);
         if (ptr == ForeignValues.NULL) {
             throw new NativeMethodException(
