@@ -42,7 +42,8 @@ public class MainActivity extends BaseActivity {
             @Override
             public void onClick(View p1) {
                 Logger.e("Making exception");
-                throw new RuntimeException();
+                //throw new RuntimeException();
+                luaDll.close();
             }
 
         });
@@ -52,7 +53,7 @@ public class MainActivity extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
        // try {
-            luaDll.close();
+            //luaDll.close();
        // } catch (Exception e) {
           //  CrashHandler.fastHandleException(e);
       //  }
