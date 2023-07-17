@@ -23,6 +23,10 @@ public class MemoryController implements Closeable {
     @Nullable
     private MemoryController parent;
 
+    public MemoryController() {
+        this.freed = new Flag(false);
+    }
+    
     @NonNull
     public final Flag getFreed() {
         return freed;
