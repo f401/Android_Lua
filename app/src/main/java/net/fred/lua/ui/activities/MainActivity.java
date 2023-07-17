@@ -51,11 +51,11 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        try {
+       // try {
             luaDll.close();
-        } catch (Exception e) {
-            CrashHandler.fastHandleException(e);
-        }
+       // } catch (Exception e) {
+          //  CrashHandler.fastHandleException(e);
+      //  }
     }
 
 }
