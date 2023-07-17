@@ -21,6 +21,9 @@ public class FunctionDescriber extends MemoryController {
     @Nullable
     private List<TypesRegistry.Type<?>> params;
 
+    @Nullable
+    private MemorySegment cachedCIF;
+
     public FunctionDescriber(@Nullable List<TypesRegistry.Type<?>> params, @NonNull TypesRegistry.Type<?> returnType) throws NativeMethodException {
         this.returnType = returnType;
 
@@ -52,13 +55,15 @@ public class FunctionDescriber extends MemoryController {
      */
     @NonNull
     public MemorySegment prepare() throws NativeMethodException {
-        MemorySegment cif = MemorySegment.create(ForeignValues.SIZE_OF_FFI_CIF);
-        this.addChild(cif);
-        ForeignFunctions.ffi_prep_cif(cif.getPointer().get(),
-                params != null ? params.size() : 0,
-                returnType.pointer.get(),
-                paramsNativeArray != null ? paramsNativeArray.getPointer().get() : ForeignValues.NULL);
-        return cif;
+        if (cachedCIF == null) {
+            this.cachedCIF = MemorySegment.create(ForeignValues.SIZE_OF_FFI_CIF);
+            this.addChild(cachedCIF);
+            ForeignFunctions.ffi_prep_cif(cachedCIF.getPointer().get(),
+                    params != null ? params.size() : 0,
+                    returnType.pointer.get(),
+                    paramsNativeArray != null ? paramsNativeArray.getPointer().get() : ForeignValues.NULL);
+        }
+        return this.cachedCIF;
     }
 
 }

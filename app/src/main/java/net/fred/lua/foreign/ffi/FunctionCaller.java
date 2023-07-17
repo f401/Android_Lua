@@ -20,9 +20,6 @@ public class FunctionCaller extends BasicMemoryController {
     @NonNull
     private final FunctionDescriber desc;
 
-    @Nullable
-    private MemorySegment cachedCif;
-
     protected FunctionCaller(@NonNull Pointer functionPointer,
                              @Nullable List<TypesRegistry.Type<?>> params,
                              @NonNull TypesRegistry.Type<?> returnType) throws NativeMethodException {
@@ -49,11 +46,7 @@ public class FunctionCaller extends BasicMemoryController {
 
     @NonNull
     public MemorySegment getCif() throws NativeMethodException {
-        if (cachedCif == null) {
-            cachedCif = desc.prepare();
-            this.addChild(cachedCif);
-        }
-        return cachedCif;
+        return desc.prepare();
     }
 
     @NonNull

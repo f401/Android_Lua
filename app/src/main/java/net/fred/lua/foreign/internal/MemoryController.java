@@ -16,7 +16,7 @@ public class MemoryController implements Closeable {
     private Flag freed;
 
     /**
-     * Contains objects that need to be released together when this object is released.
+     * @{value #children} Contains objects that need to be released together when this object is released.
      */
     private List<AutoCloseable> children;
 
@@ -48,7 +48,8 @@ public class MemoryController implements Closeable {
             freeChildren();
             freed.setFlag(true);
         } else {
-            Logger.e("Pointer freed twice: ");
+            Logger.e("Pointer freed twice");
+            throw new RuntimeException("Pointer freed twice");
         }
     }
 
@@ -86,13 +87,15 @@ public class MemoryController implements Closeable {
         }
     }
 
-    /*
+    /**
+     * Called by @{see #close}.
+     * <p>
      * This function is called when the pointer is released.
      * Can ensure that the flag is only called once without modification.
-     *
+     * <p>
      * If you don't want to call the free function to release,
      * Rewrite and implement your own release function.
-     *
+     * <p>
      * Very few cases require rewriting this method, and in most cases, only @{link MemoryController#addChild} needs to be used.
      * And @{link BasicMemoryController}.
      */
@@ -100,6 +103,7 @@ public class MemoryController implements Closeable {
     }
 
     /**
+     * Called by @{see #attachParent}
      * Called when setting the parent.
      *
      * @param parent The set parent.
