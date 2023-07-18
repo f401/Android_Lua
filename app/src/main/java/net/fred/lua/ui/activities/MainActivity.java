@@ -35,7 +35,13 @@ public class MainActivity extends BaseActivity {
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View p1) {
-                System.out.println("Finish!");
+                System.out.println("Starting");
+                try {
+                    String text = editText.getText().toString();
+                    Logger.i("Pointer of " + text + " at " + luaDll.lookupSymbol(text));
+                } catch(Exception e) {
+                    CrashHandler.fastHandleException(e);
+                }
             }
         });
         throwException.setOnClickListener(new View.OnClickListener() {
