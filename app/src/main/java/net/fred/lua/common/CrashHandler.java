@@ -116,7 +116,7 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
         sb.append("************* Crash Head ****************\n\n");
         sb.append(getThrowableMessages(p2));
 
-        FileUtils.writeFile(new File(errorSaveDir, time + "-crash.log"), sb.toString());
+        FileUtils.writeFile(new File(errorSaveDir, time + "-crash.log"), sb.toString(), true);
         return sb;
     }
 
