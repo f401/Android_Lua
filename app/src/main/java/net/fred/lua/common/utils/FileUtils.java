@@ -29,18 +29,23 @@ public final class FileUtils {
         }
         return false;
     }
-    public static void writeFile(File file, String content) {
+
+    public static void writeFile(File file, String content, boolean append) {
         if (file == null || content == null) return;
         makeParentDir(file);
         FileOutputStream fos = null;
         try {
-            fos = new FileOutputStream(file);
+            fos = new FileOutputStream(file, append);
             fos.write(content.getBytes());
         } catch (IOException e) {
             CrashHandler.fastHandleException(e);
         } finally {
             ThrowableUtils.closeAll(fos);
         }
+    }
+    
+    public static void writeFile(File file, String content) {
+        writeFile(file, content, false);
     }
 
     public static String readFile(File file) {
