@@ -20,11 +20,6 @@ public final class DynamicLoadingLibrary extends BasicMemoryController {
                 , "Invoker (" + ThrowableUtils.getInvokerInfoString() + "), passes null symbol.");
 
         long handle = ForeignFunctions.dlopen(path, ForeignValues.RTLD_LAZY);
-        if (handle == ForeignValues.NULL) {
-            throw new NativeMethodException(
-                    "Failed to open dll: " + path + ", reason: " +
-                            ForeignFunctions.dlerror());
-        }
         Logger.i("Loaded library " + path + ".At 0x" + Long.toHexString(handle));
         return new DynamicLoadingLibrary(new Pointer(handle));
     }
@@ -34,10 +29,6 @@ public final class DynamicLoadingLibrary extends BasicMemoryController {
                 "), passes null symbol.");
 
         long handle = ForeignFunctions.dlsym(pointer.get(), symbol);
-        if (handle == ForeignValues.NULL) {
-            throw new NativeMethodException("Failed to load symbol: " + symbol +
-                    ".Reason: " + ForeignFunctions.dlerror());
-        }
         Logger.i("Loaded symbol " + symbol + ".At 0x" + Long.toHexString(handle));
         return Pointer.from(handle);
     }

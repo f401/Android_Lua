@@ -1,4 +1,5 @@
 APP_ABI := armeabi-v7a arm64-v8a x86_64
+APP_CPPFLAGS := -std=c++17
 APP_PATH := $(call my-dir)
 FFI := $(APP_PATH)/libffi/libffiArchSelector.mk
 

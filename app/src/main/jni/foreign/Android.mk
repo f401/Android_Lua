@@ -3,7 +3,7 @@ LOCAL_PATH := $(call my-dir)
 include $(FFI)
 
 include $(CLEAR_VARS)
-LOCAL_SRC_FILES        := foreignFuncs.c foreignVals.c
+LOCAL_SRC_FILES        := foreignFuncs.cpp foreignVals.c utils.c
 LOCAL_MODULE           := foreign
 LOCAL_SHARED_LIBRARIES := libffi
 LOCAL_LDLIBS           += -ldl

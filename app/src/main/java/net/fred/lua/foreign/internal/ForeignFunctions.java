@@ -1,5 +1,7 @@
 package net.fred.lua.foreign.internal;
 
+import net.fred.lua.foreign.NativeMethodException;
+
 /**
  * Contains all native functions that this project need.
  */
@@ -14,9 +16,7 @@ public class ForeignFunctions {
      */
     public static native String strerror();
 
-    public static native long dlopen(String path, int flags);
-
-    public static native String dlerror();
+    public static native long dlopen(String path, int flags) throws NativeMethodException;
 
     public static native int dlclose(long ptr);
 

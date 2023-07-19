@@ -1,37 +1,47 @@
 #include <jni.h>
+#include <string>
+
+extern "C" {
 #include <stdlib.h>
 #include <dlfcn.h>
 #include <string.h>
 #include <errno.h>
 #include "../common.h"
 #include <ffi.h>
-
+#include "utils.h"
+}
 
 /*
  * These functions may be called multiple times, so dynamic registration is used.
  */
+#define ERROR_DL_OPEN_FAILED "DLL open failed: "
+#define ERROR_DL_LOAD_SYMBOL_FAILED "Can't find symbol: "
 
 static void freePointer(JNIEnv *env, jclass clazz, jlong ptr) {
     free(jlong_to_ptr(ptr, void));
 }
 
-static jlong alloc(JNIEnv* env, jclass clazz, jlong size) {
+static jlong alloc(JNIEnv *env, jclass clazz, jlong size) {
     return ptr_to_jlong(calloc(size, 1));
 }
 
-static jstring getSystemError(JNIEnv* env, jclass clazz) {
-    return (*env)->NewStringUTF(env, strerror(errno));
+static jstring getSystemError(JNIEnv *env, jclass clazz) {
+    return env->NewStringUTF(strerror(errno));
 }
 
 static jlong dllOpen(JNIEnv* env, jclass clazz, jstring jpath, jint flag) {
-    const char* path = (*env)->GetStringUTFChars(env, jpath, 0);
-    void* handle = dlopen(path, flag);
-    (*env)->ReleaseStringUTFChars(env, jpath, path);
-    return ptr_to_jlong(handle);
-}
+    const char *path = env->GetStringUTFChars(jpath, JNI_FALSE);
 
-static jstring dllError(JNIEnv* env, jclass clazz) {
-    return (*env)->NewStringUTF(env, dlerror());
+    void *handle = dlopen(path, flag);
+
+    if (handle == nullptr) {
+        std::string msg(ERROR_DL_OPEN_FAILED);
+        msg.append(dlerror());
+        throwNativeException(env, msg.data());
+    }
+
+    env->ReleaseStringUTFChars(jpath, path);
+    return ptr_to_jlong(handle);
 }
 
 static jint dllClose(JNIEnv* env, jclass clazz, jlong handle) {
@@ -39,17 +49,24 @@ static jint dllClose(JNIEnv* env, jclass clazz, jlong handle) {
 }
 
 static jlong dllSymbolLookup(JNIEnv* env, jclass clazz, jlong handle, jstring name) {
-    const char* sym = (*env)->GetStringUTFChars(env, name, 0);
+    const char *sym = env->GetStringUTFChars(name, JNI_FALSE);
     void *result = dlsym(jlong_to_ptr(handle, void), sym);
-    (*env)->ReleaseStringUTFChars(env, name, sym);
+
+    if (result == nullptr) {
+        std::string msg(ERROR_DL_LOAD_SYMBOL_FAILED);
+        msg.append(sym).append(".Reason: ").append(dlerror());
+        throwNativeException(env, msg.data());
+    }
+
+    env->ReleaseStringUTFChars(name, sym);
     return ptr_to_jlong(result);
 }
 
 static void duplicateStringTo(JNIEnv *env, jclass clazz, jlong handle, jstring string) {
-    const char *str = (*env)->GetStringUTFChars(env, string, 0);
-    size_t string_length = (*env)->GetStringUTFLength(env, string);
+    const char *str = env->GetStringUTFChars(string, JNI_FALSE);
+    size_t string_length = env->GetStringUTFLength(string);
     memcpy(jlong_to_ptr(handle, void), str, string_length + 1);
-    (*env)->ReleaseStringUTFChars(env, string, str);
+    env->ReleaseStringUTFChars(string, str);
 }
 
 static jint ffiPrepareCIF(JNIEnv *env, jclass clazz, jlong cif, jint argsCount, jlong returnType,
@@ -90,45 +107,45 @@ DEF_PEEK_FUNCS(long);
 #undef DEF_PEEK_FUNCS
 
 const static JNINativeMethod methods[] = {
-        {"alloc",             "(J)J",                   &alloc},
-        {"free",              "(J)V",                   &freePointer},
-        {"strerror",          "()Ljava/lang/String;",   &getSystemError},
-        {"dlopen",            "(Ljava/lang/String;I)J", &dllOpen},
-        {"dlerror",           "()Ljava/lang/String;",   &dllError},
-        {"dlclose",           "(J)I",                   &dllClose},
-        {"dlsym",             "(JLjava/lang/String;)J", &dllSymbolLookup},
+        {"alloc",             "(J)J",                   (void *) &alloc},
+        {"free",              "(J)V",                   (void *) &freePointer},
+        {"strerror",          "()Ljava/lang/String;",   (void *) &getSystemError},
+        {"dlopen",            "(Ljava/lang/String;I)J", (void *) &dllOpen},
+        {"dlclose",           "(J)I",                   (void *) &dllClose},
+        {"dlsym",             "(JLjava/lang/String;)J", (void *) &dllSymbolLookup},
 
-        {"putByte",           "(JB)V",                  &putJavabyte},
-        {"putChar",           "(JC)V",                  &putJavachar},
-        {"putShort",          "(JS)V",                  &putJavashort},
-        {"putInt",            "(JI)V",                  &putJavaint},
-        {"putLong",           "(JJ)V",                  &putJavalong},
+        {"putByte",           "(JB)V",                  (void *) &putJavabyte},
+        {"putChar",           "(JC)V",                  (void *) &putJavachar},
+        {"putShort",          "(JS)V",                  (void *) &putJavashort},
+        {"putInt",            "(JI)V",                  (void *) &putJavaint},
+        {"putLong",           "(JJ)V",                  (void *) &putJavalong},
 
-        {"peekByte",          "(J)B",                   &peekJavabyte},
-        {"peekChar",          "(J)C",                   &peekJavachar},
-        {"peekShort",         "(J)S",                   &peekJavashort},
-        {"peekInt",           "(J)I",                   &peekJavaint},
-        {"peekLong",          "(J)J",                   &peekJavalong},
-        {"duplicateStringTo", "(JLjava/lang/String;)V", &duplicateStringTo},
+        {"peekByte",          "(J)B",                   (void *) &peekJavabyte},
+        {"peekChar",          "(J)C",                   (void *) &peekJavachar},
+        {"peekShort",         "(J)S",                   (void *) &peekJavashort},
+        {"peekInt",           "(J)I",                   (void *) &peekJavaint},
+        {"peekLong",          "(J)J",                   (void *) &peekJavalong},
+        {"duplicateStringTo", "(JLjava/lang/String;)V", (void *) &duplicateStringTo},
 
-        {"ffi_prep_cif",      "(JIJJ)I",                &ffiPrepareCIF}
+        {"ffi_prep_cif",      "(JIJJ)I",                (void *) &ffiPrepareCIF}
 };
 
 static int registerMethods(JNIEnv* env) {
-    jclass clazz = (*env)->FindClass(env, "net/fred/lua/foreign/internal/ForeignFunctions");
-    if (clazz != NULL && (*env)->
-        RegisterNatives(env, clazz, methods, sizeof(methods) / sizeof(methods[0]))
-            == JNI_OK) {
+    jclass clazz = env->FindClass("net/fred/lua/foreign/internal/ForeignFunctions");
+    if (clazz != nullptr &&
+        env->RegisterNatives(clazz, methods, sizeof(methods) / sizeof(methods[0]))
+        == JNI_OK) {
         return JNI_OK;
     }
     return JNI_ERR;
 }
 
-jint JNI_OnLoad(JavaVM* vm, void* reversed) {
+extern "C"
+jint JNI_OnLoad(JavaVM *vm, void *reversed) {
     jint version = JNI_ERR;
-    JNIEnv *env = NULL;
+    JNIEnv *env = nullptr;
 
-    if ((*vm)->GetEnv(vm, (void **) &env, JNI_VERSION_1_1) == JNI_OK) {
+    if (vm->GetEnv((void **) &env, JNI_VERSION_1_1) == JNI_OK) {
         if (registerMethods(env) == JNI_OK) {
             version = JNI_VERSION_1_4;
         }
@@ -136,4 +153,3 @@ jint JNI_OnLoad(JavaVM* vm, void* reversed) {
 
     return version;
 }
-
