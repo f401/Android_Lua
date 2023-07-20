@@ -49,7 +49,7 @@ public class App extends Application {
 
     private static void redirectOutAndErrStreamToLog() {
         class Injector extends PrintStream {
-            public Injector(String name) {
+            public Injector(final String name) {
                 super(new OutputStream() {
                     boolean printHeader = true;
 
