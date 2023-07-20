@@ -11,13 +11,15 @@
 extern "C" {
 #endif
 
-void init_logger(JNIEnv *env);
-
 void logger_info(JNIEnv *, const char *msg);
 
 void logger_error(JNIEnv *, const char *msg);
 
 void throwNativeException(JNIEnv *, const char *msg);
+
+jobject pointer_create(JNIEnv *, void *);
+
+void *pointer_get_from(JNIEnv *, jobject obj);
 
 #ifdef __cplusplus
 }

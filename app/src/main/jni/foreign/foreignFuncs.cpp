@@ -21,15 +21,23 @@ static void freePointer(JNIEnv *env, jclass clazz, jlong ptr) {
     free(jlong_to_ptr(ptr, void));
 }
 
-static jlong alloc(JNIEnv *env, jclass clazz, jlong size) {
-    return ptr_to_jlong(calloc(size, 1));
+static jobject alloc(JNIEnv *env, jclass clazz, jlong size) {
+    void *handle = calloc(size, 1);
+    if (handle == nullptr) {
+        std::string msg("Failed to alloc ");
+        msg.append(std::to_string(size));
+        msg.append(" data, reason: ");
+        msg.append(strerror(errno));
+        throwNativeException(env, msg.data());
+    }
+    return pointer_create(env, handle);
 }
 
 static jstring getSystemError(JNIEnv *env, jclass clazz) {
     return env->NewStringUTF(strerror(errno));
 }
 
-static jlong dllOpen(JNIEnv* env, jclass clazz, jstring jpath, jint flag) {
+static jobject dllOpen(JNIEnv *env, jclass clazz, jstring jpath, jint flag) {
     const char *path = env->GetStringUTFChars(jpath, JNI_FALSE);
 
     void *handle = dlopen(path, flag);
@@ -41,14 +49,14 @@ static jlong dllOpen(JNIEnv* env, jclass clazz, jstring jpath, jint flag) {
     }
 
     env->ReleaseStringUTFChars(jpath, path);
-    return ptr_to_jlong(handle);
+    return pointer_create(env, handle);
 }
 
 static jint dllClose(JNIEnv* env, jclass clazz, jlong handle) {
     return dlclose(jlong_to_ptr(handle, void));
 }
 
-static jlong dllSymbolLookup(JNIEnv* env, jclass clazz, jlong handle, jstring name) {
+static jobject dllSymbolLookup(JNIEnv *env, jclass clazz, jlong handle, jstring name) {
     const char *sym = env->GetStringUTFChars(name, JNI_FALSE);
     void *result = dlsym(jlong_to_ptr(handle, void), sym);
 
@@ -59,7 +67,7 @@ static jlong dllSymbolLookup(JNIEnv* env, jclass clazz, jlong handle, jstring na
     }
 
     env->ReleaseStringUTFChars(name, sym);
-    return ptr_to_jlong(result);
+    return pointer_create(env, result);
 }
 
 static void duplicateStringTo(JNIEnv *env, jclass clazz, jlong handle, jstring string) {
@@ -107,22 +115,22 @@ DEF_PEEK_FUNCS(long);
 #undef DEF_PEEK_FUNCS
 
 const static JNINativeMethod methods[] = {
-        {"alloc",             "(J)J",                   (void *) &alloc},
-        {"free",              "(J)V",                   (void *) &freePointer},
-        {"strerror",          "()Ljava/lang/String;",   (void *) &getSystemError},
-        {"dlopen",            "(Ljava/lang/String;I)J", (void *) &dllOpen},
-        {"dlclose",           "(J)I",                   (void *) &dllClose},
-        {"dlsym",             "(JLjava/lang/String;)J", (void *) &dllSymbolLookup},
+        {"alloc",             "(J)Lnet/fred/lua/foreign/Pointer;",                   (void *) &alloc},
+        {"free",              "(J)V",                                                (void *) &freePointer},
+        {"strerror",          "()Ljava/lang/String;",                                (void *) &getSystemError},
+        {"dlopen",            "(Ljava/lang/String;I)Lnet/fred/lua/foreign/Pointer;", (void *) &dllOpen},
+        {"dlclose",           "(J)I",                                                (void *) &dllClose},
+        {"dlsym",             "(JLjava/lang/String;)Lnet/fred/lua/foreign/Pointer;", (void *) &dllSymbolLookup},
 
-        {"putByte",           "(JB)V",                  (void *) &putJavabyte},
-        {"putChar",           "(JC)V",                  (void *) &putJavachar},
-        {"putShort",          "(JS)V",                  (void *) &putJavashort},
-        {"putInt",            "(JI)V",                  (void *) &putJavaint},
-        {"putLong",           "(JJ)V",                  (void *) &putJavalong},
+        {"putByte",           "(JB)V",                                               (void *) &putJavabyte},
+        {"putChar",           "(JC)V",                                               (void *) &putJavachar},
+        {"putShort",          "(JS)V",                                               (void *) &putJavashort},
+        {"putInt",            "(JI)V",                                               (void *) &putJavaint},
+        {"putLong",           "(JJ)V",                                               (void *) &putJavalong},
 
-        {"peekByte",          "(J)B",                   (void *) &peekJavabyte},
-        {"peekChar",          "(J)C",                   (void *) &peekJavachar},
-        {"peekShort",         "(J)S",                   (void *) &peekJavashort},
+        {"peekByte",          "(J)B",                                                (void *) &peekJavabyte},
+        {"peekChar",          "(J)C",                                                (void *) &peekJavachar},
+        {"peekShort",         "(J)S",                                                (void *) &peekJavashort},
         {"peekInt",           "(J)I",                   (void *) &peekJavaint},
         {"peekLong",          "(J)J",                   (void *) &peekJavalong},
         {"duplicateStringTo", "(JLjava/lang/String;)V", (void *) &duplicateStringTo},

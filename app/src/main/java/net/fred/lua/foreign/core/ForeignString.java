@@ -9,7 +9,6 @@ import net.fred.lua.common.utils.ThrowableUtils;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.internal.ForeignFunctions;
-import net.fred.lua.foreign.internal.ForeignValues;
 import net.fred.lua.foreign.internal.MemorySegment;
 
 public final class ForeignString extends MemorySegment {
@@ -31,14 +30,9 @@ public final class ForeignString extends MemorySegment {
             Logger.w(ThrowableUtils.getInvokerInfoString() + " passes null when creating a string. Using default size.");
             length = DEFAULT_SIZE;
         }
-        final long ptr = ForeignFunctions.alloc(length + 1);
-        if (ptr == ForeignValues.NULL) {
-            throw new NativeMethodException(
-                    "Failed to alloc size: " + length + ".Reason: " +
-                            ForeignFunctions.strerror());
-        }
-        ForeignFunctions.duplicateStringTo(ptr, str);
-        return new ForeignString(Pointer.from(ptr), length);
+        final Pointer ptr = ForeignFunctions.alloc(length + 1);
+        ForeignFunctions.duplicateStringTo(ptr.get(), str);
+        return new ForeignString(ptr, length);
     }
 
     private ForeignString(Pointer src, long size) {

@@ -1,12 +1,13 @@
 package net.fred.lua.foreign.internal;
 
 import net.fred.lua.foreign.NativeMethodException;
+import net.fred.lua.foreign.Pointer;
 
 /**
  * Contains all native functions that this project need.
  */
 public class ForeignFunctions {
-    public static native long alloc(long size);
+    public static native Pointer alloc(long size) throws NativeMethodException;
 
     public static native void free(long ptr);
 
@@ -16,11 +17,11 @@ public class ForeignFunctions {
      */
     public static native String strerror();
 
-    public static native long dlopen(String path, int flags) throws NativeMethodException;
+    public static native Pointer dlopen(String path, int flags) throws NativeMethodException;
 
     public static native int dlclose(long ptr);
 
-    public static native long dlsym(long handle, String src);
+    public static native Pointer dlsym(long handle, String src) throws NativeMethodException;
 
     public static native void duplicateStringTo(long handle, String str);
 

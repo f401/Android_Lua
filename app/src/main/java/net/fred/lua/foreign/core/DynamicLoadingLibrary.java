@@ -19,18 +19,18 @@ public final class DynamicLoadingLibrary extends BasicMemoryController {
         ArgumentsChecker.check(FileUtils.exists(path)
                 , "Invoker (" + ThrowableUtils.getInvokerInfoString() + "), passes null symbol.");
 
-        long handle = ForeignFunctions.dlopen(path, ForeignValues.RTLD_LAZY);
-        Logger.i("Loaded library " + path + ".At 0x" + Long.toHexString(handle));
-        return new DynamicLoadingLibrary(new Pointer(handle));
+        Pointer handle = ForeignFunctions.dlopen(path, ForeignValues.RTLD_LAZY);
+        Logger.i("Loaded library " + path + ".At 0x" + Long.toHexString(handle.get()));
+        return new DynamicLoadingLibrary(handle);
     }
 
     public Pointer lookupSymbol(String symbol) throws NativeMethodException {
         ArgumentsChecker.checkNotEmpty(symbol, "Invoker (" + ThrowableUtils.getInvokerInfoString() +
                 "), passes null symbol.");
 
-        long handle = ForeignFunctions.dlsym(pointer.get(), symbol);
-        Logger.i("Loaded symbol " + symbol + ".At 0x" + Long.toHexString(handle));
-        return Pointer.from(handle);
+        Pointer handle = ForeignFunctions.dlsym(pointer.get(), symbol);
+        Logger.i("Loaded symbol " + symbol + ".At 0x" + Long.toHexString(handle.get()));
+        return handle;
     }
 
     @Override
