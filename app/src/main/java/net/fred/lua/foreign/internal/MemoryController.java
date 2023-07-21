@@ -3,6 +3,7 @@ package net.fred.lua.foreign.internal;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import net.fred.lua.common.Action;
 import net.fred.lua.common.ArgumentsChecker;
 import net.fred.lua.common.Flag;
 import net.fred.lua.common.Logger;
@@ -10,6 +11,7 @@ import net.fred.lua.common.utils.ThrowableUtils;
 
 import java.io.Closeable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class MemoryController implements Closeable {
@@ -46,6 +48,9 @@ public class MemoryController implements Closeable {
         if (!this.freed.getFlag()) {
             onFree();
             freeChildren();
+            if (parent != null) {
+                parent.removeChild(this);
+            }
             freed.setFlag(true);
         } else {
             Logger.e("Pointer freed twice");
@@ -76,13 +81,42 @@ public class MemoryController implements Closeable {
         onAttachParent(parent);
     }
 
+    public final void detachParent() {
+        this.parent = null;
+    }
+
     public final boolean checkIsParent(@NonNull MemoryController needle) {
         return this == needle || (parent != null && parent.checkIsParent(needle));
     }
 
+
+    /**
+     * Remove @{code child} from the current object.
+     * If successful, the @{code detachParent} of @{code child} will be automatically called.
+     *
+     * @param child The object you want to delete.
+     */
+    public final void removeChild(@NonNull MemoryController child) {
+        if (children.remove(child)) {
+            child.detachParent();
+        }
+    }
+
     protected void freeChildren() {
         if (children != null) {
-            ThrowableUtils.closeAll(children);
+            //During the deletion process, the subclass will call the remove method.
+            //This can cause data modification during traversal, resulting in exceptions being thrown.
+            List<AutoCloseable> dest = new ArrayList<>(children.size());
+            Collections.copy(dest, children);
+            ThrowableUtils.closeAll(dest, new Action<Void, AutoCloseable>() {
+                @Override
+                public Void action(AutoCloseable param) {
+                    if (param instanceof MemoryController) {
+                        ((MemoryController) param).detachParent();
+                    }
+                    return null;
+                }
+            });
             children = null;
         }
     }

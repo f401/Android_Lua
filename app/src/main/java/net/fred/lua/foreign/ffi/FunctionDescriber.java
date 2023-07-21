@@ -10,21 +10,21 @@ import net.fred.lua.foreign.internal.ForeignFunctions;
 import net.fred.lua.foreign.internal.ForeignValues;
 import net.fred.lua.foreign.internal.MemoryController;
 import net.fred.lua.foreign.internal.MemorySegment;
-import net.fred.lua.foreign.types.TypesRegistry;
+import net.fred.lua.foreign.types.Type;
 
 import java.util.List;
 
 public class FunctionDescriber extends MemoryController {
-    private final TypesRegistry.Type<?> returnType;
+    private final Type<?> returnType;
     @Nullable
     private Array<Pointer> paramsNativeArray;
     @Nullable
-    private List<TypesRegistry.Type<?>> params;
+    private List<Type<?>> params;
 
     @Nullable
     private MemorySegment cachedCIF;
 
-    public FunctionDescriber(@Nullable List<TypesRegistry.Type<?>> params, @NonNull TypesRegistry.Type<?> returnType) throws NativeMethodException {
+    public FunctionDescriber(@Nullable List<Type<?>> params, @NonNull Type<?> returnType) throws NativeMethodException {
         this.returnType = returnType;
 
         if (params != null) {
@@ -38,12 +38,12 @@ public class FunctionDescriber extends MemoryController {
     }
 
     @Nullable
-    public List<TypesRegistry.Type<?>> getParams() {
+    public List<Type<?>> getParams() {
         return params;
     }
 
     @NonNull
-    public TypesRegistry.Type<?> getReturnType() {
+    public Type<?> getReturnType() {
         return returnType;
     }
 

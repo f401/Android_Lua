@@ -31,7 +31,7 @@ public final class ForeignString extends MemorySegment {
             length = DEFAULT_SIZE;
         }
         final Pointer ptr = ForeignFunctions.alloc(length + 1);
-        ForeignFunctions.duplicateStringTo(ptr.get(), str);
+        ForeignFunctions.duplicateStringTo(ptr, str);
         return new ForeignString(ptr, length);
     }
 

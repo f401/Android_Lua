@@ -28,13 +28,13 @@ public final class DynamicLoadingLibrary extends BasicMemoryController {
         ArgumentsChecker.checkNotEmpty(symbol, "Invoker (" + ThrowableUtils.getInvokerInfoString() +
                 "), passes null symbol.");
 
-        Pointer handle = ForeignFunctions.dlsym(pointer.get(), symbol);
+        Pointer handle = ForeignFunctions.dlsym(pointer, symbol);
         Logger.i("Loaded symbol " + symbol + ".At 0x" + Long.toHexString(handle.get()));
         return handle;
     }
 
     @Override
     protected void onFree() {
-        ForeignFunctions.dlclose(pointer.get());
+        ForeignFunctions.dlclose(pointer);
     }
 }

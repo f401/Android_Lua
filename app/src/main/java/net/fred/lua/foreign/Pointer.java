@@ -3,9 +3,10 @@ package net.fred.lua.foreign;
 import androidx.annotation.NonNull;
 
 import net.fred.lua.common.Logger;
-import net.fred.lua.foreign.types.TypesRegistry;
+import net.fred.lua.foreign.types.PointerType;
+import net.fred.lua.foreign.types.Type;
 
-public class Pointer {
+public class Pointer implements PointerType {
     private long address;
 
     public Pointer(long address) {
@@ -54,12 +55,17 @@ public class Pointer {
     }
 
     @NonNull
-    public final Pointer plus(TypesRegistry.Type<?> type, long need) {
+    public final Pointer plus(Type<?> type, long need) {
         return new Pointer(address + (type.size * need));
     }
 
     @NonNull
     public final Pointer plus(long size) {
         return new Pointer(address + size);
+    }
+
+    @Override
+    public Pointer getPointer() {
+        return this;
     }
 }

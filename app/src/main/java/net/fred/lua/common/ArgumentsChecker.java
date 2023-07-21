@@ -38,4 +38,10 @@ public class ArgumentsChecker {
             Logger.w(msg);
         }
     }
+
+    public static void checkIndex(int idx, long size) {
+        if (idx < 0 || idx > size - 1) {
+            throw new IndexOutOfBoundsException("Size: " + size + ", but index: " + idx);
+        }
+    }
 }

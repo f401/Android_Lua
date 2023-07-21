@@ -21,7 +21,7 @@ public class BasicMemoryController extends MemoryController implements PointerTy
     @Override
     protected void onFree() {
         if (pointer != null) {
-            ForeignFunctions.free(pointer.get());
+            ForeignFunctions.free(pointer);
         }
     }
 }

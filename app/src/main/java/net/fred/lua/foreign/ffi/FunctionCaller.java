@@ -8,6 +8,7 @@ import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.core.ForeignString;
 import net.fred.lua.foreign.internal.BasicMemoryController;
 import net.fred.lua.foreign.internal.MemorySegment;
+import net.fred.lua.foreign.types.Type;
 import net.fred.lua.foreign.types.TypesRegistry;
 
 import java.util.ArrayList;
@@ -21,8 +22,8 @@ public class FunctionCaller extends BasicMemoryController {
     private final FunctionDescriber desc;
 
     protected FunctionCaller(@NonNull Pointer functionPointer,
-                             @Nullable List<TypesRegistry.Type<?>> params,
-                             @NonNull TypesRegistry.Type<?> returnType) throws NativeMethodException {
+                             @Nullable List<Type<?>> params,
+                             @NonNull Type<?> returnType) throws NativeMethodException {
         super(functionPointer);
         this.desc = new FunctionDescriber(params, returnType);
         this.addChild(this.desc);
@@ -36,8 +37,8 @@ public class FunctionCaller extends BasicMemoryController {
     }
 
     @NonNull
-    private static List<TypesRegistry.Type<?>> classes2list(@NonNull Class<?>[] params) {
-        List<TypesRegistry.Type<?>> result = new ArrayList<>(params.length);
+    private static List<Type<?>> classes2list(@NonNull Class<?>[] params) {
+        List<Type<?>> result = new ArrayList<>(params.length);
         for (Class<?> clazz : params) {
             result.add(TypesRegistry.get(clazz));
         }
