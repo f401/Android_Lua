@@ -21,6 +21,8 @@ jobject pointer_create(JNIEnv *, void *);
 
 void *pointer_get_from(JNIEnv *, jobject obj);
 
+#define IF_NULL_RETURN(NEEDLE, expr) if (NEEDLE == NULL) return expr
+
 #ifdef __cplusplus
 }
 #endif
