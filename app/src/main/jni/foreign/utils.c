@@ -16,7 +16,7 @@ static jmethodID method_pointer_get;
 if (class_##NAME == NULL || (*ENV)->IsSameObject(ENV, class_##NAME, NULL)) { \
      jclass needleClass = (*ENV)->FindClass(ENV, FULL_NAME);                 \
      if (needleClass == NULL) {                                              \
-        throwNativeException(ENV, "Failed to init class "#FULL_NAME);        \
+        class_##NAME = nullptr;        \
      } else {                                                                \
         class_##NAME = (*ENV)->NewWeakGlobalRef(ENV, needleClass);           \
      }                                                                       \
@@ -26,7 +26,7 @@ if (class_##NAME == NULL || (*ENV)->IsSameObject(ENV, class_##NAME, NULL)) { \
 if (method_##CLASS##_##SIMPLE_NAME == NULL || (*ENV)->IsSameObject(ENV, method_##CLASS##_##SIMPLE_NAME, NULL)) { \
     jmethodID __needleMethod = (*ENV)->GetStaticMethodID(ENV, class_##CLASS, NAME, DESC);                        \
     if (__needleMethod == NULL) {                            \
-        throwNativeException(ENV, "Failed to init class "#NAME);\
+        method_##CLASS##_##SIMPLE_NAME = nullptr;\
     } else {\
         method_##CLASS##_##SIMPLE_NAME = (*ENV)->NewWeakGlobalRef(ENV, __needleMethod);                              \
     }                                                 \
