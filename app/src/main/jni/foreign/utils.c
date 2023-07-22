@@ -31,6 +31,11 @@ if (method_##CLASS##_##SIMPLE_NAME == NULL || (*ENV)->IsSameObject(ENV, method_#
 #define GET_CLASS_LOGGER(ENV, IF_FAILED_RETURN) \
 GET_CLASS(env, logger, "net/fred/lua/common/Logger"); \
 IF_NULL_RETURN(class_logger, IF_FAILED_RETURN)
+
+#define GET_CLASS_POINTER(ENV, IF_FAILED_RETURN) \
+GET_CLASS(ENV, pointer, "net/fred/lua/foreign/Pointer"); \
+IF_NULL_RETURN(class_pointer, IF_FAILED_RETURN)
+
 void logger_info(JNIEnv *env, const char *msg) {
     GET_CLASS_LOGGER(env,);
     GET_STATIC_METHOD(env, logger, info, "i", "(Ljava/lang/String;)V");
@@ -53,7 +58,7 @@ void throwNativeException(JNIEnv *env, const char *msg) {
 }
 
 jobject pointer_create(JNIEnv *env, void *needle) {
-    GET_CLASS_LOGGER(env, NULL);
+    GET_CLASS_POINTER(env, NULL);
     GET_STATIC_METHOD(env, pointer, from, "from", "(J)Lnet/fred/lua/foreign/Pointer;");
     IF_NULL_RETURN(method_pointer_from, NULL);
     return (*env)->CallStaticObjectMethod(env, class_pointer, method_pointer_from,
@@ -61,7 +66,7 @@ jobject pointer_create(JNIEnv *env, void *needle) {
 }
 
 void *pointer_get_from(JNIEnv *env, jobject obj) {
-    GET_CLASS_LOGGER(env, NULL);
+    GET_CLASS_POINTER(env, NULL);
     if (method_pointer_get == NULL || (*env)->IsSameObject(env, method_pointer_get, NULL)) {
         jmethodID id = (*env)->GetMethodID(env, class_pointer, "get", "()J");
         if (id == NULL) {
