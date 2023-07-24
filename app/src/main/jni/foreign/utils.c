@@ -13,25 +13,20 @@ static jmethodID method_pointer_from;
 static jmethodID method_pointer_get;
 
 #define FIND_CLASS(ENV, NAME, FULL_NAME) \
-if (class_##NAME == NULL || (*ENV)->IsSameObject(ENV, class_##NAME, NULL)) { \
-     jclass needleClass = (*ENV)->FindClass(ENV, FULL_NAME);                 \
-     if (needleClass == NULL) {                                              \
-        class_##NAME = NULL;        \
-     } else {                                                                \
-        class_##NAME = (*ENV)->NewWeakGlobalRef(ENV, needleClass);           \
-     }                                                                       \
+if (class_##NAME == NULL || (*ENV)->IsSameObject(ENV, class_##NAME, NULL)) {                 \
+     jclass needleClass = (*ENV)->FindClass(ENV, FULL_NAME);                                 \
+     class_##NAME = needleClass == NULL ? NULL : (*env)->NewWeakGlobalRef(env, needleClass); \
 }
 
-#define FIND_STATIC_METHOD(ENV, CLASS, SIMPLE_NAME, NAME, DESC) \
-if (method_##CLASS##_##SIMPLE_NAME == NULL || (*ENV)->IsSameObject(ENV, method_##CLASS##_##SIMPLE_NAME, NULL)) { \
-    jmethodID __needleMethod = (*ENV)->GetStaticMethodID(ENV, class_##CLASS, NAME, DESC);                        \
-    if (__needleMethod == NULL) {                            \
-        method_##CLASS##_##SIMPLE_NAME = NULL;\
-    } else {\
-        method_##CLASS##_##SIMPLE_NAME = (*ENV)->NewWeakGlobalRef(ENV, __needleMethod);                              \
-    }                                                 \
+#define FIND_STATIC_METHOD(ENV, CLASS, SIMPLE_NAME, NAME, DESC)                                 \
+if (method_##CLASS##_##SIMPLE_NAME == NULL) {                                                   \
+    method_##CLASS##_##SIMPLE_NAME = (*ENV)->GetStaticMethodID(ENV, class_##CLASS, NAME, DESC); \
 }
 
+#define FIND_INSTANCE_METHOD(ENV, CLASS, SIMPLE_NAME, NAME, DESC) \
+if (method_##CLASS##_##SIMPLE_NAME == NULL) {                     \
+    method_##CLASS##_##SIMPLE_NAME = (*ENV)->GetMethodID(ENV, class_##CLASS, NAME, DESC); \
+}
 
 #define LOAD_CLASS_LOGGER(ENV, IF_FAILED_RETURN) \
 FIND_CLASS(env, logger, "net/fred/lua/common/Logger"); \
@@ -72,13 +67,7 @@ jobject pointer_create(JNIEnv *env, void *needle) {
 
 void *pointer_get_from(JNIEnv *env, jobject obj) {
     LOAD_CLASS_POINTER(env, NULL);
-    if (method_pointer_get == NULL || (*env)->IsSameObject(env, method_pointer_get, NULL)) {
-        jmethodID id = (*env)->GetMethodID(env, class_pointer, "get", "()J");
-        if (id == NULL) {
-            throwNativeException(env, "Failed to init `get`");
-            return NULL;
-        }
-        method_pointer_get = (*env)->NewWeakGlobalRef(env, id);
-    }
+    FIND_INSTANCE_METHOD(env, pointer, get, "get", "()J");
+    IF_NULL_RETURN(method_pointer_get, NULL);
     return jlong_to_ptr((*env)->CallLongMethod(env, obj, method_pointer_get), void);
 }
