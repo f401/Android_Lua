@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import net.fred.lua.App;
 import net.fred.lua.PathConstants;
@@ -38,23 +39,36 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
         return instance;
     }
 
+    public static void fastHandleException(@NonNull Throwable exception) {
+        fastHandleException(exception, null);
+    }
+
     /**
      * Usually use in try-catch
      *
      * @param exception The exception you want to deal.
+     * @param ctx       If present, a dialog box will be used to remind users instead of creating a new activity. If you need to create a new activity, pass it null.
+     *                  Also see @{see #fastHandleException(Throwable)}
      */
-    public static void fastHandleException(@NonNull Throwable exception) {
+    public static void fastHandleException(@NonNull Throwable exception, @Nullable Context ctx) {
         StringBuilder sb = getInstance().writeInfoToSdCard(Thread.currentThread(), exception);
-        Context ctx = getInstance().ctx;
-        new AlertDialog.Builder(ctx)
-                .setTitle(ctx.getString(R.string.unknown_exception_happened))
-                .setMessage(sb.toString())
-                .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.dismiss();
-                    }
-                }).show();
+        if (ctx != null) {
+            try {
+                new AlertDialog.Builder(ctx)
+                        .setTitle(ctx.getString(R.string.unknown_exception_happened))
+                        .setMessage(sb.toString())
+                        .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                dialogInterface.dismiss();
+                            }
+                        }).show();
+                return;
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+        }
+        getInstance().uncaughtException(Thread.currentThread(), exception);
     }
 
     public void install(@NonNull Context ctx) {
