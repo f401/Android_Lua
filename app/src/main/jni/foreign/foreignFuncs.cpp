@@ -18,7 +18,7 @@ extern "C" {
 #define ERROR_DL_LOAD_SYMBOL_FAILED "Can't find symbol: "
 
 #define GET_POINTER_PARAM(ENV, OUT, FROM, EXPR)                         \
-void* OUT = pointer_get_from(ENV, FROM); if (OUT == nullptr) return EXPR
+void* OUT = pointer_get_from(ENV, FROM); if (OUT == (void* ) -1) return EXPR
 
 static void FreePointer(JNIEnv *env, jclass clazz, jobject ptr) {
     GET_POINTER_PARAM(env, dst, ptr,);
@@ -106,9 +106,9 @@ static jlong ObtainStringLen(JNIEnv *env, jclass clazz, jobject dest) {
 static jint
 PrepareFFICif(JNIEnv *env, jclass clazz, jobject _cif, jint argsCount, jobject _returnType,
               jobject _paramsType) {
-    GET_POINTER_PARAM(env, cif, _cif, FFI_BAD_ARGTYPE);
-    GET_POINTER_PARAM(env, returnType, _returnType, FFI_BAD_ARGTYPE);
-    GET_POINTER_PARAM(env, paramsType, _paramsType, FFI_BAD_ARGTYPE);
+    GET_POINTER_PARAM(env, cif, _cif, -1);
+    GET_POINTER_PARAM(env, returnType, _returnType, -1);
+    GET_POINTER_PARAM(env, paramsType, _paramsType, -1);
     return ffi_prep_cif((ffi_cif *) cif,
                         FFI_DEFAULT_ABI, argsCount, (ffi_type *) returnType,
                         (ffi_type **) paramsType);
