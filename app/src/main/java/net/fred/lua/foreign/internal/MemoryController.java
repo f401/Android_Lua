@@ -102,8 +102,8 @@ public class MemoryController implements Closeable {
         }
     }
 
-    protected void freeChildren() {
-        if (children != null) {
+    public final void freeChildren() {
+        if (children != null && children.size() != 0) {
             //During the deletion process, the subclass will call the remove method.
             //This can cause data modification during traversal, resulting in exceptions being thrown.
             List<AutoCloseable> dest = new ArrayList<>(children.size());
@@ -119,6 +119,10 @@ public class MemoryController implements Closeable {
             });
             children = null;
         }
+    }
+
+    public boolean hasChild() {
+        return children != null && children.size() != 0;
     }
 
     /**

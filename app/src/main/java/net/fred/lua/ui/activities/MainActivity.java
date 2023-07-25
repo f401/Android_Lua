@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import net.fred.lua.PathConstants;
 import net.fred.lua.R;
@@ -12,9 +13,12 @@ import net.fred.lua.common.Logger;
 import net.fred.lua.common.activity.BaseActivity;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.core.DynamicLoadingLibrary;
+import net.fred.lua.foreign.ffi.FunctionDescriber;
+import net.fred.lua.foreign.internal.MemorySegment;
+import net.fred.lua.foreign.types.PrimaryTypeWrapper;
 
 public class MainActivity extends BaseActivity {
-    private Button btn, throwException;
+    private Button btn, throwException, runCif;
     private EditText editText;
     private DynamicLoadingLibrary luaDll;
 
@@ -22,9 +26,10 @@ public class MainActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        btn = (Button) findViewById(R.id.activity_main_Button1);
-        editText = (EditText) findViewById(R.id.activity_main_EditText1);
-        throwException = (Button) findViewById(R.id.activity_main_throw);
+        btn = findViewById(R.id.activity_main_Button1);
+        editText = findViewById(R.id.activity_main_EditText1);
+        throwException = findViewById(R.id.activity_main_throw);
+        runCif = findViewById(R.id.activity_main_run_cif_btn);
 
         try {
             luaDll = DynamicLoadingLibrary.open(PathConstants.NATIVE_LIBRARY_DIR + "liblua.so");
@@ -52,6 +57,20 @@ public class MainActivity extends BaseActivity {
                 luaDll.close();
             }
 
+        });
+
+        runCif.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Logger.i("Running cif");
+                FunctionDescriber desc = FunctionDescriber.of(PrimaryTypeWrapper.of(void.class), PrimaryTypeWrapper.of(int.class));
+                try {
+                    MemorySegment result = desc.prepareCIF();
+                    Toast.makeText(MainActivity.this, "Address: " + result.getPointer(), Toast.LENGTH_LONG).show();
+                } catch (NativeMethodException e) {
+                    CrashHandler.fastHandleException(e, MainActivity.this);
+                }
+            }
         });
     }
 

@@ -17,13 +17,20 @@ public class ForeignFunctions {
      */
     public static native String strerror();
 
+    public static native void memcpy(Pointer dest, Pointer src, long length);
+
     public static native Pointer dlopen(String path, int flags) throws NativeMethodException;
 
     public static native int dlclose(Pointer ptr);
 
     public static native Pointer dlsym(Pointer handle, String src) throws NativeMethodException;
 
-    public static native void duplicateStringTo(Pointer handle, String str);
+    // --------------------------------------------------------String--------------------------------------------------------------------------//
+    public static native void putString(Pointer handle, String str);
+
+    public static native String peekString(Pointer dest);
+
+    public static native long obtainStringLength(Pointer dest);
 
 
     //----------------------------------------------------------value handles------------------------------------------------------------------//
@@ -37,6 +44,8 @@ public class ForeignFunctions {
     public static native void putInt(Pointer ptr, int value);
 
     public static native void putLong(Pointer ptr, long value);
+
+    public static native void putPointer(Pointer ptr, Pointer value);
 
     public static void putFloat(Pointer ptr, float value) {
         putInt(ptr, Float.floatToIntBits(value));
@@ -56,6 +65,8 @@ public class ForeignFunctions {
 
     public static native long peekLong(Pointer ptr);
 
+    public static native Pointer peekPointer(Pointer dest);
+
     public static float peekFloat(Pointer ptr) {
         return Float.intBitsToFloat(peekInt(ptr));
     }
@@ -67,7 +78,7 @@ public class ForeignFunctions {
     //--------------------------------------------------------------libffi--------------------------------------------------------------------//
 
 
-    public static native int ffi_prep_cif(long cif, int argsCount, long returnType, long paramsType);
+    public static native int ffi_prep_cif(Pointer cif, int argsCount, Pointer returnType, Pointer paramsType);
 
     static {
         System.loadLibrary("foreign");

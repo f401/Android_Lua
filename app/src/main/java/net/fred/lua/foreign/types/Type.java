@@ -3,21 +3,23 @@ package net.fred.lua.foreign.types;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 
-public class Type<T> {
-    public final int size;
-    public final Pointer pointer;
-    public final TypesRegistry.AssignableReadable<T> assignableReadable;
+public interface Type<T> {
 
-    public Type(int size, @NonNull Pointer pointer, @Nullable TypesRegistry.AssignableReadable<T> assignableReadable) {
-        this.size = size;
-        this.pointer = pointer;
-        this.assignableReadable = assignableReadable;
-    }
+    /**
+     * Obtain the size of a single Type.
+     *
+     * @param obj When the size is determined, null can be passed in. Otherwise, the object that needs to obtain the size must be passed in.
+     * @return The size of this type.
+     */
+    int getSize(@Nullable Object obj);
 
-    @NonNull
-    public static <T> Type<T> of(int size, long address, @Nullable TypesRegistry.AssignableReadable<T> assignableReadable) {
-        return new Type<>(size, Pointer.from(address), assignableReadable);
-    }
+    @Nullable
+    Pointer getFFIPointer();
+
+    T read(@NonNull Pointer dest);
+
+    void write(@NonNull Pointer dest, @NonNull Object data) throws NativeMethodException;
 }

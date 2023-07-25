@@ -1,10 +1,11 @@
 package net.fred.lua.foreign.types;
 
-import net.fred.lua.foreign.Pointer;
 
 /**
- * All types that can serve as pointers need to implement this interface.
+ * All classes that can serve as pointers need to be implemented.
+ *
+ * @param <T> The type referred to.
  */
-public interface PointerType {
-    Pointer getPointer();
+public interface PointerType<T> extends Type<T> {
+    PointerType<T> setWriteAsPointer(boolean writeAsPointer);
 }

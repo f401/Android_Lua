@@ -9,11 +9,20 @@ import net.fred.lua.common.utils.ThrowableUtils;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.internal.ForeignFunctions;
+import net.fred.lua.foreign.internal.ForeignValues;
 import net.fred.lua.foreign.internal.MemorySegment;
+import net.fred.lua.foreign.types.PointerTypeImpl;
+
+import java.util.Objects;
 
 public final class ForeignString extends MemorySegment {
 
-    public static final long DEFAULT_SIZE = 128;
+    private final String refer;
+
+    private ForeignString(Pointer src, String refer) {
+        super(src, refer.length());
+        this.refer = refer;
+    }
 
     /**
      * Constructing a native string (@{code char *}) using Java {@code String}.
@@ -27,16 +36,13 @@ public final class ForeignString extends MemorySegment {
     public static ForeignString from(final @Nullable String str) throws NativeMethodException {
         long length;
         if (StringUtils.isEmpty(str) || (length = str.length()) == 0) {
-            Logger.w(ThrowableUtils.getInvokerInfoString() + " passes null when creating a string. Using default size.");
-            length = DEFAULT_SIZE;
+            final String err = ThrowableUtils.getInvokerInfoString() + " passes null when creating a string.";
+            Logger.w(err);
+            throw new IllegalArgumentException(err);
         }
         final Pointer ptr = ForeignFunctions.alloc(length + 1);
-        ForeignFunctions.duplicateStringTo(ptr, str);
-        return new ForeignString(ptr, length);
-    }
-
-    private ForeignString(Pointer src, long size) {
-        super(src, size);
+        ForeignFunctions.putString(ptr, str);
+        return new ForeignString(ptr, str);
     }
 
     /**
@@ -47,5 +53,50 @@ public final class ForeignString extends MemorySegment {
      */
     public long length() {
         return size();
+    }
+
+    public static ForeignStringType ofType() {
+        return new ForeignStringType();
+    }
+
+    public static class ForeignStringType extends PointerTypeImpl<ForeignString> {
+
+        protected ForeignStringType() {
+            super(true);
+        }
+
+        @Override
+        public int getSize(@Nullable Object obj) {
+            if (writeAsPointer) {
+                return 8;
+            } else {
+                Objects.requireNonNull(obj, "Cannot pass in `null` when size is uncertain.");
+                return (int) ((ForeignString) obj).size();
+            }
+        }
+
+        @Nullable
+        @Override
+        public Pointer getFFIPointer() {
+            return writeAsPointer ? Pointer.from(ForeignValues.FFI_TYPE_POINTER) : null;
+        }
+
+        @Override
+        public ForeignString read(@NonNull Pointer dest) {
+            if (writeAsPointer) {
+                dest = ForeignFunctions.peekPointer(dest);
+            }
+            return new ForeignString(dest, ForeignFunctions.peekString(dest));
+        }
+
+        @Override
+        public void write(@NonNull Pointer dest, @NonNull Object data) {
+            if (writeAsPointer) {
+                ForeignFunctions.putPointer(dest, ((ForeignString) data).pointer);
+            } else {
+                ForeignFunctions.putString(dest, ((ForeignString) data).refer);
+            }
+        }
+
     }
 }

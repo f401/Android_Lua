@@ -1,15 +1,6 @@
 package net.fred.lua.foreign.types;
 
-import androidx.annotation.NonNull;
-
-import net.fred.lua.common.ArgumentsChecker;
-import net.fred.lua.foreign.Pointer;
-import net.fred.lua.foreign.internal.ForeignFunctions;
-import net.fred.lua.foreign.internal.ForeignValues;
-
-import java.util.concurrent.ConcurrentHashMap;
-
-public class TypesRegistry {
+/*public class TypesRegistry {
     public static final int SIZE_UNKNOWN = -1;
     private static final ConcurrentHashMap<Class<?>, Type<?>> classesMap;
 
@@ -84,11 +75,14 @@ public class TypesRegistry {
      * @param clazz The key.
      * @param <T>   the type of the class modeled by this Type.Types object. For example, the type of String.class is Type<String>. Use Type<?> if the class being modeled is unknown.
      * @return The result obtained, if unknown, returns @{code null}.
-     */
+
     @SuppressWarnings("unchecked")
     public static <T> Type<T> get(@NonNull Class<T> clazz) {
-        ArgumentsChecker.check(classesMap.containsKey(clazz), "Class has not been registered yet. (" + clazz + ").");
         return (Type<T>) classesMap.get(clazz);
+    }
+
+    public static Type<?> get(Object obj) {
+        return get(obj.getClass());
     }
 
     public static void register(@NonNull Class<?> clazz, @NonNull Type<?> ptr) {
@@ -103,3 +97,4 @@ public class TypesRegistry {
     }
 
 }
+*/

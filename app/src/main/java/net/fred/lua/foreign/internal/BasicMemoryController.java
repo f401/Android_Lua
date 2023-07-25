@@ -3,9 +3,8 @@ package net.fred.lua.foreign.internal;
 import androidx.annotation.Nullable;
 
 import net.fred.lua.foreign.Pointer;
-import net.fred.lua.foreign.types.PointerType;
 
-public class BasicMemoryController extends MemoryController implements PointerType {
+public class BasicMemoryController extends MemoryController {
 
     protected Pointer pointer;
 
@@ -13,7 +12,6 @@ public class BasicMemoryController extends MemoryController implements PointerTy
         this.pointer = pointer;
     }
 
-    @Override
     public final Pointer getPointer() {
         return pointer;
     }

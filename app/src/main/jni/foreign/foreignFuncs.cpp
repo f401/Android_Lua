@@ -58,6 +58,12 @@ static jobject dllOpen(JNIEnv *env, jclass clazz, jstring jpath, jint flag) {
     return pointer_create(env, handle);
 }
 
+static void CopyMemory(JNIEnv *env, jclass clazz, jobject _dest, jobject _src, jlong length) {
+    GET_POINTER_PARAM(env, dest, _dest,);
+    GET_POINTER_PARAM(env, src, _src,);
+    memcpy(dest, src, length);
+}
+
 static jint dllClose(JNIEnv *env, jclass clazz, jobject handle) {
     GET_POINTER_PARAM(env, dst, handle, -1);
     return dlclose(dst);
@@ -166,36 +172,37 @@ static jobject peekJavaPointer(JNIEnv *env, jclass clazz, jobject dst) {
 #undef DEF_PEEK_FUNCS
 
 const static JNINativeMethod methods[] = {
-        {"alloc", "(J)Lnet/fred/lua/foreign/Pointer;", (void *) &alloc},
-        {"free", "(Lnet/fred/lua/foreign/Pointer;)V", (void *) &freePointer},
-        {"strerror", "()Ljava/lang/String;", (void *) &getSystemError},
-        {"dlopen", "(Ljava/lang/String;I)Lnet/fred/lua/foreign/Pointer;", (void *) &dllOpen},
-        {"dlclose", "(Lnet/fred/lua/foreign/Pointer;)I", (void *) &dllClose},
+        {"alloc",              "(J)Lnet/fred/lua/foreign/Pointer;",                                                              (void *) &alloc},
+        {"free",               "(Lnet/fred/lua/foreign/Pointer;)V",                                                              (void *) &freePointer},
+        {"strerror",           "()Ljava/lang/String;",                                                                           (void *) &getSystemError},
+        {"memcpy",             "(Lnet/fred/lua/foreign/Pointer;Lnet/fred/lua/foreign/Pointer;J)V",                               (void *) &CopyMemory},
+        {"dlopen",             "(Ljava/lang/String;I)Lnet/fred/lua/foreign/Pointer;",                                            (void *) &dllOpen},
+        {"dlclose",            "(Lnet/fred/lua/foreign/Pointer;)I",                                                              (void *) &dllClose},
         {"dlsym",
-         "(Lnet/fred/lua/foreign/Pointer;Ljava/lang/String;)Lnet/fred/lua/foreign/Pointer;",
-         (void *) &dllSymbolLookup},
-        {"putByte", "(Lnet/fred/lua/foreign/Pointer;B)V", (void *) &putJavabyte},
-        {"putChar", "(Lnet/fred/lua/foreign/Pointer;C)V", (void *) &putJavachar},
-        {"putShort", "(Lnet/fred/lua/foreign/Pointer;S)V", (void *) &putJavashort},
-        {"putInt", "(Lnet/fred/lua/foreign/Pointer;I)V", (void *) &putJavaint},
-        {"putLong", "(Lnet/fred/lua/foreign/Pointer;J)V", (void *) &putJavalong},
-        {"putPointer", "(Lnet/fred/lua/foreign/Pointer;Lnet/fred/lua/foreign/Pointer;)V",
-         (void *) &putJavaPointer},
+                               "(Lnet/fred/lua/foreign/Pointer;Ljava/lang/String;)Lnet/fred/lua/foreign/Pointer;",
+                                                                                                                                 (void *) &dllSymbolLookup},
+        {"putByte",            "(Lnet/fred/lua/foreign/Pointer;B)V",                                                             (void *) &putJavabyte},
+        {"putChar",            "(Lnet/fred/lua/foreign/Pointer;C)V",                                                             (void *) &putJavachar},
+        {"putShort",           "(Lnet/fred/lua/foreign/Pointer;S)V",                                                             (void *) &putJavashort},
+        {"putInt",             "(Lnet/fred/lua/foreign/Pointer;I)V",                                                             (void *) &putJavaint},
+        {"putLong",            "(Lnet/fred/lua/foreign/Pointer;J)V",                                                             (void *) &putJavalong},
+        {"putPointer",         "(Lnet/fred/lua/foreign/Pointer;Lnet/fred/lua/foreign/Pointer;)V",
+                                                                                                                                 (void *) &putJavaPointer},
 
-        {"peekByte", "(Lnet/fred/lua/foreign/Pointer;)B", (void *) &peekJavabyte},
-        {"peekChar", "(Lnet/fred/lua/foreign/Pointer;)C", (void *) &peekJavachar},
-        {"peekShort", "(Lnet/fred/lua/foreign/Pointer;)S", (void *) &peekJavashort},
-        {"peekInt", "(Lnet/fred/lua/foreign/Pointer;)I", (void *) &peekJavaint},
-        {"peekLong", "(Lnet/fred/lua/foreign/Pointer;)J", (void *) &peekJavalong},
-        {"peekPointer", "(Lnet/fred/lua/foreign/Pointer;)Lnet/fred/lua/foreign/Pointer;",
-         (void *) &peekJavaPointer},
+        {"peekByte",           "(Lnet/fred/lua/foreign/Pointer;)B",                                                              (void *) &peekJavabyte},
+        {"peekChar",           "(Lnet/fred/lua/foreign/Pointer;)C",                                                              (void *) &peekJavachar},
+        {"peekShort",          "(Lnet/fred/lua/foreign/Pointer;)S",                                                              (void *) &peekJavashort},
+        {"peekInt",            "(Lnet/fred/lua/foreign/Pointer;)I",                                                              (void *) &peekJavaint},
+        {"peekLong",           "(Lnet/fred/lua/foreign/Pointer;)J",                                                              (void *) &peekJavalong},
+        {"peekPointer",        "(Lnet/fred/lua/foreign/Pointer;)Lnet/fred/lua/foreign/Pointer;",
+                                                                                                                                 (void *) &peekJavaPointer},
 
-        {"duplicateStringTo", "(Lnet/fred/lua/foreign/Pointer;Ljava/lang/String;)V",
-         (void *) &duplicateStringTo},
-        {"readString", "(Lnet/fred/lua/foreign/Pointer;)Ljava/lang/String;", (void *) &readString},
-        {"obtainStringLength", "(Lnet/fred/lua/foreign/Pointer;)J", (void *) &obtainStringLen},
+        {"putString",          "(Lnet/fred/lua/foreign/Pointer;Ljava/lang/String;)V",
+                                                                                                                                 (void *) &duplicateStringTo},
+        {"peekString",         "(Lnet/fred/lua/foreign/Pointer;)Ljava/lang/String;",                                             (void *) &readString},
+        {"obtainStringLength", "(Lnet/fred/lua/foreign/Pointer;)J",                                                              (void *) &obtainStringLen},
 
-        {"ffi_prep_cif", "(JIJJ)I", (void *) &ffiPrepareCIF},
+        {"ffi_prep_cif",       "(Lnet/fred/lua/foreign/Pointer;ILnet/fred/lua/foreign/Pointer;Lnet/fred/lua/foreign/Pointer;)I", (void *) &ffiPrepareCIF},
 };
 
 static int registerMethods(JNIEnv *env) {

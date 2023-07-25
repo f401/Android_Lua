@@ -1,12 +1,14 @@
 package net.fred.lua.foreign;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import net.fred.lua.common.Logger;
-import net.fred.lua.foreign.types.PointerType;
+import net.fred.lua.foreign.internal.ForeignFunctions;
+import net.fred.lua.foreign.internal.ForeignValues;
 import net.fred.lua.foreign.types.Type;
 
-public class Pointer implements PointerType {
+public class Pointer {
     private long address;
 
     public Pointer(long address) {
@@ -54,18 +56,44 @@ public class Pointer implements PointerType {
         return "0x" + Long.toHexString(address);
     }
 
-    @NonNull
+    /*@NonNull
     public final Pointer plus(Type<?> type, long need) {
         return new Pointer(address + (type.size * need));
-    }
+    }*/
 
     @NonNull
     public final Pointer plus(long size) {
         return new Pointer(address + size);
     }
 
-    @Override
     public Pointer getPointer() {
         return this;
+    }
+
+    public static PointerType ofType() {
+        return new PointerType();
+    }
+
+    public static class PointerType implements Type<Pointer> {
+        @Override
+        public int getSize(@Nullable Object obj) {
+            return (int) ForeignValues.SIZE_OF_POINTER;
+        }
+
+        @Nullable
+        @Override
+        public Pointer getFFIPointer() {
+            return Pointer.from(ForeignValues.FFI_TYPE_POINTER);
+        }
+
+        @Override
+        public Pointer read(@NonNull Pointer dest) {
+            return ForeignFunctions.peekPointer(dest);
+        }
+
+        @Override
+        public void write(@NonNull Pointer dest, @NonNull Object data) throws NativeMethodException {
+            ForeignFunctions.putPointer(dest, (Pointer) data);
+        }
     }
 }
