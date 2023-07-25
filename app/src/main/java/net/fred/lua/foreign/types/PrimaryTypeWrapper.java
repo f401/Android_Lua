@@ -22,6 +22,7 @@ import androidx.annotation.Nullable;
 
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
+import net.fred.lua.foreign.internal.ForeignValues;
 import net.fred.lua.foreign.internal.MemoryController;
 import net.fred.lua.foreign.internal.MemorySegment;
 
@@ -120,6 +121,28 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements PointerTy
             @Override
             public Long read(@NonNull Pointer dest) {
                 return peekLong(dest);
+            }
+        });
+        map.put(void.class, new PrimaryType<Void>() {
+            @Override
+            public void write(@NonNull Pointer dest, @NonNull Object obj) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public int getSize(@Nullable Object obj) {
+                throw new UnsupportedOperationException();
+            }
+
+            @NonNull
+            @Override
+            public Pointer getFFIPointer() {
+                return Pointer.from(ForeignValues.FFI_TYPE_VOID);
+            }
+
+            @Override
+            public Void read(@NonNull Pointer dest) {
+                throw new UnsupportedOperationException();
             }
         });
     }
