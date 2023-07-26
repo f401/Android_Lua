@@ -63,7 +63,7 @@ public class MainActivity extends BaseActivity {
             @Override
             public void onClick(View v) {
                 Logger.i("Running cif");
-                FunctionDescriber desc = FunctionDescriber.of(PrimaryTypeWrapper.of(void.class), null);
+                FunctionDescriber desc = FunctionDescriber.of(PrimaryTypeWrapper.of(void.class), PrimaryTypeWrapper.of(int.class));
                 try {
                     MemorySegment result = desc.prepareCIF();
                     Toast.makeText(MainActivity.this, "Address: " + result.getPointer(), Toast.LENGTH_LONG).show();
