@@ -136,7 +136,7 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements PointerTy
 
             @Override
             public int getSize(@Nullable Object obj) {
-                throw new UnsupportedOperationException();
+                return 0;
             }
 
             @NonNull
@@ -147,7 +147,7 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements PointerTy
 
             @Override
             public Void read(@NonNull Pointer dest) {
-                throw new UnsupportedOperationException();
+                return null;
             }
         });
     }

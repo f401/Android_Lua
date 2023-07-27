@@ -11,11 +11,11 @@ import net.fred.lua.R;
 import net.fred.lua.common.CrashHandler;
 import net.fred.lua.common.Logger;
 import net.fred.lua.common.activity.BaseActivity;
+import net.fred.lua.common.utils.StringUtils;
 import net.fred.lua.foreign.NativeMethodException;
+import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.core.DynamicLoadingLibrary;
-import net.fred.lua.foreign.ffi.FunctionDescriber;
-import net.fred.lua.foreign.internal.MemorySegment;
-import net.fred.lua.foreign.types.PrimaryTypeWrapper;
+import net.fred.lua.foreign.ffi.FunctionCaller;
 
 public class MainActivity extends BaseActivity {
     private Button btn, throwException, runCif;
@@ -63,11 +63,14 @@ public class MainActivity extends BaseActivity {
             @Override
             public void onClick(View v) {
                 Logger.i("Running cif");
-                FunctionDescriber desc = FunctionDescriber.of(PrimaryTypeWrapper.of(void.class), PrimaryTypeWrapper.of(int.class));
                 try {
-                    MemorySegment result = desc.prepareCIF();
-                    Toast.makeText(MainActivity.this, "Address: " + result.getPointer(), Toast.LENGTH_LONG).show();
-                    result.close();
+                    Pointer newState = luaDll.lookupSymbol("luaL_newstate");
+                    Logger.i(StringUtils.templateOf("New state pointer: {}", newState));
+                    FunctionCaller caller = FunctionCaller.of(newState, Pointer.ofType());
+                    Pointer result = (Pointer) caller.call();
+                    Toast.makeText(MainActivity.this, result.toString(), Toast.LENGTH_SHORT).show();
+                    Logger.i("Call result: " + result);
+                    caller.close();
                 } catch (Throwable e) {
                     CrashHandler.fastHandleException(e, MainActivity.this);
                 }

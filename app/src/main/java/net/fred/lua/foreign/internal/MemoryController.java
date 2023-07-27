@@ -11,7 +11,6 @@ import net.fred.lua.common.utils.ThrowableUtils;
 
 import java.io.Closeable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class MemoryController implements Closeable {
@@ -106,8 +105,8 @@ public class MemoryController implements Closeable {
         if (children != null && children.size() != 0) {
             //During the deletion process, the subclass will call the remove method.
             //This can cause data modification during traversal, resulting in exceptions being thrown.
-            List<AutoCloseable> dest = new ArrayList<>(children.size());
-            Collections.copy(dest, children);
+            List<AutoCloseable> dest = new ArrayList<>(children.size() + 1);
+            dest.addAll(children);
             ThrowableUtils.closeAll(dest, new Action<Void, AutoCloseable>() {
                 @Override
                 public Void action(AutoCloseable param) {

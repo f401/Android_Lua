@@ -1,6 +1,7 @@
 package net.fred.lua.foreign.ffi;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
@@ -11,10 +12,11 @@ import net.fred.lua.foreign.types.Type;
 
 public class FunctionDescriber extends MemoryController {
 
+    @Nullable
     private final Type<?>[] params;
     private final Type<?> returnType;
 
-    public FunctionDescriber(Type<?> returnType, Type<?>[] params) {
+    public FunctionDescriber(Type<?> returnType, @Nullable Type<?>[] params) {
         this.returnType = returnType;
         this.params = params;
     }
@@ -39,8 +41,16 @@ public class FunctionDescriber extends MemoryController {
         return cif;
     }
 
+    public Type<?>[] getParams() {
+        return params;
+    }
+
+    public Type<?> getReturnType() {
+        return returnType;
+    }
+
     /**
-     * The method of truly generating @{code ffi_cif}. At foreignFuncs.cpp.
+     * The method of truly generating @{code ffi_cif}. At libffi.cpp.
      *
      * @param cif        Pointer to the generated result storage.
      * @param returnType Return Type
@@ -51,7 +61,7 @@ public class FunctionDescriber extends MemoryController {
     public native int prep_cif(Pointer cif, @NonNull Type<?> returnType, Type<?>[] params) throws NativeMethodException;
 
     /**
-     * Called from native. @{link #prep_cif} (foreignFuncs.cpp)
+     * Called from native. @{link #prep_cif} (libffi.cpp)
      */
     protected long requestMemory(long size) throws NativeMethodException {
         MemorySegment segment = MemorySegment.create(size);
