@@ -1,16 +1,21 @@
 package net.fred.lua.ui.activities;
 
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 
 import net.fred.lua.PathConstants;
 import net.fred.lua.R;
 import net.fred.lua.common.CrashHandler;
 import net.fred.lua.common.Logger;
 import net.fred.lua.common.activity.BaseActivity;
+import net.fred.lua.common.utils.FileUtils;
 import net.fred.lua.common.utils.StringUtils;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
@@ -49,6 +54,7 @@ public class MainActivity extends BaseActivity {
                 }
             }
         });
+
         throwException.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View p1) {
@@ -79,13 +85,21 @@ public class MainActivity extends BaseActivity {
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-       // try {
-            //luaDll.close();
-       // } catch (Exception e) {
-          //  CrashHandler.fastHandleException(e);
-      //  }
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_activity_options_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.activity_main_menu_clean_cache) {
+            Toast.makeText(this, getString(R.string.cache_directory_size,
+                    FileUtils.shrinkToBestDisplay(
+                            FileUtils.evalDirectoryTotalSize(getExternalCacheDir()))), Toast.LENGTH_SHORT).show();
+            FileUtils.removeDirectory(getExternalCacheDir());
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
 }

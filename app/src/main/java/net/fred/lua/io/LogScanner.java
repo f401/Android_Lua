@@ -55,7 +55,6 @@ public class LogScanner {
                 while (flag.getFlag()) {
                     Process process = new ProcessBuilder("logcat").redirectErrorStream(true).start();
 //                    Process pro = new ProcessBuilder().command("logcat", "-c").redirectErrorStream(true).start();
-                    System.out.println("Log scanner started");
                     InputStream is = process.getInputStream();
                     int len;
                     byte[] buffer = new byte[1024];

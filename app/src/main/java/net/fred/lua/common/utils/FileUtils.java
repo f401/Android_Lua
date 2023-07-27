@@ -75,4 +75,49 @@ public final class FileUtils {
             throw new RuntimeException("File path are null.");
     }
 
+    public static long evalDirectoryTotalSize(File file) {
+        long result = 0;
+        File[] sub = file.listFiles();
+        if (sub != null) {
+            for (File curr : sub) {
+                result += curr.isDirectory() ? evalDirectoryTotalSize(curr) : curr.length();
+            }
+        }
+        return result;
+    }
+
+    public static String shrinkToBestDisplay(long bytes) {
+        return shrinkToBestDisplay((double) bytes, 0);
+    }
+
+    private static String shrinkToBestDisplay(double d, int currLevel) {
+        if (d < 1024 || currLevel == 3) {
+            switch (currLevel) {
+                case 0:
+                    return d + "bytes";
+                case 1:
+                    return d + "KB";
+                case 2:
+                    return d + "MB";
+                case 3:
+                    return d + "GB";
+                default:
+                    return "";
+            }
+        } else {
+            return shrinkToBestDisplay(d / 1024, currLevel + 1);
+        }
+    }
+
+    public static void removeDirectory(File file) {
+        File[] subs = file.listFiles();
+        if (subs != null) {
+            for (File curr : subs) {
+                if (curr.isDirectory()) {
+                    removeDirectory(curr);
+                }
+                curr.delete();
+            }
+        }
+    }
 }
