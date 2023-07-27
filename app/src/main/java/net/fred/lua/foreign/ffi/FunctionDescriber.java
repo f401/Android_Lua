@@ -1,9 +1,9 @@
 package net.fred.lua.foreign.ffi;
 
+import androidx.annotation.NonNull;
+
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
-import net.fred.lua.foreign.core.Array;
-import net.fred.lua.foreign.internal.ForeignFunctions;
 import net.fred.lua.foreign.internal.ForeignValues;
 import net.fred.lua.foreign.internal.MemoryController;
 import net.fred.lua.foreign.internal.MemorySegment;
@@ -12,7 +12,6 @@ import net.fred.lua.foreign.types.Type;
 public class FunctionDescriber extends MemoryController {
 
     private final Type<?>[] params;
-
     private final Type<?> returnType;
 
     public FunctionDescriber(Type<?> returnType, Type<?>[] params) {
@@ -24,24 +23,39 @@ public class FunctionDescriber extends MemoryController {
         return new FunctionDescriber(returnType, params);
     }
 
+    /**
+     * @return Point to @{code ffi_cif}
+     * @throws NativeMethodException etc...
+     */
     public MemorySegment prepareCIF() throws NativeMethodException {
         freeChildren();
-        int result;
         MemorySegment cif = MemorySegment.create(ForeignValues.SIZE_OF_FFI_CIF);
         addChild(cif);
-        if (params != null) {
-            Array<Pointer> params = Array.create(Pointer.ofType(), this.params.length);
-            addChild(params);
-            for (int i = 0; i < this.params.length; ++i) {
-                params.write(i, this.params[i].getFFIPointer());
-            }
-            result = ForeignFunctions.ffi_prep_cif(cif.getPointer(), this.params.length, returnType.getFFIPointer(), params.getPointer());
-        } else {
-            result = ForeignFunctions.ffi_prep_cif(cif.getPointer(), 0, returnType.getFFIPointer(), Pointer.from(ForeignValues.NULL));
-        }
+        int result = prep_cif(cif.getPointer(), returnType, params);
         if (result != ForeignValues.FFI_STATUS_OK) {
             throw new NativeMethodException("Result: " + result);
         }
+
         return cif;
+    }
+
+    /**
+     * The method of truly generating @{code ffi_cif}. At foreignFuncs.cpp.
+     *
+     * @param cif        Pointer to the generated result storage.
+     * @param returnType Return Type
+     * @param params     parameter type.
+     * @return The generated results. 0 is normal.
+     * @throws NativeMethodException etc...
+     */
+    public native int prep_cif(Pointer cif, @NonNull Type<?> returnType, Type<?>[] params) throws NativeMethodException;
+
+    /**
+     * Called from native. @{link #prep_cif} (foreignFuncs.cpp)
+     */
+    protected long requestMemory(long size) throws NativeMethodException {
+        MemorySegment segment = MemorySegment.create(size);
+        addChild(segment);
+        return segment.getPointer().get();
     }
 }

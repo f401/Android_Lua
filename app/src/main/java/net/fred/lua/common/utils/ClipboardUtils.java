@@ -8,6 +8,12 @@ import androidx.annotation.NonNull;
 
 public class ClipboardUtils {
 
+    /**
+     * Obtain clipboard manager based on @{code ctx}
+     *
+     * @param ctx Context required.
+     * @return Clipboard manager.
+     */
     public static ClipboardManager getClipBoardManager(@NonNull Context ctx) {
         return (ClipboardManager) ctx.getSystemService(Context.CLIPBOARD_SERVICE);
     }

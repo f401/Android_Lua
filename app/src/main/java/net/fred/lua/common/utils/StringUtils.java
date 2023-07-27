@@ -13,4 +13,17 @@ public class StringUtils {
         return str.endsWith("/") ? str : str + "/";
     }
 
+    @NonNull
+    public static String templateOf(@NonNull String base, Object... args) {
+        try {
+            for (int i = 0; base.contains("{}"); ++i) {
+                base = base.replaceFirst("\\{\\}", args[i].toString());
+            }
+        } catch (IndexOutOfBoundsException e) {
+            System.out.println("Base: " + base);
+            e.printStackTrace();
+        }
+        return base;
+    }
+
 }

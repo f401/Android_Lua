@@ -12,21 +12,6 @@ static jmethodID method_logger_error;
 static jmethodID method_pointer_from;
 static jmethodID method_pointer_get;
 
-#define FIND_CLASS(ENV, NAME, FULL_NAME) \
-if (class_##NAME == NULL || (*ENV)->IsSameObject(ENV, class_##NAME, NULL)) {                 \
-     jclass needleClass = (*ENV)->FindClass(ENV, FULL_NAME);                                 \
-     class_##NAME = needleClass == NULL ? NULL : (*env)->NewWeakGlobalRef(env, needleClass); \
-}
-
-#define FIND_STATIC_METHOD(ENV, CLASS, SIMPLE_NAME, NAME, DESC)                                 \
-if (method_##CLASS##_##SIMPLE_NAME == NULL) {                                                   \
-    method_##CLASS##_##SIMPLE_NAME = (*ENV)->GetStaticMethodID(ENV, class_##CLASS, NAME, DESC); \
-}
-
-#define FIND_INSTANCE_METHOD(ENV, CLASS, SIMPLE_NAME, NAME, DESC) \
-if (method_##CLASS##_##SIMPLE_NAME == NULL) {                     \
-    method_##CLASS##_##SIMPLE_NAME = (*ENV)->GetMethodID(ENV, class_##CLASS, NAME, DESC); \
-}
 
 #define LOAD_CLASS_LOGGER(ENV, IF_FAILED_RETURN) \
 FIND_CLASS(env, logger, "net/fred/lua/common/Logger"); \

@@ -36,7 +36,7 @@ public final class ForeignString extends MemorySegment {
     public static ForeignString from(final @Nullable String str) throws NativeMethodException {
         long length;
         if (StringUtils.isEmpty(str) || (length = str.length()) == 0) {
-            final String err = ThrowableUtils.getInvokerInfoString() + " passes null when creating a string.";
+            final String err = ThrowableUtils.getCallerString() + " passes null when creating a string.";
             Logger.w(err);
             throw new IllegalArgumentException(err);
         }

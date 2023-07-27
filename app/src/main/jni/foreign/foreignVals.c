@@ -73,3 +73,23 @@ JNIEXPORT jint JNICALL
 Java_net_fred_lua_foreign_internal_ForeignValues_getFFI_1STATUS_1OK(JNIEnv *env, jclass clazz) {
     return FFI_OK;
 }
+
+JNIEXPORT jlong JNICALL
+Java_net_fred_lua_foreign_internal_ForeignValues_getFFI_1TYPE_1UINT8(JNIEnv *env, jclass clazz) {
+    return ptr_to_jlong(&ffi_type_uint8);
+}
+
+JNIEXPORT jlong JNICALL
+Java_net_fred_lua_foreign_internal_ForeignValues_getFFI_1TYPE_1UINT16(JNIEnv *env, jclass clazz) {
+    return ptr_to_jlong(&ffi_type_uint16);
+}
+
+JNIEXPORT jlong JNICALL
+Java_net_fred_lua_foreign_internal_ForeignValues_getFFI_1TYPE_1UINT32(JNIEnv *env, jclass clazz) {
+    return ptr_to_jlong(&ffi_type_uint32);
+}
+
+JNIEXPORT jlong JNICALL
+Java_net_fred_lua_foreign_internal_ForeignValues_getFFI_1TYPE_1UINT64(JNIEnv *env, jclass clazz) {
+    return ptr_to_jlong(&ffi_type_uint64);
+}

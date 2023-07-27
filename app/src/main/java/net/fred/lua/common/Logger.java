@@ -54,19 +54,19 @@ public class Logger implements AutoCloseable {
     }
 
     public static void i(String msg) {
-        String sb = "INFO " + getOtherInfo() + ThrowableUtils.getInvokerInfoString() +
+        String sb = "INFO " + getOtherInfo() + ThrowableUtils.getCallerString() +
                 " :" + msg;
         writeLine(sb);
     }
 
     public static void e(String msg) {
-        String sb = "ERROR " + getOtherInfo() + ThrowableUtils.getInvokerInfoString() +
+        String sb = "ERROR " + getOtherInfo() + ThrowableUtils.getCallerString() +
                 " :" + msg;
         writeLine(sb);
     }
 
     public static void w(String msg) {
-        String sb = "WARN " + getOtherInfo() + ThrowableUtils.getInvokerInfoString() +
+        String sb = "WARN " + getOtherInfo() + ThrowableUtils.getCallerString() +
                 " :" + msg;
         writeLine(sb);
     }

@@ -12,7 +12,7 @@ public class MemorySegment extends BasicMemoryController {
     /**
      * See {@link MemorySegment#create}
      */
-    protected MemorySegment(Pointer src, long size) {
+    public MemorySegment(Pointer src, long size) {
         super(src);
         this.size = size;
     }

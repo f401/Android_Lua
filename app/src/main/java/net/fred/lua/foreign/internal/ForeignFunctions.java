@@ -75,10 +75,7 @@ public class ForeignFunctions {
         return Double.longBitsToDouble(peekLong(ptr));
     }
 
-    //--------------------------------------------------------------libffi--------------------------------------------------------------------//
-
-
-    public static native int ffi_prep_cif(Pointer cif, int argsCount, Pointer returnType, Pointer paramsType);
+    //--------------------------------------------------------------libffi--------------------------------------------------------------------/
 
     static {
         System.loadLibrary("foreign");

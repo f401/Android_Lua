@@ -3,6 +3,8 @@ package net.fred.lua.foreign.core;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import net.fred.lua.common.Logger;
+import net.fred.lua.common.utils.StringUtils;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.internal.ForeignFunctions;
@@ -29,7 +31,9 @@ public class Array<T> extends MemorySegment {
 
     public static <T> Array<T> create(Type<T> type, long length) throws NativeMethodException {
         // Must be sized
-        Pointer ptr = MemorySegment.allocate(length * type.getSize(null));
+        long totalSize = length * type.getSize(null);
+        Pointer ptr = MemorySegment.allocate(totalSize);
+        Logger.i(StringUtils.templateOf("Create {} size of Segment at {}.", totalSize, ptr));
         return new Array<>(ptr, length, type);
     }
 
@@ -50,7 +54,9 @@ public class Array<T> extends MemorySegment {
     }
 
     public void write(int idx, T data) throws NativeMethodException {
-        mType.write(evalDataOff(idx), data);
+        Pointer off = evalDataOff(idx);
+        mType.write(off, data);
+        Logger.i(StringUtils.templateOf("Write {}, at {}.", data, off));
     }
 
     public T get(int idx) {

@@ -64,7 +64,7 @@ public class ThrowableUtils {
     }
 
     @NonNull
-    public static String getInvokerInfoString() {
+    public static String getCallerString() {
         StackTraceElement info = // 0-1 system, 2 current, 3 upper
                 Thread.currentThread().getStackTrace()[4];
         String fileName = info.getFileName();

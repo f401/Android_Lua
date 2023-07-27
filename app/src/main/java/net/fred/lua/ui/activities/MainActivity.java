@@ -67,7 +67,8 @@ public class MainActivity extends BaseActivity {
                 try {
                     MemorySegment result = desc.prepareCIF();
                     Toast.makeText(MainActivity.this, "Address: " + result.getPointer(), Toast.LENGTH_LONG).show();
-                } catch (NativeMethodException e) {
+                    result.close();
+                } catch (Throwable e) {
                     CrashHandler.fastHandleException(e, MainActivity.this);
                 }
             }

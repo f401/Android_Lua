@@ -7,7 +7,6 @@ extern "C" {
 #include <string.h>
 #include <errno.h>
 #include "../common.h"
-#include <ffi.h>
 #include "utils.h"
 }
 
@@ -16,9 +15,6 @@ extern "C" {
  */
 #define ERROR_DL_OPEN_FAILED "DLL open failed: "
 #define ERROR_DL_LOAD_SYMBOL_FAILED "Can't find symbol: "
-
-#define GET_POINTER_PARAM(ENV, OUT, FROM, EXPR)                         \
-void* OUT = pointer_get_from(ENV, FROM); if (OUT == (void* ) -1) return EXPR
 
 static void FreePointer(JNIEnv *env, jclass clazz, jobject ptr) {
     GET_POINTER_PARAM(env, dst, ptr,);
@@ -33,6 +29,7 @@ static jobject AllocateSegment(JNIEnv *env, jclass clazz, jlong size) {
         msg.append(" data, reason: ");
         msg.append(strerror(errno));
         throwNativeException(env, msg.data());
+        return nullptr;
     }
     return pointer_create(env, handle);
 }
@@ -78,42 +75,17 @@ static jobject LookUpSymbol(JNIEnv *env, jclass clazz, jobject handle, jstring n
         std::string msg(ERROR_DL_LOAD_SYMBOL_FAILED);
         msg.append(sym).append(".Reason: ").append(dlerror());
         throwNativeException(env, msg.data());
+        return nullptr;
     }
 
     env->ReleaseStringUTFChars(name, sym);
     return pointer_create(env, result);
 }
 
-static void PutString(JNIEnv *env, jclass clazz, jobject handle, jstring string) {
-    const char *str = env->GetStringUTFChars(string, JNI_FALSE);
-    size_t string_length = env->GetStringUTFLength(string);
-    GET_POINTER_PARAM(env, dst, handle,);
-    memcpy(dst, str, string_length + 1);
-    env->ReleaseStringUTFChars(string, str);
-}
-
-
-static jobject ReadString(JNIEnv *env, jclass clazz, jobject dest) {
-    GET_POINTER_PARAM(env, dst, dest, nullptr);
-    return env->NewStringUTF((char *) dst);
-}
-
 static jlong ObtainStringLen(JNIEnv *env, jclass clazz, jobject dest) {
     GET_POINTER_PARAM(env, dst, dest, -1);
     return strlen((char *) dst);
 }
-
-static jint
-PrepareFFICif(JNIEnv *env, jclass clazz, jobject _cif, jint argsCount, jobject _returnType,
-              jobject _paramsType) {
-    GET_POINTER_PARAM(env, cif, _cif, -1);
-    GET_POINTER_PARAM(env, returnType, _returnType, -1);
-    GET_POINTER_PARAM(env, paramsType, _paramsType, -1);
-    return ffi_prep_cif((ffi_cif *) cif,
-                        FFI_DEFAULT_ABI, argsCount, (ffi_type *) returnType,
-                        (ffi_type **) paramsType);
-}
-
 
 //----------------------------------------------------------value handles-----------------------------------------------//
 
@@ -135,10 +107,19 @@ DEF_PUT_FUNCS(char);
 
 DEF_PUT_FUNCS(long);
 
-static void putJavaPointer(JNIEnv *env, jclass clazz, jobject dest, jobject src) {
-    GET_POINTER_PARAM(env, source, src,);
-    GET_POINTER_PARAM(env, dst, dest,);
-    memcpy(dst, source, sizeof(void *));
+
+static void PutString(JNIEnv *env, jclass clazz, jobject handle, jstring string) {
+    const char *str = env->GetStringUTFChars(string, JNI_FALSE);
+    size_t string_length = env->GetStringUTFLength(string);
+    GET_POINTER_PARAM(env, dst, handle,);
+    memcpy(dst, str, string_length + 1);
+    env->ReleaseStringUTFChars(string, str);
+}
+
+static void putJavaPointer(JNIEnv *env, jclass clazz, jobject _dest, jobject _source) {
+    GET_POINTER_PARAM(env, source, _source,);
+    GET_POINTER_PARAM(env, dst, _dest,);
+    memcpy(dst, &source, sizeof(void *));
 }
 
 #undef DEF_PUT_FUNCS
@@ -153,9 +134,7 @@ static j##TYPE peekJava##TYPE(JNIEnv *env, jclass clazz, jobject ptr) {    \
 static j##TYPE peekJava##TYPE(JNIEnv *env, jclass clazz, jobject ptr)
 
 DEF_PEEK_FUNCS(byte);
-
 DEF_PEEK_FUNCS(int);
-
 DEF_PEEK_FUNCS(short);
 
 DEF_PEEK_FUNCS(char);
@@ -167,6 +146,11 @@ static jobject peekJavaPointer(JNIEnv *env, jclass clazz, jobject dst) {
     void *result;
     memcpy(&result, dest, sizeof(void *));
     return pointer_create(env, result);
+}
+
+static jobject ReadString(JNIEnv *env, jclass clazz, jobject dest) {
+    GET_POINTER_PARAM(env, dst, dest, nullptr);
+    return env->NewStringUTF((char *) dst);
 }
 
 #undef DEF_PEEK_FUNCS
@@ -201,8 +185,6 @@ const static JNINativeMethod methods[] = {
                                                                                                                                  (void *) &PutString},
         {"peekString",         "(Lnet/fred/lua/foreign/Pointer;)Ljava/lang/String;",                                             (void *) &ReadString},
         {"obtainStringLength", "(Lnet/fred/lua/foreign/Pointer;)J",                                                              (void *) &ObtainStringLen},
-
-        {"ffi_prep_cif",       "(Lnet/fred/lua/foreign/Pointer;ILnet/fred/lua/foreign/Pointer;Lnet/fred/lua/foreign/Pointer;)I", (void *) &PrepareFFICif},
 };
 
 static int registerMethods(JNIEnv *env) {

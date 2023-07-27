@@ -15,6 +15,10 @@ import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_INT32;
 import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_INT64;
 import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_INT8;
 import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_POINTER;
+import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_UIN64;
+import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_UINT16;
+import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_UINT32;
+import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_UINT8;
 import static net.fred.lua.foreign.internal.ForeignValues.SIZE_OF_POINTER;
 
 import androidx.annotation.NonNull;
@@ -34,6 +38,7 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements PointerTy
     static {
         map = new ConcurrentHashMap<>(6);
         map.put(byte.class, new PrimaryType<Byte>() {
+
             @Override
             public void write(@NonNull Pointer dest, @NonNull Object obj) {
                 putByte(dest, (byte) obj);
@@ -47,7 +52,7 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements PointerTy
             @NonNull
             @Override
             public Pointer getFFIPointer() {
-                return Pointer.from(FFI_TYPE_INT8);
+                return signed ? Pointer.from(FFI_TYPE_INT8) : FFI_TYPE_UINT8;
             }
 
             @Override
@@ -70,7 +75,7 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements PointerTy
             @NonNull
             @Override
             public Pointer getFFIPointer() {
-                return Pointer.from(FFI_TYPE_INT16);
+                return signed ? Pointer.from(FFI_TYPE_INT16) : FFI_TYPE_UINT16;
             }
 
             @Override
@@ -92,7 +97,7 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements PointerTy
             @NonNull
             @Override
             public Pointer getFFIPointer() {
-                return Pointer.from(FFI_TYPE_INT32);
+                return signed ? Pointer.from(FFI_TYPE_INT32) : FFI_TYPE_UINT32;
             }
 
             @Override
@@ -115,7 +120,7 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements PointerTy
             @NonNull
             @Override
             public Pointer getFFIPointer() {
-                return Pointer.from(FFI_TYPE_INT64);
+                return signed ? Pointer.from(FFI_TYPE_INT64) : FFI_TYPE_UIN64;
             }
 
             @Override
@@ -197,9 +202,17 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements PointerTy
         }
     }
 
-    public interface PrimaryType<T> extends Type<T> {
-        void write(@NonNull Pointer dest, @NonNull Object obj);
+    public abstract static class PrimaryType<T> implements SignedUnsigned<T> {
+        protected boolean signed = false;
 
-        T read(@NonNull Pointer dest);
+        public abstract void write(@NonNull Pointer dest, @NonNull Object obj);
+
+        public abstract T read(@NonNull Pointer dest);
+
+        @Override
+        public SignedUnsigned<T> setSigned(boolean signed) {
+            this.signed = signed;
+            return this;
+        }
     }
 }
