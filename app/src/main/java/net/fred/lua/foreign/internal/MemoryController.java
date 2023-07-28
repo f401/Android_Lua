@@ -58,6 +58,7 @@ public class MemoryController implements Closeable {
     }
 
     public void addChild(@Nullable AutoCloseable segment) {
+        ArgumentsChecker.check(!this.getFreed().getFlag(), "Father has been released.");
         if (segment != this && segment != null) {
             if (children == null) {
                 children = new ArrayList<>(2);

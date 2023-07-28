@@ -19,6 +19,8 @@ public final class ForeignString extends MemorySegment {
 
     private final String refer;
 
+    public static final int DEFAULT_SIZE = 256;
+
     private ForeignString(Pointer src, String refer) {
         super(src, refer.length());
         this.refer = refer;
@@ -68,10 +70,9 @@ public final class ForeignString extends MemorySegment {
         @Override
         public int getSize(@Nullable Object obj) {
             if (writeAsPointer) {
-                return 8;
+                return (int) ForeignValues.SIZE_OF_POINTER;
             } else {
-                Objects.requireNonNull(obj, "Cannot pass in `null` when size is uncertain.");
-                return (int) ((ForeignString) obj).size();
+                return obj != null ? (int) ((ForeignString) obj).size() : DEFAULT_SIZE;
             }
         }
 
