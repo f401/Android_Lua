@@ -4,9 +4,11 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+import net.fred.lua.foreign.NativeMethodException;
+
 public class MemoryControllerTest {
     @Test
-    public void testAddChild() {
+    public void testAddChild() throws NativeMethodException {
         MemoryController base = new MemoryController();
         MemoryController child = new MemoryController();
 
@@ -22,7 +24,7 @@ public class MemoryControllerTest {
     }
 
     @Test
-    public void testChildFree() {
+    public void testChildFree() throws NativeMethodException {
         MemoryController base = new MemoryController();
         MemoryController child = new MemoryController();
         base.addChild(child);
@@ -35,7 +37,7 @@ public class MemoryControllerTest {
     }
 
     @Test
-    public void testChildFree2() {
+    public void testChildFree2() throws NativeMethodException {
         MemoryController base = new MemoryController();
         MemoryController child = new MemoryController();
         base.addChild(child);

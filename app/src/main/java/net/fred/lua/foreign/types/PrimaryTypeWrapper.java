@@ -32,6 +32,13 @@ import net.fred.lua.foreign.internal.MemorySegment;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Packaging for basic types.
+ *
+ * Note: Free is only required after using @{link PointerType#writeAsPointer}.
+ *
+ * @param <T> Basic types of packaging required.
+ */
 public class PrimaryTypeWrapper<T> extends MemoryController implements PointerType<T> {
     private static final ConcurrentHashMap<Class<?>, PrimaryType<?>> map;
 

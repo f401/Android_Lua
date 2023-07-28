@@ -8,6 +8,7 @@ import net.fred.lua.common.ArgumentsChecker;
 import net.fred.lua.common.Flag;
 import net.fred.lua.common.Logger;
 import net.fred.lua.common.utils.ThrowableUtils;
+import net.fred.lua.foreign.NativeMethodException;
 
 import java.io.Closeable;
 import java.util.ArrayList;
@@ -43,7 +44,7 @@ public class MemoryController implements Closeable {
     }
 
     @Override
-    public final void close() {
+    public final void close() throws NativeMethodException {
         if (!this.freed.getFlag()) {
             onFree();
             freeChildren();
@@ -136,8 +137,13 @@ public class MemoryController implements Closeable {
      * <p>
      * Very few cases require rewriting this method, and in most cases, only @{link MemoryController#addChild} needs to be used.
      * And @{link BasicMemoryController}.
+     * <p>
+     * However, sometimes, children are used as management methods for memory usage rather than being
+     * 'released together', and in these cases, the method also needs to be rewritten.
+     * For example, @{link net.fred.lua.foreign.ffi.FunctionCaller} and @{link net.fred.lua.foreign.ffi.FunctionDescriber}
+     *
      */
-    protected void onFree() {
+    protected void onFree() throws NativeMethodException {
     }
 
     /**

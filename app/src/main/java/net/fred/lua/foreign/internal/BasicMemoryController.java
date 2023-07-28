@@ -2,6 +2,7 @@ package net.fred.lua.foreign.internal;
 
 import androidx.annotation.Nullable;
 
+import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 
 public class BasicMemoryController extends MemoryController {
@@ -17,7 +18,7 @@ public class BasicMemoryController extends MemoryController {
     }
 
     @Override
-    protected void onFree() {
+    protected void onFree() throws NativeMethodException {
         if (pointer != null) {
             ForeignFunctions.free(pointer);
         }

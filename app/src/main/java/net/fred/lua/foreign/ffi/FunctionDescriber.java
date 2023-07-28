@@ -8,6 +8,7 @@ import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.internal.ForeignValues;
 import net.fred.lua.foreign.internal.MemoryController;
 import net.fred.lua.foreign.internal.MemorySegment;
+import net.fred.lua.foreign.types.PrimaryTypeWrapper;
 import net.fred.lua.foreign.types.Type;
 
 public class FunctionDescriber extends MemoryController {
@@ -17,15 +18,27 @@ public class FunctionDescriber extends MemoryController {
     private final Type<?> returnType;
 
     public FunctionDescriber(Type<?> returnType, @Nullable Type<?>[] params) {
+        if (returnType == null) {
+            returnType = PrimaryTypeWrapper.of(void.class);
+        }
         this.returnType = returnType;
         this.params = params;
     }
 
-    public static FunctionDescriber of(Type<?> returnType, Type<?>... params) {
+    /**
+     * Create a new function describer.
+     * @param returnType The return type of the function in the native layer. Null is void.
+     * @param params The parameter type of the function in the native layer. Nullable.
+     * @return function describer.
+     */
+    public static FunctionDescriber of(Type<?> returnType, @Nullable Type<?>... params) {
         return new FunctionDescriber(returnType, params);
     }
 
     /**
+     * Running the native layer @{code ffi_prep_cif}.
+     * To prepare for the first parameter of the call. (@{code ffi_call})
+     *
      * @return Point to @{code ffi_cif}
      * @throws NativeMethodException etc...
      */
@@ -67,5 +80,21 @@ public class FunctionDescriber extends MemoryController {
         MemorySegment segment = MemorySegment.create(size);
         addChild(segment);
         return segment.getPointer().get();
+    }
+
+    @Override
+    protected void onFree() throws NativeMethodException {
+        super.onFree();
+        releaseParams(returnType);
+        if (params != null) {
+            for (Type<?> type: params) {
+                releaseParams(type);
+            }
+        }
+    }
+    private static void releaseParams(Type<?> type) throws NativeMethodException {
+        if (type instanceof PrimaryTypeWrapper) {
+            ((PrimaryTypeWrapper<?>)type).close();
+        }
     }
 }

@@ -41,7 +41,7 @@ public class MainActivity extends BaseActivity {
         try {
             luaDll = DynamicLoadingLibrary.open(PathConstants.NATIVE_LIBRARY_DIR + "liblua.so");
         } catch (NativeMethodException e) {
-            throw new RuntimeException(e);
+            CrashHandler.fastHandleException(e, this);
         }
 
         btn.setOnClickListener(new View.OnClickListener() {
@@ -62,7 +62,11 @@ public class MainActivity extends BaseActivity {
             public void onClick(View p1) {
                 Logger.e("Making exception");
                 //throw new RuntimeException();
-                luaDll.close();
+                try {
+                    luaDll.close();
+                } catch (NativeMethodException e) {
+                    CrashHandler.fastHandleException(e, MainActivity.this);
+                }
             }
 
         });
