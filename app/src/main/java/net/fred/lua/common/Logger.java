@@ -1,5 +1,7 @@
 package net.fred.lua.common;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import net.fred.lua.App;
@@ -85,10 +87,12 @@ public class Logger implements AutoCloseable {
     }
 
     public static void write(String msg) {
+        Log.i("logger", msg);
         stream().print(msg);
     }
 
     public static void write(int i) {
+        Log.i("logger", String.valueOf(i));
         stream().write(i);
     }
 

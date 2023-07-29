@@ -21,6 +21,8 @@ import net.fred.lua.foreign.core.DynamicLoadingLibrary;
 import net.fred.lua.io.CStandardOutputInput;
 import net.fred.lua.lua.Lua5_4;
 
+import java.util.Objects;
+
 public class MainActivity extends BaseActivity {
     private Button btn, throwException, runCif;
     private EditText editText;
@@ -98,7 +100,9 @@ public class MainActivity extends BaseActivity {
         if (item.getItemId() == R.id.activity_main_menu_clean_cache) {
             Toast.makeText(this, getString(R.string.cache_directory_size,
                     FileUtils.shrinkToBestDisplay(
-                            FileUtils.evalDirectoryTotalSize(getExternalCacheDir()))), Toast.LENGTH_SHORT).show();
+                            FileUtils.evalDirectoryTotalSize(
+                                    Objects.requireNonNull(getExternalCacheDir())))), Toast.LENGTH_SHORT).show();
+            Logger.i("Removing cache directory.");
             FileUtils.removeDirectory(getExternalCacheDir());
             return true;
         }

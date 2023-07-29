@@ -3,6 +3,7 @@ package net.fred.lua.foreign.ffi;
 import androidx.annotation.Nullable;
 
 import net.fred.lua.common.ArgumentsChecker;
+import net.fred.lua.common.Logger;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.internal.ForeignValues;
@@ -37,10 +38,11 @@ public class FunctionCaller extends MemoryController {
 
     /**
      * Calculate the total size of parameters.
+     *
      * @param params Parameters to be calculated.
      * @return Total size required.
      */
-    private long evalTotalSize(Object... params) {
+    private long evalParamsTotalSize(Object... params) {
         long size = 0;
         for (int i = 0; i < params.length; i++) {
             size += describer.getParams()[i].getSize(params[i]);
@@ -55,7 +57,7 @@ public class FunctionCaller extends MemoryController {
     @Deprecated
     private MemorySegment putParamsToSegment(Object... params) throws NativeMethodException {
         long paramsOffset = 0;
-        MemorySegment paramsSegment = MemorySegment.create(evalTotalSize(params));
+        MemorySegment paramsSegment = MemorySegment.create(evalParamsTotalSize(params));
         MemorySegment resultSegment = MemorySegment.create(params.length * ForeignValues.SIZE_OF_POINTER);
         addChild(paramsSegment);
         addChild(resultSegment);
@@ -94,10 +96,8 @@ public class FunctionCaller extends MemoryController {
         return describer.getReturnType().read(returnPointer);
     }
 
-    public Object callAndClose(Object... params) throws NativeMethodException {
-        Object result = call(params);
-        close();
-        return result;
+    public FunctionDescriber getDescriber() {
+        return describer;
     }
 
     protected native void ffi_call(Pointer cif, Pointer funcAddress, Pointer returnSegment, Type<?>[] typedParams, Object[] params);
@@ -105,6 +105,7 @@ public class FunctionCaller extends MemoryController {
     @Override
     protected void onFree() throws NativeMethodException {
         super.onFree();
+        Logger.i("Releasing Caller.");
         describer.close();
     }
 }

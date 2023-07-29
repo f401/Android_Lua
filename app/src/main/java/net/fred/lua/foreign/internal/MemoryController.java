@@ -3,10 +3,10 @@ package net.fred.lua.foreign.internal;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import net.fred.lua.common.Action;
 import net.fred.lua.common.ArgumentsChecker;
 import net.fred.lua.common.Flag;
 import net.fred.lua.common.Logger;
+import net.fred.lua.common.NonExceptionAction;
 import net.fred.lua.common.utils.ThrowableUtils;
 import net.fred.lua.foreign.NativeMethodException;
 
@@ -103,13 +103,17 @@ public class MemoryController implements Closeable {
         }
     }
 
+    public final AutoCloseable childAt(int idx) {
+        return children.get(idx);
+    }
+
     public final void freeChildren() {
         if (children != null && children.size() != 0) {
             //During the deletion process, the subclass will call the remove method.
             //This can cause data modification during traversal, resulting in exceptions being thrown.
             List<AutoCloseable> dest = new ArrayList<>(children.size() + 1);
             dest.addAll(children);
-            ThrowableUtils.closeAll(dest, new Action<Void, AutoCloseable>() {
+            ThrowableUtils.closeAll(dest, new NonExceptionAction<Void, AutoCloseable>() {
                 @Override
                 public Void action(AutoCloseable param) {
                     if (param instanceof MemoryController) {

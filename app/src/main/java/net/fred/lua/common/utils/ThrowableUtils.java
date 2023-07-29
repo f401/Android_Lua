@@ -3,7 +3,7 @@ package net.fred.lua.common.utils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import net.fred.lua.common.Action;
+import net.fred.lua.common.NonExceptionAction;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -46,7 +46,7 @@ public class ThrowableUtils {
      * @param t      The collection of objects that need to be closed
      * @param action Actions to be performed before closing. If you don't need it, just pass it @{code null}.
      */
-    public static void closeAll(@Nullable List<AutoCloseable> t, @Nullable Action<Void, AutoCloseable> action) {
+    public static void closeAll(@Nullable List<AutoCloseable> t, @Nullable NonExceptionAction<Void, AutoCloseable> action) {
         if (t != null) {
             for (AutoCloseable c : t) {
                 try {

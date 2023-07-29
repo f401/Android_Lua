@@ -11,7 +11,7 @@ import net.fred.lua.foreign.internal.MemorySegment;
 import net.fred.lua.foreign.types.PrimaryTypeWrapper;
 import net.fred.lua.foreign.types.Type;
 
-public class FunctionDescriber extends MemoryController {
+public final class FunctionDescriber extends MemoryController {
 
     @Nullable
     private final Type<?>[] params;
@@ -35,23 +35,10 @@ public class FunctionDescriber extends MemoryController {
         return new FunctionDescriber(returnType, params);
     }
 
-    /**
-     * Running the native layer @{code ffi_prep_cif}.
-     * To prepare for the first parameter of the call. (@{code ffi_call})
-     *
-     * @return Point to @{code ffi_cif}
-     * @throws NativeMethodException etc...
-     */
-    public MemorySegment prepareCIF() throws NativeMethodException {
-        freeChildren();
-        MemorySegment cif = MemorySegment.create(ForeignValues.SIZE_OF_FFI_CIF);
-        addChild(cif);
-        int result = prep_cif(cif.getPointer(), returnType, params);
-        if (result != ForeignValues.FFI_STATUS_OK) {
-            throw new NativeMethodException("Result: " + result);
+    private static void releaseParams(Type<?> type) throws NativeMethodException {
+        if (type instanceof PrimaryTypeWrapper) {
+            ((PrimaryTypeWrapper<?>) type).close();
         }
-
-        return cif;
     }
 
     public Type<?>[] getParams() {
@@ -76,10 +63,31 @@ public class FunctionDescriber extends MemoryController {
     /**
      * Called from native. @{link #prep_cif} (libffi.cpp)
      */
-    protected long requestMemory(long size) throws NativeMethodException {
+    private long requestMemory(long size) throws NativeMethodException {
         MemorySegment segment = MemorySegment.create(size);
         addChild(segment);
         return segment.getPointer().get();
+    }
+
+    /**
+     * Running the native layer @{code ffi_prep_cif}.
+     * To prepare for the first parameter of the call. (@{code ffi_call})
+     *
+     * @return Point to @{code ffi_cif}
+     * @throws NativeMethodException etc...
+     */
+    public MemorySegment prepareCIF() throws NativeMethodException {
+        if (hasChild()) {
+            return (MemorySegment) childAt(0);
+        }
+        freeChildren();
+        MemorySegment cif = MemorySegment.create(ForeignValues.SIZE_OF_FFI_CIF);
+        addChild(cif);
+        int result = prep_cif(cif.getPointer(), returnType, params);
+        if (result != ForeignValues.FFI_STATUS_OK) {
+            throw new NativeMethodException("Result: " + result);
+        }
+        return cif;
     }
 
     @Override
@@ -87,14 +95,17 @@ public class FunctionDescriber extends MemoryController {
         super.onFree();
         releaseParams(returnType);
         if (params != null) {
-            for (Type<?> type: params) {
+            for (Type<?> type : params) {
                 releaseParams(type);
             }
         }
     }
-    private static void releaseParams(Type<?> type) throws NativeMethodException {
-        if (type instanceof PrimaryTypeWrapper) {
-            ((PrimaryTypeWrapper<?>)type).close();
-        }
+
+    public int obtainFFISize() {
+        return (int) ForeignValues.SIZE_OF_FFI_CIF;
+    }
+
+    public void cleanCache() {
+        freeChildren();
     }
 }

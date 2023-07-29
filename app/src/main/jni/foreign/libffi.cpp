@@ -76,7 +76,7 @@ Java_net_fred_lua_foreign_ffi_FunctionCaller_ffi_1call(JNIEnv *env, jobject thiz
                                                        jobjectArray _params) {
     jclass class_functionCaller = env->GetObjectClass(thiz);
     static jmethodID method_functionCaller_evalTotalSize;
-    FIND_INSTANCE_METHOD(env, functionCaller, evalTotalSize, "evalTotalSize",
+    FIND_INSTANCE_METHOD(env, functionCaller, evalTotalSize, "evalParamsTotalSize",
                          "([Ljava/lang/Object;)J");
     IF_NULL_RETURN(method_functionCaller_evalTotalSize,);
 

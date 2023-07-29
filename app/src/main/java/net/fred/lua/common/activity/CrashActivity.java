@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import net.fred.lua.App;
 import net.fred.lua.R;
 import net.fred.lua.common.CrashHandler;
+import net.fred.lua.common.Logger;
 import net.fred.lua.common.utils.ClipboardUtils;
 import net.fred.lua.common.utils.MathUtils;
 
@@ -56,6 +57,7 @@ public class CrashActivity extends AppCompatActivity {
     }*/
 
     private void restart() {
+        Logger.i("Restarting process");
         PackageManager pm = getPackageManager();
         Intent intent = pm.getLaunchIntentForPackage(getPackageName());
         if (intent != null) {

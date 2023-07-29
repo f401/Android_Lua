@@ -1,6 +1,5 @@
 package net.fred.lua.common;
 
-
 /**
  * Required for Functional programming.
  *
@@ -8,5 +7,5 @@ package net.fred.lua.common;
  * @param <P> Param type.
  */
 public interface Action<R, P> {
-    R action(P param);
+    R action(P param) throws Exception;
 }

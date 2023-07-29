@@ -53,6 +53,7 @@ public class LogScanner {
             try {
                 outputStream = new PrintWriter(PathConstants.LOG_FILE_PATH);
                 while (flag.getFlag()) {
+                    new ProcessBuilder("logcat", "-c").start().waitFor();
                     Process process = new ProcessBuilder("logcat").redirectErrorStream(true).start();
 //                    Process pro = new ProcessBuilder().command("logcat", "-c").redirectErrorStream(true).start();
                     InputStream is = process.getInputStream();
@@ -63,7 +64,7 @@ public class LogScanner {
                         outputStream.flush();
                     }
                 }
-            } catch (IOException e) {
+            } catch (InterruptedException | IOException e) {
                 e.printStackTrace();
                 Log.e("Scanner", ThrowableUtils.getThrowableMessage(e));
             } finally {

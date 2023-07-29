@@ -1,6 +1,5 @@
 package net.fred.lua.foreign.internal;
 
-import net.fred.lua.common.Logger;
 import net.fred.lua.foreign.Pointer;
 
 /**
@@ -59,8 +58,6 @@ public class ForeignValues {
 
         SIZE_OF_FFI_CIF = sizeOfFFI_CIF();
         SIZE_OF_POINTER = sizeOfPointer();
-
-        Logger.i("Int32 type: " + FFI_TYPE_INT32);
     }
 
     /**

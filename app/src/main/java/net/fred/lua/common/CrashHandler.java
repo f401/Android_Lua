@@ -81,6 +81,7 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
     }
 
     private void startCrashActivity(String content) {
+        Logger.i("Launching crash activity");
         Intent intent = new Intent(this.ctx, CrashActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                 | Intent.FLAG_ACTIVITY_CLEAR_TOP |
@@ -103,6 +104,7 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
      */
     @NonNull
     private StringBuilder writeInfoToSdCard(Thread p1, Throwable p2) {
+        Logger.i("Obtain Messages");
         StringBuilder sb = new StringBuilder();
         String versionName = "Unknown";
         long versionCode = 0;
