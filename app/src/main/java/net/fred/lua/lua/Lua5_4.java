@@ -1,7 +1,5 @@
 package net.fred.lua.lua;
 
-import androidx.annotation.Nullable;
-
 import net.fred.lua.PathConstants;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
@@ -13,7 +11,7 @@ import net.fred.lua.foreign.types.PrimaryTypeWrapper;
 public class Lua5_4 extends Lua {
     protected static DynamicLoadingLibrary dll;
 
-    protected Lua5_4() throws NativeMethodException {
+    public Lua5_4() throws NativeMethodException {
         super(new_state());
     }
 

@@ -1,7 +1,5 @@
 package net.fred.lua.ui.activities;
 
-import android.app.ActivityManager;
-import android.content.Context;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,11 +16,10 @@ import net.fred.lua.common.CrashHandler;
 import net.fred.lua.common.Logger;
 import net.fred.lua.common.activity.BaseActivity;
 import net.fred.lua.common.utils.FileUtils;
-import net.fred.lua.common.utils.StringUtils;
 import net.fred.lua.foreign.NativeMethodException;
-import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.core.DynamicLoadingLibrary;
-import net.fred.lua.foreign.ffi.FunctionCaller;
+import net.fred.lua.io.CStandardOutputInput;
+import net.fred.lua.lua.Lua5_4;
 
 public class MainActivity extends BaseActivity {
     private Button btn, throwException, runCif;
@@ -76,13 +73,13 @@ public class MainActivity extends BaseActivity {
             public void onClick(View v) {
                 Logger.i("Running cif");
                 try {
-                    Pointer newState = luaDll.lookupSymbol("luaL_newstate");
-                    Logger.i(StringUtils.templateOf("New state pointer: {}", newState));
-                    FunctionCaller caller = FunctionCaller.of(newState, Pointer.ofType());
-                    Pointer result = (Pointer) caller.call();
-                    Toast.makeText(MainActivity.this, result.toString(), Toast.LENGTH_SHORT).show();
-                    Logger.i("Call result: " + result);
-                    caller.close();
+                    Lua5_4 lua54 = new Lua5_4();
+                    CStandardOutputInput.getInstance().redirectStandardOutTo(
+                            getExternalCacheDir() + "/lua_out.txt"
+                    );
+                    lua54.openlibs();
+                    lua54.dofile("/sdcard/l.lua");
+                    lua54.close();
                 } catch (Throwable e) {
                     CrashHandler.fastHandleException(e, MainActivity.this);
                 }

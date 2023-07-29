@@ -51,6 +51,9 @@ jobject pointer_create(JNIEnv *env, void *needle) {
 }
 
 void *pointer_get_from(JNIEnv *env, jobject obj) {
+    if (obj == NULL || (*env)->IsSameObject(env, obj, NULL)) {
+        return NULL;
+    }
     LOAD_CLASS_POINTER(env, (void *) -1);
     FIND_INSTANCE_METHOD(env, pointer, get, "get", "()J");
     IF_NULL_RETURN(method_pointer_get, (void *) -1);

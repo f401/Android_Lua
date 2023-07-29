@@ -87,27 +87,27 @@ Java_net_fred_lua_foreign_ffi_FunctionCaller_ffi_1call(JNIEnv *env, jobject thiz
         char *params_data = (char *) alloca(
                 env->CallLongMethod(thiz, method_functionCaller_evalTotalSize, _params));
         params_ptr = (void **) alloca(sizeof(void *) * length);
-        jlong off = 0;
+        jint off = 0;
 
         LOAD_CLASS_TYPE(env,);
         static jmethodID method_type_write, method_type_getSize;
-        FIND_INSTANCE_METHOD(env, type, write, "write",
-                             "(Lnet/fred/lua/Pointer;Ljava/lang/Object;)V");
         FIND_INSTANCE_METHOD(env, type, getSize, "getSize", "(Ljava/lang/Object;)I");
-        IF_NULL_RETURN(method_type_write,);
         IF_NULL_RETURN(method_type_getSize,);
+        FIND_INSTANCE_METHOD(env, type, write, "write",
+                             "(Lnet/fred/lua/foreign/Pointer;Ljava/lang/Object;)V");
+        IF_NULL_RETURN(method_type_write,);
         for (jsize i = 0; i < length; ++i) {
             jobject typed = env->GetObjectArrayElement(_typed_params, i);
             jobject param = env->GetObjectArrayElement(_params, i);
 
             void *dest_ptr = params_data + off;
-            params_ptr[i] = &dest_ptr;
+            params_ptr[i] = dest_ptr;
 
             jobject dest = pointer_create(env, dest_ptr);
             env->CallVoidMethod(typed, method_type_write, dest, param);
             env->DeleteLocalRef(dest);
 
-            off += env->CallLongMethod(typed, method_type_getSize, param);
+            off += env->CallIntMethod(typed, method_type_getSize, param);
 
             env->DeleteLocalRef(typed);
             env->DeleteLocalRef(param);
@@ -116,6 +116,5 @@ Java_net_fred_lua_foreign_ffi_FunctionCaller_ffi_1call(JNIEnv *env, jobject thiz
     GET_POINTER_PARAM(env, cif, _cif,);
     GET_POINTER_PARAM(env, func_addr, _func_address,);
     GET_POINTER_PARAM(env, ret_seg, _return_segment,);
-
     ffi_call((ffi_cif *) cif, (void (*)()) func_addr, ret_seg, params_ptr);
 }
