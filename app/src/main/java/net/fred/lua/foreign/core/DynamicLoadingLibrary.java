@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.collection.LruCache;
 
 import net.fred.lua.common.ArgumentsChecker;
+import net.fred.lua.common.CrashHandler;
 import net.fred.lua.common.Logger;
 import net.fred.lua.common.utils.FileUtils;
 import net.fred.lua.common.utils.ThrowableUtils;
@@ -48,7 +49,6 @@ public final class DynamicLoadingLibrary extends BasicMemoryController {
             super(50);
         }
 
-        @NonNull
         @Override
         protected Pointer create(@NonNull String key) {
             try {
@@ -57,7 +57,8 @@ public final class DynamicLoadingLibrary extends BasicMemoryController {
                 return ptr;
             } catch (NativeMethodException e) {
                 Logger.e(e.getMessage());
-                throw new RuntimeException(e);
+                CrashHandler.fastHandleException(e);
+                return null;
             }
         }
     }

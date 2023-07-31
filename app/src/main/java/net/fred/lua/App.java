@@ -13,6 +13,7 @@ import androidx.multidex.MultiDex;
 
 import net.fred.lua.common.CrashHandler;
 import net.fred.lua.common.Logger;
+import net.fred.lua.foreign.Breakpad;
 import net.fred.lua.io.LogScanner;
 
 import java.io.OutputStream;
@@ -81,12 +82,19 @@ public class App extends Application {
         super.onCreate();
         instance = this;
         PathConstants.init(this);
+
+        Logger.i("Starting logger scanner");
         LogScanner.getInstance().start();
+
         if (isMainProcess()) {
             CrashHandler.getInstance().install(this);
         }
+
         Log.i("Application", "redirecting stream");
         redirectOutAndErrStreamToLog();
+
+        Logger.i("init native breakpad to " + PathConstants.NATIVE_CRASH_DUMP_PATH);
+        Breakpad.init(PathConstants.NATIVE_CRASH_DUMP_PATH);
     }
 
     /**
@@ -95,7 +103,7 @@ public class App extends Application {
      * @return current process name.
      */
     @Nullable
-    public String autoGetProcessName() {
+    public String getCurrentProcessName() {
         if (Build.VERSION.SDK_INT >= //Build.VERSION_CODES.P
                 28) {
             return getProcessName();
@@ -122,7 +130,7 @@ public class App extends Application {
     public boolean isMainProcess() {
         try {
             return getPackageName(). //prevent java.lang.NullPointerException
-                    equals(autoGetProcessName());
+                    equals(getCurrentProcessName());
         } catch (Exception e) {
             return false;
         }

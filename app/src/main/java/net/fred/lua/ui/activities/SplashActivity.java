@@ -12,6 +12,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
+import android.util.DisplayMetrics;
 import android.widget.TextView;
 
 import androidx.core.app.ActivityCompat;
@@ -20,7 +21,6 @@ import androidx.core.content.ContextCompat;
 import net.fred.lua.R;
 import net.fred.lua.common.Flag;
 import net.fred.lua.common.activity.BaseActivity;
-import net.fred.lua.common.utils.MathUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,8 +43,10 @@ public class SplashActivity extends BaseActivity {
 
         hideActionBar();
 
-        tv.setHeight(MathUtils.dp2px(getWindowManager().getDefaultDisplay().getWidth() / 2));
-        tv.setWidth(MathUtils.dp2px(getWindowManager().getDefaultDisplay().getHeight() / 2));
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        tv.setWidth(metrics.widthPixels / 2);
+        tv.setHeight(metrics.heightPixels / 2);
 
         handleRWPermission();
         startMainHandler.postDelayed(new Runnable() {

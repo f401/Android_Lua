@@ -14,8 +14,8 @@ public class PathConstants {
     public static String EXTERNAL_CACHE_DIR;
     public static String CRASH_FILE_SAVE_DIR;
     public static String LOGGER_FILE_SAVE_DIR;
-
     public static String NATIVE_LIBRARY_DIR;
+    public static String NATIVE_CRASH_DUMP_PATH;
 
     public static void init(@NonNull Context ctx) {
         EXTERNAL_CACHE_DIR = ctx.getExternalCacheDir().toString();
@@ -26,6 +26,7 @@ public class PathConstants {
 
         NATIVE_LIBRARY_DIR = StringUtils.fixLastSeparator(
                 ctx.getApplicationInfo().nativeLibraryDir);
+        NATIVE_CRASH_DUMP_PATH = makeDir(ctx.getExternalCacheDir().toString(), "crash/native/");
     }
 
     private static String makeDir(@NonNull String first, @NonNull String second) {

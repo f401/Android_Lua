@@ -10,14 +10,12 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
-import net.fred.lua.PathConstants;
 import net.fred.lua.R;
 import net.fred.lua.common.CrashHandler;
 import net.fred.lua.common.Logger;
 import net.fred.lua.common.activity.BaseActivity;
 import net.fred.lua.common.utils.FileUtils;
-import net.fred.lua.foreign.NativeMethodException;
-import net.fred.lua.foreign.core.DynamicLoadingLibrary;
+import net.fred.lua.foreign.Breakpad;
 import net.fred.lua.io.CStandardOutputInput;
 import net.fred.lua.lua.Lua5_4;
 
@@ -26,7 +24,6 @@ import java.util.Objects;
 public class MainActivity extends BaseActivity {
     private Button btn, throwException, runCif;
     private EditText editText;
-    private DynamicLoadingLibrary luaDll;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,22 +34,10 @@ public class MainActivity extends BaseActivity {
         throwException = findViewById(R.id.activity_main_throw);
         runCif = findViewById(R.id.activity_main_run_cif_btn);
 
-        try {
-            luaDll = DynamicLoadingLibrary.open(PathConstants.NATIVE_LIBRARY_DIR + "liblua.so");
-        } catch (NativeMethodException e) {
-            CrashHandler.fastHandleException(e, this);
-        }
-
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View p1) {
-                System.out.println("Starting");
-                try {
-                    String text = editText.getText().toString();
-                    Logger.i("Pointer of " + text + " at " + luaDll.lookupSymbol(text));
-                } catch(Exception e) {
-                    CrashHandler.fastHandleException(e);
-                }
+
             }
         });
 
@@ -61,11 +46,7 @@ public class MainActivity extends BaseActivity {
             public void onClick(View p1) {
                 Logger.e("Making exception");
                 //throw new RuntimeException();
-                try {
-                    luaDll.close();
-                } catch (NativeMethodException e) {
-                    CrashHandler.fastHandleException(e, MainActivity.this);
-                }
+                Breakpad.SEND_SIGNAL_SEGV();
             }
 
         });
