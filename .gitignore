@@ -12,3 +12,4 @@ jniLibs
 objs
 .settings
 .clang-tidy
+*mapping

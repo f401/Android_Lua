@@ -30,8 +30,10 @@
 -keep public class * extends android.app.Application {}
 -keep public class * extends android.view.View {}
 
--keep class net.fred.lua.foreign.types.Type {}
--keep class net.fred.lua.foreign.Pointer {}
+-keep interface net.fred.lua.foreign.types.Type {}
+-keepclasseswithmembers class net.fred.lua.foreign.Pointer {
+    static net.fred.lua.foreign.Pointer from(long);
+}
 -keep class net.fred.lua.foreign.NativeMethodException {}
 
 -keep class net.fred.lua.foreign.ffi.FunctionDescriber {
