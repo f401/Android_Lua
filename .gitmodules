@@ -1,0 +1,3 @@
+[submodule "app/src/main/jni/breakpad"]
+	path = app/src/main/jni/breakpad
+	url = https://github.com/f401/breakpad

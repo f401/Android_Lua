@@ -29,9 +29,8 @@ public class SplashActivity extends BaseActivity {
 
     public static final int PERMISSION_REQUEST_CODE = 10101;
     public static final int GOTO_SETTINGS_ACTIVITY = 368;
-    public static final int START_TIME = 2000;
+    public static final int START_TIME = 1000;
 
-    private TextView tv;
     private Handler startMainHandler;
     private final Flag isPermissionRequestFinished = new Flag(false);
 
@@ -39,7 +38,7 @@ public class SplashActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
-        tv = findViewById(R.id.activity_splash_tv);
+        TextView tv = findViewById(R.id.activity_splash_tv);
         startMainHandler = new Handler();
 
         hideActionBar();
