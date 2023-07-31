@@ -35,7 +35,7 @@ android {
     buildTypes {
         release {
             signingConfig signingConfigs.config
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
@@ -46,10 +46,6 @@ android {
         ndkBuild {
             path 'src/main/jni/Android.mk'
         }
-    }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_7
-        targetCompatibility JavaVersion.VERSION_1_7
     }
 }
 
