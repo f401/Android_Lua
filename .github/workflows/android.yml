@@ -8,9 +8,7 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
       - name: set up JDK 11
@@ -19,10 +17,8 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
           cache: gradle
-
       - name: Pull sub modules
         run: git submodule update --init --recursive
-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build APK
@@ -34,19 +30,19 @@ jobs:
         with:
           name: app-debug
           path: app/build/outputs/apk/debug/app-debug.apk
-    - name: Upload Release APK
-      uses: actions/upload-artifact@v2
-      with:
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v2
+        with:
           name: app-release
           path: app/build/outputs/apk/release/app-release.apk
-    - name: Upload Debug AAB
-      uses: actions/upload-artifact@v2
-      with:
+      - name: Upload Debug AAB
+        uses: actions/upload-artifact@v2
+        with:
           name: app-debug-bundle-aab
           path: app/build/outputs/bundle/debug/app-debug.aab
-    - name: Upload Release AAB
-      uses: actions/upload-artifact@v2
-      with:
+      - name: Upload Release AAB
+        uses: actions/upload-artifact@v2
+        with:
           name: app-release-bundle-aab
           path: app/build/outputs/bundle/release/app-release.aab
     
