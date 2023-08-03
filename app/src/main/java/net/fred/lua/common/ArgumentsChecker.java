@@ -1,5 +1,6 @@
 package net.fred.lua.common;
 
+import net.fred.lua.common.utils.FileUtils;
 import net.fred.lua.common.utils.StringUtils;
 
 
@@ -18,7 +19,7 @@ public class ArgumentsChecker {
         }
     }
 
-    public static void checkNotEmpty(String needle, String msg) {
+    public static void checkStringNotNullOrEmpty(String needle, String msg) {
         if (StringUtils.isEmpty(needle)) {
             Logger.e(msg);
             throw new NullPointerException(msg);
@@ -29,14 +30,8 @@ public class ArgumentsChecker {
         check(value >= 0, "Value must be greater than or equal to 0.(" + value + ")");
     }
 
-    /**
-     * See also {@see ArgumentsChecker#check}.
-     * The difference is that this method uses @{link Logger#w} instead of throwing an exception.
-     */
-    public static void checkOrWarning(boolean cond, String msg) {
-        if (!cond) {
-            Logger.w(msg);
-        }
+    public static void checkFileExists(String path, String msg) {
+        check(FileUtils.exists(path), msg);
     }
 
     public static void checkIndex(int idx, long size) {

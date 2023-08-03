@@ -6,7 +6,6 @@ import androidx.collection.LruCache;
 import net.fred.lua.common.ArgumentsChecker;
 import net.fred.lua.common.CrashHandler;
 import net.fred.lua.common.Logger;
-import net.fred.lua.common.utils.FileUtils;
 import net.fred.lua.common.utils.ThrowableUtils;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
@@ -24,7 +23,7 @@ public final class DynamicLoadingLibrary extends BasicMemoryController {
     }
 
     public static DynamicLoadingLibrary open(String path) throws NativeMethodException {
-        ArgumentsChecker.check(FileUtils.exists(path)
+        ArgumentsChecker.checkFileExists(path
                 , "Invoker (" + ThrowableUtils.getCallerString() + "), passes null symbol.");
 
         Pointer handle = ForeignFunctions.dlopen(path, ForeignValues.RTLD_LAZY);
@@ -33,7 +32,7 @@ public final class DynamicLoadingLibrary extends BasicMemoryController {
     }
 
     public Pointer lookupSymbol(String symbol) throws NativeMethodException {
-        ArgumentsChecker.checkNotEmpty(symbol, "Invoker (" + ThrowableUtils.getCallerString() +
+        ArgumentsChecker.checkStringNotNullOrEmpty(symbol, "Invoker (" + ThrowableUtils.getCallerString() +
                 "), passes null symbol.");
         return cache.get(symbol);
     }
