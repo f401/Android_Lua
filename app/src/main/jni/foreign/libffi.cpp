@@ -17,7 +17,7 @@ static jclass class_type;
 FIND_CLASS(ENV, type, "net/fred/lua/foreign/types/Type"); \
 IF_NULL_RETURN(class_type, EXPR)
 
-static void *get_pointer_from_type(JNIEnv *env, jobject type) {
+static void *get_type_ffi_pointer(JNIEnv *env, jobject type) {
     LOAD_CLASS_TYPE(env, nullptr);
 
     static jmethodID method_type_get_pointer;
@@ -34,7 +34,7 @@ Java_net_fred_lua_foreign_ffi_FunctionDescriber_prep_1cif(JNIEnv *env, jobject t
                                                           jobject __cif,
                                                           jobject return_type,
                                                           jobjectArray _params) {
-    auto *returnType = static_cast<ffi_type *>(get_pointer_from_type(env, return_type));
+    auto *returnType = static_cast<ffi_type *>(get_type_ffi_pointer(env, return_type));
     IF_NULL_RETURN(returnType, -1);
 
     static jmethodID method_desc_request;
@@ -42,22 +42,23 @@ Java_net_fred_lua_foreign_ffi_FunctionDescriber_prep_1cif(JNIEnv *env, jobject t
     FIND_INSTANCE_METHOD(env, desc, request, "requestMemory", "(J)J");
     IF_NULL_RETURN(method_desc_request, -1);
 
+    // Obtain a pointer to store CIF (already allocated by the Java layer).
     GET_POINTER_PARAM(env, _cif, __cif, -1);
     auto *cif = (ffi_cif *) _cif;
 
     //solve params
     ffi_type **params = nullptr;
     size_t params_len = 0;
-    if (!(EQUAL_TO_NULL(env, _params))) {
+    if (!(EQUAL_TO_NULL(env, _params))) { //has params
         params_len = env->GetArrayLength(_params);
-        if (params_len != 0) {
+        if (params_len != 0) { //has data
             params = jlong_to_ptr(env->CallLongMethod(thiz, method_desc_request,
                                                       (jlong) params_len * sizeof(void *)),
-                                  ffi_type *);
+                                  ffi_type *); // Allocate space for storage pointers.
             for (jsize i = 0; i < params_len; ++i) {
                 jobject curr = env->GetObjectArrayElement(_params, i);
 
-                void *curr_ptr = get_pointer_from_type(env, curr);
+                void *curr_ptr = get_type_ffi_pointer(env, curr);
                 IF_NULL_RETURN(curr_ptr, -2);
                 env->DeleteLocalRef(curr);
 
@@ -84,9 +85,10 @@ Java_net_fred_lua_foreign_ffi_FunctionCaller_ffi_1call(JNIEnv *env, jobject thiz
     jsize length = 0;
     //assign params data
     if (!(EQUAL_TO_NULL(env, _params) || (length = env->GetArrayLength(_typed_params)) == 0)) {
+        // Save pointers that truly store data
         char *params_data = (char *) alloca(
                 env->CallLongMethod(thiz, method_functionCaller_evalTotalSize, _params));
-        params_ptr = (void **) alloca(sizeof(void *) * length);
+        params_ptr = (void **) alloca(sizeof(void *) * length); //lazy init
         jint off = 0;
 
         LOAD_CLASS_TYPE(env,);
@@ -96,6 +98,7 @@ Java_net_fred_lua_foreign_ffi_FunctionCaller_ffi_1call(JNIEnv *env, jobject thiz
         FIND_INSTANCE_METHOD(env, type, write, "write",
                              "(Lnet/fred/lua/foreign/Pointer;Ljava/lang/Object;)V");
         IF_NULL_RETURN(method_type_write,);
+
         for (jsize i = 0; i < length; ++i) {
             jobject typed = env->GetObjectArrayElement(_typed_params, i);
             jobject param = env->GetObjectArrayElement(_params, i);
