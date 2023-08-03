@@ -1,5 +1,6 @@
 package net.fred.lua.ui.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -66,6 +67,14 @@ public class MainActivity extends BaseActivity {
                 } catch (Throwable e) {
                     CrashHandler.fastHandleException(e, MainActivity.this);
                 }
+            }
+        });
+
+        ((Button) findViewById(R.id.activity_main_start_view_test)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(MainActivity.this, ViewTestActivity.class);
+                startActivity(i);
             }
         });
     }
