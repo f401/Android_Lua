@@ -2,14 +2,12 @@ package net.fred.lua.ui.view;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
+import android.graphics.Matrix;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.View;
-import android.view.ViewConfiguration;
 import android.widget.Scroller;
 
 import androidx.annotation.NonNull;
@@ -17,10 +15,9 @@ import androidx.annotation.Nullable;
 
 public class FreeScrollView extends View {
     private GestureDetector mGestureDetector;
+    private ScaleGestureDetector mScaleGestureDetector;
     private Scroller mScroller;
-    private Paint mPaint;
-
-    private int mMaxFlingVelocity;
+    private Matrix mMatrix;
 
     public FreeScrollView(Context context) {
         super(context);
@@ -42,14 +39,12 @@ public class FreeScrollView extends View {
     }
 
     private void init(Context context) {
-        mGestureDetector = new GestureDetector(context, constructTouchNavigation());
-        mScroller = new Scroller(context);
-        mPaint = new Paint();
-        mPaint.setTextSize(30f);
-        mPaint.setColor(Color.RED);
+        TouchNavigation touchNavigation = constructTouchNavigation();
+        mGestureDetector = new GestureDetector(context, touchNavigation);
+        mScaleGestureDetector = new ScaleGestureDetector(context, touchNavigation);
 
-        ViewConfiguration viewConfiguration = ViewConfiguration.get(context);
-        mMaxFlingVelocity = viewConfiguration.getScaledMaximumFlingVelocity();
+        mScroller = new Scroller(context);
+        mMatrix = new Matrix();
     }
 
     @Override
@@ -62,9 +57,11 @@ public class FreeScrollView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        boolean consume = mGestureDetector.onTouchEvent(event);
-        Log.i("View", consume + "");
-        return consume;
+        mScaleGestureDetector.onTouchEvent(event);
+        if (!mGestureDetector.onTouchEvent(event)) {
+            onUp();
+        }
+        return true;
     }
 
     public boolean isScrolling() {
@@ -72,36 +69,41 @@ public class FreeScrollView extends View {
     }
 
     public void stopScroll() {
-        mScroller.abortAnimation();
+        mScroller.forceFinished(true);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
+        canvas.concat(mMatrix);
         super.onDraw(canvas);
-        canvas.drawColor(Color.YELLOW);
-        canvas.drawCircle(getMeasuredWidth() / 2, getMeasuredHeight() / 2, 200, mPaint);
     }
 
-    public class TouchNavigation extends GestureDetector.SimpleOnGestureListener {
+    protected void onUp() {
+    }
+
+    protected int getMaxScrollX() {
+        return Integer.MAX_VALUE;
+    }
+
+    protected int getMaxScrollY() {
+        return Integer.MAX_VALUE;
+    }
+
+    public class TouchNavigation extends GestureDetector.SimpleOnGestureListener implements ScaleGestureDetector.OnScaleGestureListener {
         @Override
         public boolean onScroll(@NonNull MotionEvent e1, @NonNull MotionEvent e2, float distanceX, float distanceY) {
-            scrollBy((int) distanceX, (int) distanceY);
-            Log.i("Touch", "Catch scroll");
-            return true;
-        }
-
-        @Override
-        public boolean onDown(@NonNull MotionEvent e) {
-            Log.i("Nav", "on down");
+            mMatrix.postTranslate(-distanceX, -distanceY);
+            invalidate();
             return true;
         }
 
         @Override
         public boolean onFling(@NonNull MotionEvent e1, @NonNull MotionEvent e2, float velocityX, float velocityY) {
             mScroller.fling(getScrollX(), getScrollY(),
-                    (int) -velocityX, (int) -velocityY,
-                    0, getWidth(),
-                    0, getHeight());
+                    (int) -velocityX,
+                    (int) -velocityY,
+                    0, getMaxScrollX(),
+                    0, getMaxScrollY());
             postInvalidate();
             return true;
         }
@@ -112,6 +114,24 @@ public class FreeScrollView extends View {
                 stopScroll();
             }
             return true;
+        }
+
+        @Override
+        public boolean onScale(@NonNull ScaleGestureDetector detector) {
+            float scale = detector.getScaleFactor();
+            mMatrix.postScale(scale, scale, detector.getFocusX(), detector.getFocusY());
+            invalidate();
+            return true;
+        }
+
+        @Override
+        public boolean onScaleBegin(@NonNull ScaleGestureDetector detector) {
+            return true;
+        }
+
+        @Override
+        public void onScaleEnd(@NonNull ScaleGestureDetector detector) {
+
         }
     }
 }

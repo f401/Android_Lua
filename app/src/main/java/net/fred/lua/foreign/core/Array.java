@@ -80,7 +80,7 @@ public class Array<T> extends MemorySegment {
         @Nullable
         @Override
         public Pointer getFFIPointer() {
-            return writeAsPointer ? Pointer.from(ForeignValues.FFI_TYPE_POINTER) : null;
+            return writeAsPointer ? ForeignValues.FFI_TYPE_POINTER : null;
         }
 
         @Override

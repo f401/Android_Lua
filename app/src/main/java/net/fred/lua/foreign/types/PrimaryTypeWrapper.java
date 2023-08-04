@@ -59,7 +59,7 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements PointerTy
             @NonNull
             @Override
             public Pointer getFFIPointer() {
-                return signed ? Pointer.from(FFI_TYPE_INT8) : FFI_TYPE_UINT8;
+                return signed ? FFI_TYPE_INT8 : FFI_TYPE_UINT8;
             }
 
             @Override
@@ -82,7 +82,7 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements PointerTy
             @NonNull
             @Override
             public Pointer getFFIPointer() {
-                return signed ? Pointer.from(FFI_TYPE_INT16) : FFI_TYPE_UINT16;
+                return signed ? FFI_TYPE_INT16 : FFI_TYPE_UINT16;
             }
 
             @Override
@@ -104,7 +104,7 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements PointerTy
             @NonNull
             @Override
             public Pointer getFFIPointer() {
-                return signed ? Pointer.from(FFI_TYPE_INT32) : FFI_TYPE_UINT32;
+                return signed ? FFI_TYPE_INT32 : FFI_TYPE_UINT32;
             }
 
             @Override
@@ -127,7 +127,7 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements PointerTy
             @NonNull
             @Override
             public Pointer getFFIPointer() {
-                return signed ? Pointer.from(FFI_TYPE_INT64) : FFI_TYPE_UIN64;
+                return signed ? FFI_TYPE_INT64 : FFI_TYPE_UIN64;
             }
 
             @Override
@@ -149,7 +149,7 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements PointerTy
             @NonNull
             @Override
             public Pointer getFFIPointer() {
-                return Pointer.from(ForeignValues.FFI_TYPE_VOID);
+                return ForeignValues.FFI_TYPE_VOID;
             }
 
             @Override
@@ -186,7 +186,7 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements PointerTy
     @Nullable
     @Override
     public Pointer getFFIPointer() {
-        return writeAsPointer ? Pointer.from(FFI_TYPE_POINTER) : mapperAs.getFFIPointer();
+        return writeAsPointer ? FFI_TYPE_POINTER : mapperAs.getFFIPointer();
     }
 
     @Override

@@ -66,10 +66,7 @@ public class Pointer {
         return new Pointer(address + size);
     }
 
-    public Pointer getPointer() {
-        return this;
-    }
-
+    @NonNull
     public static PointerType ofType() {
         return new PointerType();
     }
@@ -83,7 +80,7 @@ public class Pointer {
         @Nullable
         @Override
         public Pointer getFFIPointer() {
-            return Pointer.from(ForeignValues.FFI_TYPE_POINTER);
+            return ForeignValues.FFI_TYPE_POINTER;
         }
 
         @Override

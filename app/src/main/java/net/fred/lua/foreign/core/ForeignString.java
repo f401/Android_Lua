@@ -13,8 +13,6 @@ import net.fred.lua.foreign.internal.ForeignValues;
 import net.fred.lua.foreign.internal.MemorySegment;
 import net.fred.lua.foreign.types.PointerTypeImpl;
 
-import java.util.Objects;
-
 public final class ForeignString extends MemorySegment {
 
     private final String refer;
@@ -79,7 +77,7 @@ public final class ForeignString extends MemorySegment {
         @Nullable
         @Override
         public Pointer getFFIPointer() {
-            return writeAsPointer ? Pointer.from(ForeignValues.FFI_TYPE_POINTER) : null;
+            return writeAsPointer ? ForeignValues.FFI_TYPE_POINTER : null;
         }
 
         @Override

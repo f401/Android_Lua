@@ -7,7 +7,7 @@ import net.fred.lua.foreign.Pointer;
  */
 public class ForeignValues {
 
-    public static final long NULL;
+    public static final Pointer NULL;
     public static final int RTLD_LAZY;
     public static final int RTLD_NOW;
     public static final int RTLD_GLOBAL;
@@ -15,12 +15,12 @@ public class ForeignValues {
 
     //libffi
 
-    public static final long FFI_TYPE_INT8;
-    public static final long FFI_TYPE_INT16;
-    public static final long FFI_TYPE_INT32;
-    public static final long FFI_TYPE_INT64;
-    public static final long FFI_TYPE_POINTER;
-    public static final long FFI_TYPE_VOID;
+    public static final Pointer FFI_TYPE_INT8;
+    public static final Pointer FFI_TYPE_INT16;
+    public static final Pointer FFI_TYPE_INT32;
+    public static final Pointer FFI_TYPE_INT64;
+    public static final Pointer FFI_TYPE_POINTER;
+    public static final Pointer FFI_TYPE_VOID;
 
     public static final Pointer FFI_TYPE_UINT8;
     public static final Pointer FFI_TYPE_UINT16;
@@ -36,18 +36,18 @@ public class ForeignValues {
 
     static {
         System.loadLibrary("foreign");
-        NULL = getNULL();
+        NULL = Pointer.from(getNULL());
         RTLD_LAZY = getRTLD_LAZY();
         RTLD_GLOBAL = getRTLD_GLOBAL();
         RTLD_NOW = getRTLD_NOW();
         RTLD_LOCAL = getRTLD_LOCAL();
 
-        FFI_TYPE_INT8 = getFFI_TYPE_INT8();
-        FFI_TYPE_INT16 = getFFI_TYPE_INT16();
-        FFI_TYPE_INT32 = getFFI_TYPE_INT32();
-        FFI_TYPE_INT64 = getFFI_TYPE_INT64();
-        FFI_TYPE_POINTER = getFFI_TYPE_POINTER();
-        FFI_TYPE_VOID = getFFI_TYPE_VOID();
+        FFI_TYPE_INT8 = Pointer.from(getFFI_TYPE_INT8());
+        FFI_TYPE_INT16 = Pointer.from(getFFI_TYPE_INT16());
+        FFI_TYPE_INT32 = Pointer.from(getFFI_TYPE_INT32());
+        FFI_TYPE_INT64 = Pointer.from(getFFI_TYPE_INT64());
+        FFI_TYPE_POINTER = Pointer.from(getFFI_TYPE_POINTER());
+        FFI_TYPE_VOID = Pointer.from(getFFI_TYPE_VOID());
 
         FFI_TYPE_UINT8 = Pointer.from(getFFI_TYPE_UINT8());
         FFI_TYPE_UINT16 = Pointer.from(getFFI_TYPE_UINT16());
