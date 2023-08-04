@@ -15,12 +15,13 @@ import net.fred.lua.R;
 import net.fred.lua.common.CrashHandler;
 import net.fred.lua.common.Logger;
 import net.fred.lua.common.activity.BaseActivity;
-import net.fred.lua.common.utils.FileUtils;
 import net.fred.lua.foreign.Breakpad;
+import net.fred.lua.foreign.NativeMethodException;
+import net.fred.lua.foreign.core.DynamicLoadingLibrary;
 import net.fred.lua.io.CStandardOutputInput;
 import net.fred.lua.lua.Lua5_4;
 
-import java.util.Objects;
+import org.apache.commons.io.FileUtils;
 
 public class MainActivity extends BaseActivity {
     private Button btn, throwException, runCif;
@@ -38,7 +39,13 @@ public class MainActivity extends BaseActivity {
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View p1) {
-
+                try {
+                    DynamicLoadingLibrary dll = DynamicLoadingLibrary.open("liblua.so");
+                    dll.lookupSymbol(editText.getText().toString());
+                    dll.close();
+                } catch (NativeMethodException e) {
+                    throw new RuntimeException(e);
+                }
             }
         });
 
@@ -89,11 +96,11 @@ public class MainActivity extends BaseActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.activity_main_menu_clean_cache) {
             Toast.makeText(this, getString(R.string.cache_directory_size,
-                    FileUtils.shrinkToBestDisplay(
-                            FileUtils.evalDirectoryTotalSize(
-                                    Objects.requireNonNull(getExternalCacheDir())))), Toast.LENGTH_SHORT).show();
+                    FileUtils.byteCountToDisplaySize(
+                            FileUtils.sizeOfDirectory(getExternalCacheDir())
+                    )), Toast.LENGTH_SHORT).show();
             Logger.i("Removing cache directory.");
-            FileUtils.removeDirectory(getExternalCacheDir());
+            net.fred.lua.common.utils.FileUtils.deleteDirectory(getExternalCacheDir());
             return true;
         }
         return super.onOptionsItemSelected(item);
