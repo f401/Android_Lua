@@ -1,15 +1,21 @@
 package net.fred.lua.foreign.types;
 
 import static net.fred.lua.foreign.internal.ForeignFunctions.peekByte;
+import static net.fred.lua.foreign.internal.ForeignFunctions.peekDouble;
+import static net.fred.lua.foreign.internal.ForeignFunctions.peekFloat;
 import static net.fred.lua.foreign.internal.ForeignFunctions.peekInt;
 import static net.fred.lua.foreign.internal.ForeignFunctions.peekLong;
 import static net.fred.lua.foreign.internal.ForeignFunctions.peekPointer;
 import static net.fred.lua.foreign.internal.ForeignFunctions.peekShort;
 import static net.fred.lua.foreign.internal.ForeignFunctions.putByte;
+import static net.fred.lua.foreign.internal.ForeignFunctions.putDouble;
+import static net.fred.lua.foreign.internal.ForeignFunctions.putFloat;
 import static net.fred.lua.foreign.internal.ForeignFunctions.putInt;
 import static net.fred.lua.foreign.internal.ForeignFunctions.putLong;
 import static net.fred.lua.foreign.internal.ForeignFunctions.putPointer;
 import static net.fred.lua.foreign.internal.ForeignFunctions.putShort;
+import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_DOUBLE;
+import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_FLOAT;
 import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_INT16;
 import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_INT32;
 import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_INT64;
@@ -155,6 +161,51 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements PointerTy
             @Override
             public Void read(@NonNull Pointer dest) {
                 return null;
+            }
+        });
+        map.put(float.class, new PrimaryType<Float>() {
+            @Override
+            public void write(@NonNull Pointer dest, @NonNull Object obj) {
+                putFloat(dest, (Float) obj);
+            }
+
+            @Override
+            public int getSize(@Nullable Object obj) {
+                return 4;
+            }
+
+            @NonNull
+            @Override
+            public Pointer getFFIPointer() {
+                return FFI_TYPE_FLOAT;
+            }
+
+            @Override
+            public Float read(@NonNull Pointer dest) {
+                return peekFloat(dest);
+            }
+        });
+
+        map.put(double.class, new PrimaryType<Double>() {
+            @Override
+            public void write(@NonNull Pointer dest, @NonNull Object obj) {
+                putDouble(dest, (double) obj);
+            }
+
+            @Override
+            public int getSize(@Nullable Object obj) {
+                return 8;
+            }
+
+            @NonNull
+            @Override
+            public Pointer getFFIPointer() {
+                return FFI_TYPE_DOUBLE;
+            }
+
+            @Override
+            public Double read(@NonNull Pointer dest) {
+                return peekDouble(dest);
             }
         });
     }

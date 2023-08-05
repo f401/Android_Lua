@@ -93,3 +93,13 @@ JNIEXPORT jlong JNICALL
 Java_net_fred_lua_foreign_internal_ForeignValues_getFFI_1TYPE_1UINT64(JNIEnv *env, jclass clazz) {
     return ptr_to_jlong(&ffi_type_uint64);
 }
+
+JNIEXPORT jlong JNICALL
+Java_net_fred_lua_foreign_internal_ForeignValues_getFFI_1TYPE_1FLOAT(JNIEnv *env, jclass clazz) {
+    return ptr_to_jlong(&ffi_type_float);
+}
+
+JNIEXPORT jlong JNICALL
+Java_net_fred_lua_foreign_internal_ForeignValues_getFFI_1TYPE_1DOUBLE(JNIEnv *env, jclass clazz) {
+    return ptr_to_jlong(&ffi_type_double);
+}

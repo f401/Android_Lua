@@ -27,6 +27,9 @@ public class ForeignValues {
     public static final Pointer FFI_TYPE_UINT32;
     public static final Pointer FFI_TYPE_UIN64;
 
+    public static final Pointer FFI_TYPE_FLOAT;
+    public static final Pointer FFI_TYPE_DOUBLE;
+
     //sizes
 
     public static final long SIZE_OF_FFI_CIF;
@@ -46,13 +49,16 @@ public class ForeignValues {
         FFI_TYPE_INT16 = Pointer.from(getFFI_TYPE_INT16());
         FFI_TYPE_INT32 = Pointer.from(getFFI_TYPE_INT32());
         FFI_TYPE_INT64 = Pointer.from(getFFI_TYPE_INT64());
-        FFI_TYPE_POINTER = Pointer.from(getFFI_TYPE_POINTER());
-        FFI_TYPE_VOID = Pointer.from(getFFI_TYPE_VOID());
 
         FFI_TYPE_UINT8 = Pointer.from(getFFI_TYPE_UINT8());
         FFI_TYPE_UINT16 = Pointer.from(getFFI_TYPE_UINT16());
         FFI_TYPE_UINT32 = Pointer.from(getFFI_TYPE_UINT32());
         FFI_TYPE_UIN64 = Pointer.from(getFFI_TYPE_UINT64());
+
+        FFI_TYPE_POINTER = Pointer.from(getFFI_TYPE_POINTER());
+        FFI_TYPE_VOID = Pointer.from(getFFI_TYPE_VOID());
+        FFI_TYPE_FLOAT = Pointer.from(getFFI_TYPE_FLOAT());
+        FFI_TYPE_DOUBLE = Pointer.from(getFFI_TYPE_DOUBLE());
 
         FFI_STATUS_OK = getFFI_STATUS_OK();
 
@@ -92,6 +98,10 @@ public class ForeignValues {
     private static native long getFFI_TYPE_UINT32();
 
     private static native long getFFI_TYPE_UINT64();
+
+    private static native long getFFI_TYPE_FLOAT();
+
+    private static native long getFFI_TYPE_DOUBLE();
 
     private static native int getFFI_STATUS_OK();
 

@@ -16,12 +16,13 @@ import net.fred.lua.common.CrashHandler;
 import net.fred.lua.common.Logger;
 import net.fred.lua.common.activity.BaseActivity;
 import net.fred.lua.foreign.Breakpad;
-import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.core.DynamicLoadingLibrary;
 import net.fred.lua.io.CStandardOutputInput;
 import net.fred.lua.lua.Lua5_4;
 
 import org.apache.commons.io.FileUtils;
+
+import java.io.IOException;
 
 public class MainActivity extends BaseActivity {
     private Button btn, throwException, runCif;
@@ -43,7 +44,7 @@ public class MainActivity extends BaseActivity {
                     DynamicLoadingLibrary dll = DynamicLoadingLibrary.open("liblua.so");
                     dll.lookupSymbol(editText.getText().toString());
                     dll.close();
-                } catch (NativeMethodException e) {
+                } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             }
