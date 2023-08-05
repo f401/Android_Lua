@@ -37,8 +37,16 @@ public class Array<T> extends MemorySegment {
         return new Array<>(ptr, length, type);
     }
 
-    public static <T> ArrayType<T> ofType() {
-        return new ArrayType<>();
+    /**
+     * Create type of array.
+     *
+     * @param type Null when it does not need to be read.
+     * @param size 0 when it does not need to be read.
+     * @param <T>  the type.
+     * @return The ArrayType.
+     */
+    public static <T> ArrayType<T> ofType(@Nullable Type<T> type, long size) {
+        return new ArrayType<>(type, size);
     }
 
     public Type<T> getType() {
@@ -64,8 +72,13 @@ public class Array<T> extends MemorySegment {
     }
 
     public static class ArrayType<T> extends PointerTypeImpl<Array<T>> {
-        protected ArrayType() {
+        private final Type<T> type;
+        private final long size;
+
+        protected ArrayType(Type<T> type, long size) {
             super(true);
+            this.size = size;
+            this.type = type;
         }
 
         @Override
@@ -85,7 +98,8 @@ public class Array<T> extends MemorySegment {
 
         @Override
         public Array<T> read(@NonNull Pointer dest) {
-            throw new UnsupportedOperationException();
+            Objects.requireNonNull(type);
+            return new Array<>(dest, size, type);
         }
 
         @Override
