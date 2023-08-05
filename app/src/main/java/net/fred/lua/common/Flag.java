@@ -11,12 +11,12 @@ public class Flag {
         flag = initVal;
     }
 
-    synchronized public void setFlag(boolean flag) {
-        this.flag = flag;
-    }
-
     synchronized public boolean getFlag() {
         return flag;
+    }
+
+    synchronized public void setFlag(boolean flag) {
+        this.flag = flag;
     }
 
 }

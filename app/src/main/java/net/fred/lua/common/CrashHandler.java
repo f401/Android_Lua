@@ -24,11 +24,10 @@ import java.io.StringWriter;
 
 public class CrashHandler implements Thread.UncaughtExceptionHandler {
     public static final String EXTRA_ERROR_CONTENT = "ErrorContent";
-
+    private static CrashHandler instance;
     public File crashFile;
     private Context ctx;
     private Thread.UncaughtExceptionHandler defaultExceptionHandler;
-    private static CrashHandler instance;
     private boolean showError;
 
     @NonNull
