@@ -6,12 +6,16 @@
 #include <client/linux/handler/exception_handler.h>
 #include "utils.h"
 #include <android/log.h>
+#include <unistd.h>
 
 static JavaVM *g_vm;
 
 static bool
 dumpCallback(const google_breakpad::MinidumpDescriptor &descriptor, void *, bool succeed) {
     __android_log_print(ANDROID_LOG_ERROR, "Error", "Dump path: %s\n", descriptor.path());
+    int latest = open((descriptor.directory() + "/latest").data(), O_WRONLY | O_CREAT, 0666);
+    write(latest, descriptor.path(), strlen(descriptor.path()));
+    close(latest);
     return succeed;
 }
 
@@ -34,6 +38,6 @@ Java_net_fred_lua_foreign_Breakpad_init(JNIEnv *env, jclass clazz, jstring crash
 extern "C"
 JNIEXPORT void JNICALL
 Java_net_fred_lua_foreign_Breakpad_SEND_1SIGNAL_1SEGV(JNIEnv *env, jclass clazz) {
-    char *ptr = nullptr;
-    *ptr = 89;
+    char *c = nullptr;
+    *c = 'a';
 }

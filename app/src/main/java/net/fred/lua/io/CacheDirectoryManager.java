@@ -83,6 +83,7 @@ public class CacheDirectoryManager {
 
     public void delete() {
         net.fred.lua.common.utils.FileUtils.deleteDirectory(cacheDirectory);
+        net.fred.lua.common.utils.FileUtils.makeDirs(getNativeCrashDirectory());
     }
 
     public void compressLatestLogs() {
