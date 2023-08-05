@@ -56,11 +56,6 @@ public class Pointer {
         return "0x" + Long.toHexString(address);
     }
 
-    /*@NonNull
-    public final Pointer plus(Type<?> type, long need) {
-        return new Pointer(address + (type.size * need));
-    }*/
-
     @NonNull
     public final Pointer plus(long size) {
         return new Pointer(address + size);

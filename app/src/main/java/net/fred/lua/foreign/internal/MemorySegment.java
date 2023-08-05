@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import net.fred.lua.common.ArgumentsChecker;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
+import net.fred.lua.foreign.types.Type;
 
 public class MemorySegment extends BasicMemoryController {
     private final long size;
@@ -52,5 +53,12 @@ public class MemorySegment extends BasicMemoryController {
         return size;
     }
 
+    public void put(long off, Pointer src) {
+        ForeignFunctions.putPointer(pointer.plus(off), src);
+    }
+
+    public void put(long off, Type<?> type, Object obj) throws NativeMethodException {
+        type.write(pointer.plus(off), obj);
+    }
 
 }

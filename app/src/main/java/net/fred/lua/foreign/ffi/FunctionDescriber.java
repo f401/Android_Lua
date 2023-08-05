@@ -80,7 +80,6 @@ public final class FunctionDescriber extends MemoryController {
         if (hasChild()) {
             return (MemorySegment) childAt(0);
         }
-        freeChildren();
         MemorySegment cif = MemorySegment.create(ForeignValues.SIZE_OF_FFI_CIF);
         addChild(cif);
         int result = prep_cif(cif.getPointer(), returnType, params);

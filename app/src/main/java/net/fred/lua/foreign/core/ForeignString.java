@@ -96,6 +96,5 @@ public final class ForeignString extends MemorySegment {
                 ForeignFunctions.putString(dest, ((ForeignString) data).refer);
             }
         }
-
     }
 }
