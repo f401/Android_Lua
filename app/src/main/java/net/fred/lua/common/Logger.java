@@ -5,10 +5,12 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import net.fred.lua.App;
-import net.fred.lua.PathConstants;
 import net.fred.lua.common.utils.DateUtils;
 import net.fred.lua.common.utils.StringUtils;
 import net.fred.lua.common.utils.ThrowableUtils;
+import net.fred.lua.io.CacheDirectoryManager;
+
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,14 +22,10 @@ public class Logger implements AutoCloseable {
     private PrintStream stream;
 
     private Logger() {
-        String fileName = DateUtils.getCurrentTimeString("yyyy_MM_dd-HH_mm_ss")
-                + ".log";
-
-        File logFile =
-                new File(StringUtils.fixLastSeparator(PathConstants.LOGGER_FILE_SAVE_DIR) + fileName);
+        File logFile = CacheDirectoryManager.getInstance().getLoggerFile();
 
         if (logFile.exists()) {
-            logFile.delete();
+            FileUtils.deleteQuietly(logFile);
         }
 
         try {
@@ -61,6 +59,13 @@ public class Logger implements AutoCloseable {
         writeLine(sb);
     }
 
+    /**
+     * {@link StringUtils#templateOf}
+     */
+    public static void i(String base, Object... fmt) {
+        i(StringUtils.templateOf(base, fmt));
+    }
+
     public static void e(String msg) {
         String sb = "ERROR " + getOtherInfo() + ThrowableUtils.getCallerString() +
                 " :" + msg;
@@ -76,7 +81,7 @@ public class Logger implements AutoCloseable {
     @NonNull
     private static String getOtherInfo() {
         StringBuilder sb = new StringBuilder();
-        sb.append(DateUtils.getCurrentTimeString("yyyy_MM_dd-HH_mm_ss"))
+        sb.append(DateUtils.getCurrentTimeString("yyyy-MM-dd HH:mm:ss"))
                 .append(" ").append(Thread.currentThread().getName())
                 .append(" ").append(Thread.currentThread().getId())
                 .append("/").append(android.os.Process.myPid());

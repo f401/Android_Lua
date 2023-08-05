@@ -18,9 +18,8 @@ import net.fred.lua.common.activity.BaseActivity;
 import net.fred.lua.foreign.Breakpad;
 import net.fred.lua.foreign.core.DynamicLoadingLibrary;
 import net.fred.lua.io.CStandardOutputInput;
+import net.fred.lua.io.CacheDirectoryManager;
 import net.fred.lua.lua.Lua5_4;
-
-import org.apache.commons.io.FileUtils;
 
 import java.io.IOException;
 
@@ -97,11 +96,10 @@ public class MainActivity extends BaseActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.activity_main_menu_clean_cache) {
             Toast.makeText(this, getString(R.string.cache_directory_size,
-                    FileUtils.byteCountToDisplaySize(
-                            FileUtils.sizeOfDirectory(getExternalCacheDir())
-                    )), Toast.LENGTH_SHORT).show();
+                    CacheDirectoryManager.getInstance().sizeOfDirectoryString()
+            ), Toast.LENGTH_SHORT).show();
             Logger.i("Removing cache directory.");
-            net.fred.lua.common.utils.FileUtils.deleteDirectory(getExternalCacheDir());
+            CacheDirectoryManager.getInstance().delete();
             return true;
         }
         return super.onOptionsItemSelected(item);

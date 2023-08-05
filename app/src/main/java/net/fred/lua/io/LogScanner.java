@@ -4,7 +4,6 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import net.fred.lua.PathConstants;
 import net.fred.lua.common.Flag;
 import net.fred.lua.common.utils.ThrowableUtils;
 
@@ -33,6 +32,18 @@ public class LogScanner {
         return instance;
     }
 
+    public static void cleanBuffer() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    new ProcessBuilder("logcat", "-c").start().waitFor();
+                } catch (InterruptedException | IOException ignored) {
+                }
+            }
+        }).start();
+    }
+
     public void setFlag(boolean flag) {
         this.flag.setFlag(flag);
     }
@@ -51,9 +62,9 @@ public class LogScanner {
         public void run() {
             PrintWriter outputStream = null;
             try {
-                outputStream = new PrintWriter(PathConstants.LOG_FILE_PATH);
+                outputStream = new PrintWriter(CacheDirectoryManager.getInstance().
+                        getLogScannerFile());
                 while (flag.getFlag()) {
-                    new ProcessBuilder("logcat", "-c").start().waitFor();
                     Process process = new ProcessBuilder("logcat").redirectErrorStream(true).start();
 //                    Process pro = new ProcessBuilder().command("logcat", "-c").redirectErrorStream(true).start();
                     InputStream is = process.getInputStream();
@@ -64,7 +75,7 @@ public class LogScanner {
                         outputStream.flush();
                     }
                 }
-            } catch (InterruptedException | IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
                 Log.e("Scanner", ThrowableUtils.getThrowableMessage(e));
             } finally {

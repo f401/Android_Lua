@@ -26,4 +26,10 @@ public class StringUtils {
         return base;
     }
 
+    public static String getSuffix(@NonNull String src) {
+        int idx = src.lastIndexOf(".");
+        if (idx == -1)
+            return "";
+        return src.substring(idx + 1);
+    }
 }

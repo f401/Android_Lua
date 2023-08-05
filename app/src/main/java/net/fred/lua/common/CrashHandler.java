@@ -12,11 +12,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import net.fred.lua.App;
-import net.fred.lua.PathConstants;
 import net.fred.lua.R;
 import net.fred.lua.common.activity.CrashActivity;
 import net.fred.lua.common.utils.DateUtils;
 import net.fred.lua.common.utils.FileUtils;
+import net.fred.lua.io.CacheDirectoryManager;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -25,7 +25,7 @@ import java.io.StringWriter;
 public class CrashHandler implements Thread.UncaughtExceptionHandler {
     public static final String EXTRA_ERROR_CONTENT = "ErrorContent";
 
-    public File errorSaveDir;
+    public File crashFile;
     private Context ctx;
     private Thread.UncaughtExceptionHandler defaultExceptionHandler;
     private static CrashHandler instance;
@@ -75,7 +75,7 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
         this.ctx = ctx;
         this.defaultExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler(this);
-        errorSaveDir = new File(PathConstants.CRASH_FILE_SAVE_DIR);
+        crashFile = CacheDirectoryManager.getInstance().getCrashFile();
         showError = true;
         Logger.i("Crash handler installed in package: " + ctx.getPackageName());
     }
@@ -132,14 +132,14 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
         sb.append("************* Crash Head ****************\n\n");
         sb.append(getThrowableMessages(p2));
 
-        FileUtils.writeFile(new File(errorSaveDir, time + "-crash.log"), sb.toString(), true);
+        FileUtils.writeFile(crashFile, sb.toString(), true);
         return sb;
     }
 
     @Override
     public void uncaughtException(@NonNull Thread p1, @NonNull Throwable p2) {
         try {
-            Logger.e("--Making Crash--");
+            Logger.e("------------------Making Crash---------------");
             StringBuilder sb = writeInfoToSdCard(p1, p2);
             if (showError && ctx != null) {
                 Logger.i("Starting a new activity");

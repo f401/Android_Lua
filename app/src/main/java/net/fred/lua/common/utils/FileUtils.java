@@ -14,11 +14,15 @@ public final class FileUtils {
 
     public static void makeDirs(String dir) {
         if (!StringUtils.isEmpty(dir)) {
-            try {
-                org.apache.commons.io.FileUtils.forceMkdir(new File(dir));
-            } catch (IOException e) {
-                CrashHandler.fastHandleException(e);
-            }
+            makeDirs(new File(dir));
+        }
+    }
+
+    public static void makeDirs(File dir) {
+        try {
+            org.apache.commons.io.FileUtils.forceMkdir(dir);
+        } catch (IOException e) {
+            CrashHandler.fastHandleException(e);
         }
     }
 
@@ -39,4 +43,5 @@ public final class FileUtils {
             Logger.e("Failed to delete directory " + directory + ", because: " + e.getMessage());
         }
     }
+
 }

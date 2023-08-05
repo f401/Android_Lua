@@ -14,6 +14,7 @@ import androidx.multidex.MultiDex;
 import net.fred.lua.common.CrashHandler;
 import net.fred.lua.common.Logger;
 import net.fred.lua.foreign.Breakpad;
+import net.fred.lua.io.CacheDirectoryManager;
 import net.fred.lua.io.LogScanner;
 
 import java.io.OutputStream;
@@ -81,7 +82,11 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         instance = this;
+        LogScanner.cleanBuffer();
+
         PathConstants.init(this);
+        CacheDirectoryManager.install(this);
+        CacheDirectoryManager.getInstance().compressLatestLogs();
 
         Logger.i("Starting logger scanner");
         LogScanner.getInstance().start();
@@ -93,8 +98,7 @@ public class App extends Application {
         Log.i("Application", "redirecting stream");
         redirectOutAndErrStreamToLog();
 
-        Logger.i("init native breakpad to " + PathConstants.NATIVE_CRASH_DUMP_PATH);
-        Breakpad.init(PathConstants.NATIVE_CRASH_DUMP_PATH);
+        Breakpad.init(CacheDirectoryManager.getInstance().getNativeCrashDirectory().toString());
     }
 
     /**

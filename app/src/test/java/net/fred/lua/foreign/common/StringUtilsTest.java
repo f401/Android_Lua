@@ -24,4 +24,10 @@ public class StringUtilsTest {
         assertEquals(StringUtils.fixLastSeparator("/usr"), "/usr/");
         assertEquals(StringUtils.fixLastSeparator("/usr/"), "/usr/");
     }
+
+    @Test
+    public void testGetSuffix() {
+        assertEquals(StringUtils.getSuffix("a.out"), "out");
+        assertEquals(StringUtils.getSuffix("a.adsao.out"), "out");
+    }
 }
