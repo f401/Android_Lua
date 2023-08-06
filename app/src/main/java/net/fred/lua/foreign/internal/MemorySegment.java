@@ -40,7 +40,7 @@ public class MemorySegment extends BasicMemoryController {
      */
     @NonNull
     public static Pointer allocate(long size) throws NativeMethodException {
-        ArgumentsChecker.checkNotLessZero((int) size);
+        ArgumentsChecker.checkSize((int) size);
         return ForeignFunctions.alloc(size);
     }
 

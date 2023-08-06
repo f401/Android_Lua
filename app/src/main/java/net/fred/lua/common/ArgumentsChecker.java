@@ -26,7 +26,7 @@ public class ArgumentsChecker {
         }
     }
 
-    public static void checkNotLessZero(int value) {
+    public static void checkSize(int value) {
         check(value >= 0, "Value must be greater than or equal to 0.(" + value + ")");
     }
 
