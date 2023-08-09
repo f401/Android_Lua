@@ -2,7 +2,9 @@ package net.fred.lua.ui.view;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -38,13 +40,18 @@ public class FreeScrollView extends View {
         return new TouchNavigation();
     }
 
-    private void init(Context context) {
+    private Paint mPaint;
+
+    protected void init(Context context) {
         TouchNavigation touchNavigation = constructTouchNavigation();
         mGestureDetector = new GestureDetector(context, touchNavigation);
         mScaleGestureDetector = new ScaleGestureDetector(context, touchNavigation);
 
         mScroller = new Scroller(context);
         mMatrix = new Matrix();
+
+        mPaint = new Paint();
+        mPaint.setColor(Color.BLACK);
     }
 
     @Override

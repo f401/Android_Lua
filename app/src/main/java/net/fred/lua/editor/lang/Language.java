@@ -1,5 +1,5 @@
 package net.fred.lua.editor.lang;
 
 public class Language {
-    public static final String NEWLINE = "\n";
+    public static final char NEWLINE = '\n';
 }

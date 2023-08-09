@@ -3,6 +3,7 @@ package net.fred.lua.editor;
 import net.fred.lua.common.ArgumentsChecker;
 import net.fred.lua.common.Pair;
 
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -20,7 +21,7 @@ public class TextLineCache {
         this.maxCount = maxCount;
         this.map = new LinkedHashMap<>(maxCount, 0.75f, true);
         // The third parameter is very important.
-        this.map.put(0, 0);
+        this.map.put(1, 0);
     }
 
     /**
@@ -45,6 +46,20 @@ public class TextLineCache {
         return Pair.makePair(nearestMatch, map.get(nearestMatch));
     }
 
+    public Pair<Integer, Integer> getNearestLineByOffset(int offset) {
+        ArgumentsChecker.checkSize(offset);
+        int nearestMatch = 0;
+        int nearestDistance = Integer.MAX_VALUE;
+        for (Map.Entry<Integer, Integer> curr : map.entrySet()) {
+            int distance = Math.abs(curr.getValue() - offset);
+            if (distance < nearestDistance) {
+                nearestDistance = distance;
+                nearestMatch = curr.getKey();
+            }
+        }
+        return Pair.makePair(nearestMatch, map.get(nearestMatch));
+    }
+
     public void put(int line, int off) {
         ArgumentsChecker.checkSize(line);
         ArgumentsChecker.checkSize(off);
@@ -61,15 +76,19 @@ public class TextLineCache {
 
     public void cleanAll() {
         map.clear();
-        map.put(0, 0);
+        map.put(1, 0);
     }
 
     public void invalidateCache(int fromCharOffset) {
-        Set<Map.Entry<Integer, Integer>> entrySet = map.entrySet();
-        for (Map.Entry<Integer, Integer> curr : entrySet) {
-            if (curr.getValue() >= fromCharOffset) {
-                map.remove(curr.getKey());
+        Iterator<Map.Entry<Integer, Integer>> entryIterator = map.entrySet().iterator();
+        while (entryIterator.hasNext()) {
+            Map.Entry<Integer, Integer> curr = entryIterator.next();
+            if (curr.getValue() > fromCharOffset) {
+                entryIterator.remove();
             }
+        }
+        if (map.size() == 0) {
+            map.put(1, 0);
         }
     }
 }
