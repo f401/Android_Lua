@@ -5,14 +5,12 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.OverScroller;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import net.fred.lua.common.Logger;
@@ -47,7 +45,7 @@ public class FreeScrollView extends View {
     }
 
     protected TouchNavigation constructTouchNavigation() {
-        return new TouchNavigation();
+        return new TouchNavigation(this);
     }
 
     private Paint mPaint;
@@ -174,56 +172,23 @@ public class FreeScrollView extends View {
         return y - getPaddingTop() + getScrollY();
     }
 
-    public class TouchNavigation extends GestureDetector.SimpleOnGestureListener implements ScaleGestureDetector.OnScaleGestureListener {
-        @Override
-        public boolean onScroll(@NonNull MotionEvent e1, @NonNull MotionEvent e2, float distanceX, float distanceY) {
-            scrollBy((int) distanceX, (int) distanceY);
-            return true;
-        }
+    protected void fling(int velocityX, int velocityY) {
+        mScroller.fling(getScrollX(), getScrollY(),
+                velocityX, velocityY,
+                0, getMaxScrollX(),
+                0, getMaxScrollY());
+        postInvalidate();
+    }
 
-        @Override
-        public boolean onFling(@NonNull MotionEvent e1, @NonNull MotionEvent e2, float velocityX, float velocityY) {
-            mScroller.fling(getScrollX(), getScrollY(),
-                    (int) -velocityX,
-                    (int) -velocityY,
-                    0, getMaxScrollX(),
-                    0, getMaxScrollY());
-            postInvalidate();
-            return true;
-        }
+    public float getScaleFactor() {
+        return mScaleFactor;
+    }
 
-        @Override
-        public boolean onSingleTapConfirmed(@NonNull MotionEvent e) {
-            if (isScrolling()) {
-                stopScroll();
-            }
-            return true;
-        }
-
-        @Override
-        public boolean onScale(@NonNull ScaleGestureDetector detector) {
-            mScaleFactor *= detector.getScaleFactor();
-            if (mScaleFactor > SCALE_MAX) {
-                mScaleFactor = SCALE_MAX;
-            } else if (mScaleFactor < SCALE_MIN) {
-                mScaleFactor = SCALE_MIN;
-            }
-            mScaleFocusX = detector.getFocusX();
-            mScaleFocusY = detector.getFocusY();
-            Log.i("DEBUG", "Scale factor: " + mScaleFactor);
-            postInvalidate();
-            return true;
-        }
-
-        @Override
-        public boolean onScaleBegin(@NonNull ScaleGestureDetector detector) {
-            return true;
-        }
-
-        @Override
-        public void onScaleEnd(@NonNull ScaleGestureDetector detector) {
-
-        }
+    public void invalidateScaleFactor(float newScaleFactor, float focusX, float focusY) {
+        this.mScaleFactor = newScaleFactor;
+        this.mScaleFocusX = focusX;
+        this.mScaleFocusY = focusY;
+        postInvalidate();
     }
 
 }
