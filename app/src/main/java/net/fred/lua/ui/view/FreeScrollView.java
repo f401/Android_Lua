@@ -28,6 +28,7 @@ public class FreeScrollView extends View {
     private OverScroller mScroller;
     private float mScaleFactor;
     private float mScaleFocusX, mScaleFocusY;
+    private Paint brush;
 
     public FreeScrollView(Context context) {
         super(context);
@@ -48,7 +49,6 @@ public class FreeScrollView extends View {
         return new TouchNavigation(this);
     }
 
-    private Paint mPaint;
 
     protected void init(Context context) {
         TouchNavigation touchNavigation = constructTouchNavigation();
@@ -57,8 +57,9 @@ public class FreeScrollView extends View {
 
         mScroller = new OverScroller(context);
 
-        mPaint = new Paint();
-        mPaint.setColor(Color.BLACK);
+        brush = new Paint();
+        brush.setColor(Color.BLACK);
+        brush.setTextSize(50f);
 
         mScaleFactor = 1.0f;
         mScaleFocusX = mScaleFocusY = 0.0f;
@@ -109,8 +110,14 @@ public class FreeScrollView extends View {
         canvas.save();
         canvas.scale(mScaleFactor, mScaleFactor, mScaleFocusX, mScaleFocusY);
         super.onDraw(canvas);
-        canvas.drawCircle(getWidth() / 2, getHeight() / 2, 200, mPaint);
+        canvas.drawCircle(getWidth() / 2, getHeight() / 2, 200, brush);
+        canvas.drawText("1", getPaddingLeft(), getPaddingTop(), brush);
         canvas.restore();
+    }
+
+    public int rowHeight() {
+        Paint.FontMetricsInt fontMetrics = brush.getFontMetricsInt();
+        return fontMetrics.descent - fontMetrics.ascent;
     }
 
     // --------------------------------------------------------- Scroll And Scale ----------------------------------------//
