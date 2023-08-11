@@ -36,7 +36,6 @@ public class FreeScrollView extends View {
     private ScaleGestureDetector mScaleGestureDetector;
     private OverScroller mScroller;
     private float mScaleFactor;
-    private float mScaleFocusX, mScaleFocusY;
     private Paint mLineBrush, mBoundaryPaint;
     private int mDrawBoundaryPrompt;
 
@@ -135,7 +134,6 @@ public class FreeScrollView extends View {
         mBoundaryPaint.setColor(Color.GRAY);
 
         mScaleFactor = 1.0f;
-        mScaleFocusX = mScaleFocusY = 0.0f;
         mDrawBoundaryPrompt = 0;
 
         setFocusable(true);
@@ -218,11 +216,6 @@ public class FreeScrollView extends View {
         super.scrollTo(x, y);
     }
 
-    @Override
-    public void scrollBy(int x, int y) {
-        scrollTo((int) (getScrollX() * mScaleFactor + x), (int) (getScrollY() * mScaleFactor + y));
-    }
-
     protected int getMaxScrollX() {
         return Integer.MAX_VALUE;
     }
@@ -259,10 +252,8 @@ public class FreeScrollView extends View {
         return mScaleFactor;
     }
 
-    public void invalidateScaleFactor(float newScaleFactor, float focusX, float focusY) {
+    public void invalidateScaleFactor(float newScaleFactor) {
         this.mScaleFactor = newScaleFactor;
-        this.mScaleFocusX = focusX;
-        this.mScaleFocusY = focusY;
         float newTextSize = newScaleFactor * mLineBrush.getTextSize();
         newTextSize = Math.min(TEXT_MAX_SIZE, newTextSize);
         newTextSize = Math.max(TEXT_MIN_SIZE, newTextSize);

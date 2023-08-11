@@ -42,7 +42,7 @@ public class TouchNavigation extends GestureDetector.SimpleOnGestureListener imp
             scaleFactor = FreeScrollView.SCALE_MIN;
         }
 
-        freeScrollView.invalidateScaleFactor(scaleFactor, detector.getFocusX(), detector.getFocusY());
+        freeScrollView.invalidateScaleFactor(scaleFactor);
         return true;
     }
 
