@@ -18,17 +18,28 @@ import net.fred.lua.common.utils.MathUtils;
 
 // Based on https://github.com/TIIEHenry/CodeEditor/blob/master/CodeEditor/src/main/java/tiiehenry/code/view/TouchNavigationMethod.java
 public class FreeScrollView extends View {
-    public static final int DEFAULT_BOTTOM_GAP_SIZE = MathUtils.dp2px(400);
+    public static final int DEFAULT_BOTTOM_GAP_SIZE = 400;
+    public static final int BOUNDARY_PROMPT_MAX_TOP = 30;
+
+    public static final int TOP_BOUNDARY_PROMPT = 1;
+    public static final int LEFT_BOUNDARY_PROMPT = 2;
+    public static final int RIGHT_BOUNDARY_PROMPT = 4;
+    public static final int BOTTOM_BOUNDARY_PROMPT = 8;
 
     public static final float SCALE_MAX = 2.0f;
     public static final float SCALE_MIN = 0.5f;
+
+    public static final float TEXT_MIN_SIZE = 8f;
+    public static final float TEXT_MAX_SIZE = 80f;
 
     private GestureDetector mGestureDetector;
     private ScaleGestureDetector mScaleGestureDetector;
     private OverScroller mScroller;
     private float mScaleFactor;
     private float mScaleFocusX, mScaleFocusY;
-    private Paint brush;
+    private Paint mLineBrush, mBoundaryPaint;
+    private int mDrawBoundaryPrompt;
+
 
     public FreeScrollView(Context context) {
         super(context);
@@ -49,22 +60,24 @@ public class FreeScrollView extends View {
         return new TouchNavigation(this);
     }
 
-
-    protected void init(Context context) {
-        TouchNavigation touchNavigation = constructTouchNavigation();
-        mGestureDetector = new GestureDetector(context, touchNavigation);
-        mScaleGestureDetector = new ScaleGestureDetector(context, touchNavigation);
-
-        mScroller = new OverScroller(context);
-
-        brush = new Paint();
-        brush.setColor(Color.BLACK);
-        brush.setTextSize(50f);
-
-        mScaleFactor = 1.0f;
-        mScaleFocusX = mScaleFocusY = 0.0f;
-
-        setFocusable(true);
+    /**
+     * Set a circle O with a radius of r and a chord length of l.
+     * The distance from the chord to the arc is m (@{link #BOUNDARY_PROMPT_MAX_TOP}).
+     * Given l and t, find r.
+     * <p>
+     * According to the Pythagorean theorem, the following formulas can be listed:
+     * r ^ 2=(r - m) ^ 2+(l/2) ^ 2
+     * According to the complete square formula, it can be concluded that:
+     * r ^ 2=r ^ 2-2rm+m ^ 2+(l/2) ^ 2
+     * Transfer and merge to obtain:
+     * 2rm=m ^ 2+(l/2) ^ 2
+     * Ultimately available:
+     * r=(m ^ 2 + (l/2) ^ 2)/2m
+     * </p>
+     */
+    protected static float evalCircleRadius(float l) {
+        return (MathUtils.square(BOUNDARY_PROMPT_MAX_TOP) +
+                MathUtils.square(l / 2)) / (2 * BOUNDARY_PROMPT_MAX_TOP);
     }
 
     @Override
@@ -105,18 +118,65 @@ public class FreeScrollView extends View {
     protected void onUp() {
     }
 
+    // ----------------------------------------- boundary prompt ------------------------------//
+
+    protected void init(Context context) {
+        TouchNavigation touchNavigation = constructTouchNavigation();
+        mGestureDetector = new GestureDetector(context, touchNavigation);
+        mScaleGestureDetector = new ScaleGestureDetector(context, touchNavigation);
+
+        mScroller = new OverScroller(context);
+
+        mLineBrush = new Paint();
+        mLineBrush.setColor(Color.BLACK);
+        mLineBrush.setTextSize(50f);
+
+        mBoundaryPaint = new Paint();
+        mBoundaryPaint.setColor(Color.GRAY);
+
+        mScaleFactor = 1.0f;
+        mScaleFocusX = mScaleFocusY = 0.0f;
+        mDrawBoundaryPrompt = 0;
+
+        setFocusable(true);
+    }
+
+    /**
+     * direction is defined as 'TOP_BOUNDARY_PROMPT, LEFT_BOUNDARY_PROMPT, RIGHT_BOUNDARY_PROMPT
+     * and BOTTOM_BOUNDARY_PROMPT'.
+     */
+    public void drawBoundaryPrompt(int direction) {
+        mDrawBoundaryPrompt |= direction;
+    }
+
+    /**
+     * Called by @{link #onDraw}
+     */
+    private void realDrawBoundaryPrompt(Canvas canvas) {
+        mDrawBoundaryPrompt &= 15;//Mask
+
+        if ((mDrawBoundaryPrompt & TOP_BOUNDARY_PROMPT) > 0) {
+            float r = evalCircleRadius(getWidth());
+            canvas.drawCircle((float) getWidth() / 2,
+                    BOUNDARY_PROMPT_MAX_TOP - r, r, mBoundaryPaint);
+        }
+
+        mDrawBoundaryPrompt = 0; //reset
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         canvas.save();
-        canvas.scale(mScaleFactor, mScaleFactor, mScaleFocusX, mScaleFocusY);
+        realDrawBoundaryPrompt(canvas);
+        canvas.drawText("1", getWidth() / 2, getHeight() / 2, mLineBrush);
+
+        //canvas.scale(mScaleFactor, mScaleFactor, mScaleFocusX, mScaleFocusY);
         super.onDraw(canvas);
-        canvas.drawCircle(getWidth() / 2, getHeight() / 2, 200, brush);
-        canvas.drawText("1", getPaddingLeft(), getPaddingTop(), brush);
         canvas.restore();
     }
 
     public int rowHeight() {
-        Paint.FontMetricsInt fontMetrics = brush.getFontMetricsInt();
+        Paint.FontMetricsInt fontMetrics = mLineBrush.getFontMetricsInt();
         return fontMetrics.descent - fontMetrics.ascent;
     }
 
@@ -132,7 +192,6 @@ public class FreeScrollView extends View {
         }
     }
 
-
     /**
      * This includes rolling boundary check.
      * When exceeding the boundary. Will use maximum(minimum) values.
@@ -142,15 +201,19 @@ public class FreeScrollView extends View {
         final int maxX = Math.max(getScrollX(), getMaxScrollX());
         if (x < 0) {
             x = 0;
+            drawBoundaryPrompt(LEFT_BOUNDARY_PROMPT);
         } else if (x > maxX) {
             x = maxX;
+            drawBoundaryPrompt(RIGHT_BOUNDARY_PROMPT);
         }
 
-        final int maxY = Math.max(getScrollY(), getMaxScrollY());
+        final float maxY = Math.max(getScrollY(), getMaxScrollY());
         if (y < 0) {
             y = 0;
+            drawBoundaryPrompt(TOP_BOUNDARY_PROMPT);
         } else if (y > maxY) {
-            y = maxY;
+            y = (int) maxY;
+            drawBoundaryPrompt(BOTTOM_BOUNDARY_PROMPT);
         }
         super.scrollTo(x, y);
     }
@@ -195,7 +258,13 @@ public class FreeScrollView extends View {
         this.mScaleFactor = newScaleFactor;
         this.mScaleFocusX = focusX;
         this.mScaleFocusY = focusY;
+        float newTextSize = newScaleFactor * mLineBrush.getTextSize();
+        newTextSize = Math.min(TEXT_MAX_SIZE, newTextSize);
+        newTextSize = Math.max(TEXT_MIN_SIZE, newTextSize);
+        mLineBrush.setTextSize(newTextSize);
         postInvalidate();
     }
+
+
 
 }
