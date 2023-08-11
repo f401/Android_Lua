@@ -218,6 +218,11 @@ public class FreeScrollView extends View {
         super.scrollTo(x, y);
     }
 
+    @Override
+    public void scrollBy(int x, int y) {
+        scrollTo((int) (getScrollX() * mScaleFactor + x), (int) (getScrollY() * mScaleFactor + y));
+    }
+
     protected int getMaxScrollX() {
         return Integer.MAX_VALUE;
     }
