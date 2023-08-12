@@ -19,7 +19,7 @@ import net.fred.lua.common.utils.MathUtils;
 // Based on https://github.com/TIIEHenry/CodeEditor/blob/master/CodeEditor/src/main/java/tiiehenry/code/view/TouchNavigationMethod.java
 public class FreeScrollView extends View {
     public static final int DEFAULT_BOTTOM_GAP_SIZE = 400;
-    public static final int BOUNDARY_PROMPT_MAX_TOP = 30;
+    public static final int BOUNDARY_PROMPT_MAX_TOP = 100;
 
     public static final int TOP_BOUNDARY_PROMPT = 1;
     public static final int LEFT_BOUNDARY_PROMPT = 2;
@@ -55,10 +55,6 @@ public class FreeScrollView extends View {
         init(context);
     }
 
-    protected TouchNavigation constructTouchNavigation() {
-        return new TouchNavigation(this);
-    }
-
     /**
      * Set a circle O with a radius of r and a chord length of l.
      * The distance from the chord to the arc is m (@{link #BOUNDARY_PROMPT_MAX_TOP}).
@@ -77,6 +73,30 @@ public class FreeScrollView extends View {
     protected static float evalCircleRadius(float l) {
         return (MathUtils.square(BOUNDARY_PROMPT_MAX_TOP) +
                 MathUtils.square(l / 2)) / (2 * BOUNDARY_PROMPT_MAX_TOP);
+    }
+
+    protected void init(Context context) {
+        TouchNavigation touchNavigation = constructTouchNavigation();
+        mGestureDetector = new GestureDetector(context, touchNavigation);
+        mScaleGestureDetector = new ScaleGestureDetector(context, touchNavigation);
+
+        mScroller = new OverScroller(context);
+
+        mLineBrush = new Paint();
+        mLineBrush.setColor(Color.BLACK);
+        mLineBrush.setTextSize(50f);
+
+        mBoundaryPaint = new Paint();
+        mBoundaryPaint.setColor(Color.GRAY);
+
+        mScaleFactor = 1.0f;
+        mDrawBoundaryPrompt = 0;
+
+        setFocusable(true);
+    }
+
+    protected TouchNavigation constructTouchNavigation() {
+        return new TouchNavigation(this);
     }
 
     @Override
@@ -101,12 +121,12 @@ public class FreeScrollView extends View {
     public void computeScroll() {
         if (mScroller.computeScrollOffset()) {
             scrollTo(mScroller.getCurrX(), mScroller.getCurrY());
-            postInvalidate();
         }
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+
         mScaleGestureDetector.onTouchEvent(event);
         if (!mGestureDetector.onTouchEvent(event)) {
             onUp();
@@ -114,29 +134,17 @@ public class FreeScrollView extends View {
         return true;
     }
 
-    protected void onUp() {
-    }
-
     // ----------------------------------------- boundary prompt ------------------------------//
 
-    protected void init(Context context) {
-        TouchNavigation touchNavigation = constructTouchNavigation();
-        mGestureDetector = new GestureDetector(context, touchNavigation);
-        mScaleGestureDetector = new ScaleGestureDetector(context, touchNavigation);
+    protected void onUp() {
+        dismissBoundaryPrompt();
+    }
 
-        mScroller = new OverScroller(context);
-
-        mLineBrush = new Paint();
-        mLineBrush.setColor(Color.BLACK);
-        mLineBrush.setTextSize(50f);
-
-        mBoundaryPaint = new Paint();
-        mBoundaryPaint.setColor(Color.GRAY);
-
-        mScaleFactor = 1.0f;
-        mDrawBoundaryPrompt = 0;
-
-        setFocusable(true);
+    public void dismissBoundaryPrompt() {
+        if (mDrawBoundaryPrompt != 0) {
+            mDrawBoundaryPrompt = 0;
+            invalidate();
+        }
     }
 
     /**
@@ -154,21 +162,47 @@ public class FreeScrollView extends View {
         mDrawBoundaryPrompt &= 15;//Mask
 
         if ((mDrawBoundaryPrompt & TOP_BOUNDARY_PROMPT) > 0) {
-            float r = evalCircleRadius(getWidth());
-            canvas.drawCircle((float) getWidth() / 2,
-                    BOUNDARY_PROMPT_MAX_TOP - r, r, mBoundaryPaint);
+            canvas.drawArc(getScrollX(),
+                    getPaddingTop() - BOUNDARY_PROMPT_MAX_TOP,  // When drawing DrawArc, the center of the circle is at (bottom + top)/2
+                    getScrollX() + getWidth(),
+                    getPaddingTop() + BOUNDARY_PROMPT_MAX_TOP,
+                    0, 180, true, mBoundaryPaint);
         }
 
-        mDrawBoundaryPrompt = 0; //reset
+        if ((mDrawBoundaryPrompt & BOTTOM_BOUNDARY_PROMPT) > 0) {
+            canvas.drawArc(getScrollX(),
+                    getScrollY() + getHeight() - getPaddingBottom() - BOUNDARY_PROMPT_MAX_TOP,
+                    screenToViewX(getWidth()),
+                    getScrollY() + getHeight() - getPaddingBottom() + BOUNDARY_PROMPT_MAX_TOP,
+                    0, -180, true, mBoundaryPaint);
+        }
+
+        if ((mDrawBoundaryPrompt & LEFT_BOUNDARY_PROMPT) > 0) {
+            canvas.drawArc(getPaddingLeft() - BOUNDARY_PROMPT_MAX_TOP,
+                    getScrollY(),
+                    getPaddingLeft() + BOUNDARY_PROMPT_MAX_TOP, getScrollY() + getHeight(),
+                    -90, 180, true, mBoundaryPaint);
+        }
+
+        if ((mDrawBoundaryPrompt & RIGHT_BOUNDARY_PROMPT) > 0) {
+            Logger.i("RIGHT");
+            canvas.drawArc(getScrollX() + getWidth() - BOUNDARY_PROMPT_MAX_TOP,
+                    getScrollY(),
+                    getScrollX() + getWidth() + BOUNDARY_PROMPT_MAX_TOP,
+                    getScrollY() + getHeight(),
+                    -90f, -180f, true, mBoundaryPaint);
+        }
+
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         canvas.save();
         realDrawBoundaryPrompt(canvas);
-        canvas.drawText("1", getWidth() / 2, getHeight() / 2, mLineBrush);
+        canvas.drawText("1", rowHeight(), rowHeight(), mLineBrush);
+        canvas.drawText("1", getWidth() / 2f, getHeight() / 2f, mLineBrush);
 
-        //canvas.scale(mScaleFactor, mScaleFactor, mScaleFocusX, mScaleFocusY);
+        //canvas.scale(mScaleFactor, mScaleFactor);
         super.onDraw(canvas);
         canvas.restore();
     }
@@ -217,11 +251,11 @@ public class FreeScrollView extends View {
     }
 
     protected int getMaxScrollX() {
-        return Integer.MAX_VALUE;
+        return getWidth() * 2;
     }
 
     protected int getMaxScrollY() {
-        return Integer.MAX_VALUE;
+        return getHeight() * 2;
     }
 
     /**
@@ -260,7 +294,5 @@ public class FreeScrollView extends View {
         mLineBrush.setTextSize(newTextSize);
         postInvalidate();
     }
-
-
 
 }

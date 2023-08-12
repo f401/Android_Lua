@@ -148,7 +148,7 @@ static jobject peekJavaPointer(JNIEnv *env, jclass clazz, jobject dst) {
     return pointer_create(env, result);
 }
 
-static jobject ReadString(JNIEnv *env, jclass clazz, jobject dest) {
+static jstring ReadString(JNIEnv *env, jclass clazz, jobject dest) {
     GET_POINTER_PARAM(env, dst, dest, nullptr);
     return env->NewStringUTF((char *) dst);
 }

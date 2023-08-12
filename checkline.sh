@@ -2,7 +2,7 @@
 
 line=0
 
-for i in `find . -type f | grep -E --color '^(./).*\.(xml|cc|java|cpp|c|h|gradle|mk)$'`;do
+for i in `find . -type f | grep -E --color '^(./).*\.(cc|java|cpp|c|h|gradle|mk)$'`;do
 	result=`wc -l $i | awk '{print $1}'`
 	echo "Doing lines: $result, $i."
 	((line+=result))
