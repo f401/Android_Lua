@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -75,6 +76,10 @@ public class FreeScrollView extends View {
         mDocument = Document.open();
 
         setFocusable(true);
+        setFocusableInTouchMode(true);
+
+        setHorizontalScrollBarEnabled(true);
+        setVerticalScrollBarEnabled(true);
     }
 
     protected TouchNavigation constructTouchNavigation() {
@@ -108,11 +113,11 @@ public class FreeScrollView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-
         mScaleGestureDetector.onTouchEvent(event);
         if (!mGestureDetector.onTouchEvent(event)) {
             onUp();
         }
+        super.onTouchEvent(event);
         return true;
     }
 
@@ -189,6 +194,12 @@ public class FreeScrollView extends View {
         canvas.restore();
     }
 
+    @Override
+    protected void onScrollChanged(int l, int t, int oldl, int oldt) {
+        Log.i("Scroll", awakenScrollBars(0) + "");
+        super.onScrollChanged(l, t, oldl, oldt);
+    }
+
     public int rowHeight() {
         Paint.FontMetricsInt fontMetrics = mLineBrush.getFontMetricsInt();
         return fontMetrics.descent - fontMetrics.ascent;
@@ -243,6 +254,7 @@ public class FreeScrollView extends View {
     @Override
     protected int computeVerticalScrollRange() {
         return mDocument.getRowCount() * rowHeight() + getPaddingTop() + getPaddingBottom();
+//        return getHeight() * 2;
     }
 
     /**
