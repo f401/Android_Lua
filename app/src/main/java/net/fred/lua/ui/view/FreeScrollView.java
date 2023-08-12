@@ -80,6 +80,8 @@ public class FreeScrollView extends View {
 
         setHorizontalScrollBarEnabled(true);
         setVerticalScrollBarEnabled(true);
+        setHorizontalFadingEdgeEnabled(true);
+        setVerticalFadingEdgeEnabled(true);
     }
 
     protected TouchNavigation constructTouchNavigation() {
@@ -194,11 +196,7 @@ public class FreeScrollView extends View {
         canvas.restore();
     }
 
-    @Override
-    protected void onScrollChanged(int l, int t, int oldl, int oldt) {
-        Log.i("Scroll", awakenScrollBars(0) + "");
-        super.onScrollChanged(l, t, oldl, oldt);
-    }
+
 
     public int rowHeight() {
         Paint.FontMetricsInt fontMetrics = mLineBrush.getFontMetricsInt();
@@ -255,6 +253,12 @@ public class FreeScrollView extends View {
     protected int computeVerticalScrollRange() {
         return mDocument.getRowCount() * rowHeight() + getPaddingTop() + getPaddingBottom();
 //        return getHeight() * 2;
+    }
+
+    @Override
+    protected void onScrollChanged(int l, int t, int oldl, int oldt) {
+        Log.i("Scroll", awakenScrollBars(0) + "");
+        super.onScrollChanged(l, t, oldl, oldt);
     }
 
     /**
