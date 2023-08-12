@@ -156,6 +156,10 @@ public class TextLine implements Text {
         return nearestMatchLine;
     }
 
+    public int getRowCount() {
+        return lineCount;
+    }
+
     /**
      * Called before insertion, no default implementation.
      * Called by @{link #insert};

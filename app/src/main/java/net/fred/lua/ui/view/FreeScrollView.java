@@ -14,7 +14,7 @@ import android.widget.OverScroller;
 import androidx.annotation.Nullable;
 
 import net.fred.lua.common.Logger;
-import net.fred.lua.common.utils.MathUtils;
+import net.fred.lua.editor.Document;
 
 // Based on https://github.com/TIIEHenry/CodeEditor/blob/master/CodeEditor/src/main/java/tiiehenry/code/view/TouchNavigationMethod.java
 public class FreeScrollView extends View {
@@ -38,7 +38,7 @@ public class FreeScrollView extends View {
     private float mScaleFactor;
     private Paint mLineBrush, mBoundaryPaint;
     private int mDrawBoundaryPrompt;
-
+    private Document mDocument;
 
     public FreeScrollView(Context context) {
         super(context);
@@ -53,26 +53,6 @@ public class FreeScrollView extends View {
     public FreeScrollView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(context);
-    }
-
-    /**
-     * Set a circle O with a radius of r and a chord length of l.
-     * The distance from the chord to the arc is m (@{link #BOUNDARY_PROMPT_MAX_TOP}).
-     * Given l and t, find r.
-     * <p>
-     * According to the Pythagorean theorem, the following formulas can be listed:
-     * r ^ 2=(r - m) ^ 2+(l/2) ^ 2
-     * According to the complete square formula, it can be concluded that:
-     * r ^ 2=r ^ 2-2rm+m ^ 2+(l/2) ^ 2
-     * Transfer and merge to obtain:
-     * 2rm=m ^ 2+(l/2) ^ 2
-     * Ultimately available:
-     * r=(m ^ 2 + (l/2) ^ 2)/2m
-     * </p>
-     */
-    protected static float evalCircleRadius(float l) {
-        return (MathUtils.square(BOUNDARY_PROMPT_MAX_TOP) +
-                MathUtils.square(l / 2)) / (2 * BOUNDARY_PROMPT_MAX_TOP);
     }
 
     protected void init(Context context) {
@@ -91,6 +71,8 @@ public class FreeScrollView extends View {
 
         mScaleFactor = 1.0f;
         mDrawBoundaryPrompt = 0;
+
+        mDocument = Document.open();
 
         setFocusable(true);
     }
@@ -256,6 +238,11 @@ public class FreeScrollView extends View {
 
     protected int getMaxScrollY() {
         return getHeight() * 2;
+    }
+
+    @Override
+    protected int computeVerticalScrollRange() {
+        return mDocument.getRowCount() * rowHeight() + getPaddingTop() + getPaddingBottom();
     }
 
     /**
