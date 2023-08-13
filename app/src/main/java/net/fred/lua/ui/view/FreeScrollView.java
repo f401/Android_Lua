@@ -19,7 +19,7 @@ import net.fred.lua.common.Logger;
 
 // Based on https://github.com/TIIEHenry/CodeEditor/blob/master/CodeEditor/src/main/java/tiiehenry/code/view/TouchNavigationMethod.java
 public class FreeScrollView extends View {
-    public static final int DEFAULT_BOTTOM_GAP_SIZE = 400;
+    public static final int SCROLLBAR_SIZE = 20;
     public static final int BOUNDARY_PROMPT_MAX_TOP = 100;
 
     public static final int TOP_BOUNDARY_PROMPT = 1;
@@ -86,7 +86,7 @@ public class FreeScrollView extends View {
         setHorizontalFadingEdgeEnabled(true);
         setVerticalFadingEdgeEnabled(true);
         setScrollbarFadingEnabled(false);
-        setScrollBarSize(20);
+        setScrollBarSize(SCROLLBAR_SIZE);
 
         setWillNotDraw(false);
     }
