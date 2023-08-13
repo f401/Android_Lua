@@ -86,7 +86,10 @@ public class App extends Application {
 
         PathConstants.init(this);
         CacheDirectoryManager.install(this);
-        CacheDirectoryManager.getInstance().compressLatestLogs();
+
+        if (isMainProcess()) {
+            CacheDirectoryManager.getInstance().compressLatestLogs();
+        }
 
         Logger.i("Starting logger scanner");
         LogScanner.getInstance().start();

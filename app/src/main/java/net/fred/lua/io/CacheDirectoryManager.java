@@ -142,9 +142,18 @@ public class CacheDirectoryManager {
 
     private File renameFileAccordingDate(File file) {
         String name = DateUtils.formatDate(file.lastModified());
+
+        if (file.getName().contains("crash")) {
+            name += "-crash";
+        } else if (file.getName().contains("logger")) {
+            name += "-logger";
+        } else if (file.getName().contains("scanner")) {
+            name += "-scanner";
+        }
+
         File dest = new File(file.getParent(), name + "." +
                 StringUtils.getSuffix(file.getName()));
-        Log.i(TAG, dest.toString());
+        Log.i(TAG, "rename " + file + " to " + dest);
         if (!file.renameTo(dest)) {
             Log.e(TAG, "Failed to rename " + file + " to " + dest);
         }

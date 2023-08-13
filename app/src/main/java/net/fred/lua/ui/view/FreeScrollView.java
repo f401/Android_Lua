@@ -5,7 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
-import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -14,8 +14,8 @@ import android.widget.OverScroller;
 
 import androidx.annotation.Nullable;
 
+import net.fred.lua.R;
 import net.fred.lua.common.Logger;
-import net.fred.lua.editor.Document;
 
 // Based on https://github.com/TIIEHenry/CodeEditor/blob/master/CodeEditor/src/main/java/tiiehenry/code/view/TouchNavigationMethod.java
 public class FreeScrollView extends View {
@@ -33,26 +33,31 @@ public class FreeScrollView extends View {
     public static final float TEXT_MIN_SIZE = 8f;
     public static final float TEXT_MAX_SIZE = 80f;
 
+    private final Runnable dismissBoundaryPromptTask = new Runnable() {
+        @Override
+        public void run() {
+            dismissBoundaryPrompt();
+        }
+    };
+
     private GestureDetector mGestureDetector;
     private ScaleGestureDetector mScaleGestureDetector;
     private OverScroller mScroller;
     private float mScaleFactor;
     private Paint mLineBrush, mBoundaryPaint;
     private int mDrawBoundaryPrompt;
-    private Document mDocument;
 
     public FreeScrollView(Context context) {
-        super(context);
+        super(new ContextThemeWrapper(context, R.style.scrollbars_wrapper));
         init(context);
     }
 
     public FreeScrollView(Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
-        init(context);
+        this(context, attrs, 0);
     }
 
     public FreeScrollView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
+        super(new ContextThemeWrapper(context, R.style.scrollbars_wrapper), attrs, defStyleAttr);
         init(context);
     }
 
@@ -73,8 +78,6 @@ public class FreeScrollView extends View {
         mScaleFactor = 1.0f;
         mDrawBoundaryPrompt = 0;
 
-        mDocument = Document.open();
-
         setFocusable(true);
         setFocusableInTouchMode(true);
 
@@ -82,6 +85,10 @@ public class FreeScrollView extends View {
         setVerticalScrollBarEnabled(true);
         setHorizontalFadingEdgeEnabled(true);
         setVerticalFadingEdgeEnabled(true);
+        setScrollbarFadingEnabled(false);
+        setScrollBarSize(20);
+
+        setWillNotDraw(false);
     }
 
     protected TouchNavigation constructTouchNavigation() {
@@ -106,15 +113,10 @@ public class FreeScrollView extends View {
         return size;
     }
 
-    @Override
-    public void computeScroll() {
-        if (mScroller.computeScrollOffset()) {
-            scrollTo(mScroller.getCurrX(), mScroller.getCurrY());
-        }
-    }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        awakenScrollBars();
         mScaleGestureDetector.onTouchEvent(event);
         if (!mGestureDetector.onTouchEvent(event)) {
             onUp();
@@ -132,7 +134,7 @@ public class FreeScrollView extends View {
     public void dismissBoundaryPrompt() {
         if (mDrawBoundaryPrompt != 0) {
             mDrawBoundaryPrompt = 0;
-            invalidate();
+            postInvalidate();
         }
     }
 
@@ -184,10 +186,14 @@ public class FreeScrollView extends View {
 
     }
 
+    private void drawScrollBar(Canvas canvas) {
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         canvas.save();
         realDrawBoundaryPrompt(canvas);
+        drawScrollBar(canvas);
         canvas.drawText("1", rowHeight(), rowHeight(), mLineBrush);
         canvas.drawText("1", getWidth() / 2f, getHeight() / 2f, mLineBrush);
 
@@ -195,8 +201,6 @@ public class FreeScrollView extends View {
         super.onDraw(canvas);
         canvas.restore();
     }
-
-
 
     public int rowHeight() {
         Paint.FontMetricsInt fontMetrics = mLineBrush.getFontMetricsInt();
@@ -241,6 +245,16 @@ public class FreeScrollView extends View {
         super.scrollTo(x, y);
     }
 
+    @Override
+    public void computeScroll() {
+        if (mScroller.computeScrollOffset()) {
+            scrollTo(mScroller.getCurrX(), mScroller.getCurrY());
+            if (mDrawBoundaryPrompt > 0) {
+                postDelayed(dismissBoundaryPromptTask, 1000);
+            }
+        }
+    }
+
     protected int getMaxScrollX() {
         return getWidth() * 2;
     }
@@ -251,14 +265,8 @@ public class FreeScrollView extends View {
 
     @Override
     protected int computeVerticalScrollRange() {
-        return mDocument.getRowCount() * rowHeight() + getPaddingTop() + getPaddingBottom();
-//        return getHeight() * 2;
-    }
-
-    @Override
-    protected void onScrollChanged(int l, int t, int oldl, int oldt) {
-        Log.i("Scroll", awakenScrollBars(0) + "");
-        super.onScrollChanged(l, t, oldl, oldt);
+//        return mDocument.getRowCount() * rowHeight() + getPaddingTop() + getPaddingBottom();
+        return getHeight() * 2;
     }
 
     /**

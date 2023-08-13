@@ -7,4 +7,8 @@
         <item name="colorAccent">@color/cyan</item>
     </style>
 
+    <style name="scrollbars_wrapper">
+        <item name="android:scrollbars">horizontal|vertical</item>
+    </style>
+
 </resources>
