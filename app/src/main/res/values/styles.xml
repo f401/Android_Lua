@@ -9,6 +9,10 @@
 
     <style name="scrollbars_wrapper">
         <item name="android:scrollbars">horizontal|vertical</item>
+        <item name="android:scrollbarThumbHorizontal">@color/dark_gray</item>
+        <item name="android:scrollbarThumbVertical">@color/dark_gray</item>
+        <item name="android:scrollbarTrackHorizontal">@color/light_gray</item>
+        <item name="android:scrollbarTrackVertical">@color/light_gray</item>
     </style>
 
 </resources>

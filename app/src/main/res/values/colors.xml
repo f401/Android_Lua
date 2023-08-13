@@ -7,6 +7,7 @@
     <color name="white">#FAFAFA</color>
 
     <color name="cyan">#03DAC5</color>
-
+    <color name="light_gray">#D8D9D8</color>
+    <color name="dark_gray">#C1C2C1</color>
 
 </resources>

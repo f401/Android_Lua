@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.ContextThemeWrapper;
 import android.view.GestureDetector;
@@ -16,10 +17,11 @@ import androidx.annotation.Nullable;
 
 import net.fred.lua.R;
 import net.fred.lua.common.Logger;
+import net.fred.lua.common.utils.MathUtils;
 
 // Based on https://github.com/TIIEHenry/CodeEditor/blob/master/CodeEditor/src/main/java/tiiehenry/code/view/TouchNavigationMethod.java
 public class FreeScrollView extends View {
-    public static final int SCROLLBAR_SIZE = 20;
+    public static final int SCROLLBAR_SIZE = MathUtils.dp2px(10);
     public static final int BOUNDARY_PROMPT_MAX_TOP = 100;
 
     public static final int TOP_BOUNDARY_PROMPT = 1;
@@ -46,6 +48,7 @@ public class FreeScrollView extends View {
     private float mScaleFactor;
     private Paint mLineBrush, mBoundaryPaint;
     private int mDrawBoundaryPrompt;
+    private Rect mHorizontalScrollBarRect, mVerticalScrollBarRect;
 
     public FreeScrollView(Context context) {
         super(new ContextThemeWrapper(context, R.style.scrollbars_wrapper));
@@ -73,7 +76,7 @@ public class FreeScrollView extends View {
         mLineBrush.setTextSize(50f);
 
         mBoundaryPaint = new Paint();
-        mBoundaryPaint.setColor(Color.GRAY);
+        mBoundaryPaint.setColor(Color.LTGRAY);
 
         mScaleFactor = 1.0f;
         mDrawBoundaryPrompt = 0;
@@ -88,11 +91,45 @@ public class FreeScrollView extends View {
         setScrollbarFadingEnabled(false);
         setScrollBarSize(SCROLLBAR_SIZE);
 
+
         setWillNotDraw(false);
+    }
+
+    private void initVerticalScrollBarRect() {
+        if (mVerticalScrollBarRect == null) {
+            mVerticalScrollBarRect = new Rect(); //lazy init
+            mVerticalScrollBarRect.left = getContentWidth() - getVerticalScrollbarWidth();
+            mVerticalScrollBarRect.right = getContentWidth();
+        }
+        //These values change very quickly, so we need to update them
+        float scrollBarPos = (float) getContentHeight() / computeVerticalScrollRange();
+        int scrollBarHeight = (int) scrollBarPos * getHeight();
+
+        mVerticalScrollBarRect.top = (int) scrollBarPos * getScrollY();
+        mVerticalScrollBarRect.bottom = mVerticalScrollBarRect.top + scrollBarHeight;
+    }
+
+    public boolean isOnVerticalScrollBarTrack(int x, int y) {
+        initVerticalScrollBarRect();
+        return mVerticalScrollBarRect.contains(x, y);
     }
 
     protected TouchNavigation constructTouchNavigation() {
         return new TouchNavigation(this);
+    }
+
+    /*
+     The only methods that have to worry about padding are invalidate, draw
+     and computeVerticalScrollRange() methods. Other methods can assume that
+     the text completely fills a rectangular viewport given by getContentWidth()
+     and getContentHeight()
+    */
+    protected int getContentHeight() {
+        return getHeight() - getPaddingTop() - getPaddingBottom();
+    }
+
+    protected int getContentWidth() {
+        return getWidth() - getPaddingLeft() - getPaddingRight();
     }
 
     @Override
@@ -183,17 +220,12 @@ public class FreeScrollView extends View {
                     getScrollY() + getHeight(),
                     -90f, -180f, true, mBoundaryPaint);
         }
-
-    }
-
-    private void drawScrollBar(Canvas canvas) {
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         canvas.save();
         realDrawBoundaryPrompt(canvas);
-        drawScrollBar(canvas);
         canvas.drawText("1", rowHeight(), rowHeight(), mLineBrush);
         canvas.drawText("1", getWidth() / 2f, getHeight() / 2f, mLineBrush);
 
