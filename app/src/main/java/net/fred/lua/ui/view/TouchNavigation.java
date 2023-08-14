@@ -1,5 +1,6 @@
 package net.fred.lua.ui.view;
 
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -7,19 +8,25 @@ import android.view.ScaleGestureDetector;
 import androidx.annotation.NonNull;
 
 public class TouchNavigation extends GestureDetector.SimpleOnGestureListener implements ScaleGestureDetector.OnScaleGestureListener {
+    public static final int SCROLLBAR_HORIZONTAL = 1;
+    public static final int SCROLLBAR_VERTICAL = 2;
+
     private final FreeScrollView freeSv;
-    private boolean touchedVerticalScrollBar;
+    private int touchedScrollBar;
 
     public TouchNavigation(FreeScrollView freeScrollView) {
         this.freeSv = freeScrollView;
-        this.touchedVerticalScrollBar = false;
+        this.touchedScrollBar = 0;
     }
 
     @Override
     public boolean onScroll(@NonNull MotionEvent e1, @NonNull MotionEvent e2, float distanceX, float distanceY) {
-        if (touchedVerticalScrollBar) {
+        if (touchedScrollBar == SCROLLBAR_VERTICAL) {
             float scrollPos = (float) freeSv.computeVerticalScrollRange() / freeSv.getContentHeight();
             freeSv.smoothScrollBy(0, (int) -(distanceY * scrollPos));
+        } else if (touchedScrollBar == SCROLLBAR_HORIZONTAL) {
+            float scrollPos = (float) freeSv.computeHorizontalScrollRange() / freeSv.getContentWidth();
+            freeSv.smoothScrollBy((int) -(distanceX * scrollPos), 0);
         } else {
             freeSv.scrollBy((int) distanceX, (int) distanceY);
         }
@@ -31,20 +38,19 @@ public class TouchNavigation extends GestureDetector.SimpleOnGestureListener imp
         int x = freeSv.screenToViewX((int) e.getX()),
                 y = freeSv.screenToViewY((int) e.getY());
         boolean onVerticalScrollbarTrack = freeSv.isOnVerticalScrollBarTrack(x, y);
-        if (onVerticalScrollbarTrack) {
-            touchedVerticalScrollBar = true;
-            if (freeSv.isOnVerticalScrollbar(x, y)) {
-                freeSv.extendScrollbar(true);
-                return false;//User may scroll bar.
+        boolean onHorizontalScrollbarTrack = freeSv.isOnHorizontalScrollbarTrack(x, y);
+        Log.i("onDown", onVerticalScrollbarTrack + " " + onHorizontalScrollbarTrack);
+        if (onVerticalScrollbarTrack || onHorizontalScrollbarTrack) {
+            if (onVerticalScrollbarTrack) {
+                touchedScrollBar = SCROLLBAR_VERTICAL;
             } else {
-                freeSv.extendScrollbar(false);
-                float scrollPos = (float) freeSv.computeVerticalScrollRange() / freeSv.getContentHeight();
-                freeSv.smoothScrollTo(0, (int) (scrollPos * e.getY()));
+                touchedScrollBar = SCROLLBAR_HORIZONTAL;
             }
-            return true;
+            freeSv.extendScrollbar(false);
+            return false;
         }
-        if (touchedVerticalScrollBar) {
-            touchedVerticalScrollBar = false;
+        if (touchedScrollBar > 0) {//has touched
+            touchedScrollBar = 0;
             freeSv.shrinkScrollbar(false);
         }
         return false;
@@ -58,7 +64,13 @@ public class TouchNavigation extends GestureDetector.SimpleOnGestureListener imp
 
     @Override
     public boolean onSingleTapConfirmed(@NonNull MotionEvent e) {
-        if (freeSv.isScrolling()) {
+        if (touchedScrollBar == SCROLLBAR_VERTICAL) {
+            float scrollPos = (float) freeSv.computeVerticalScrollRange() / freeSv.getContentHeight();
+            freeSv.smoothScrollTo(freeSv.getScrollX(), (int) (scrollPos * e.getY()));
+        } else if (touchedScrollBar == SCROLLBAR_HORIZONTAL) {
+            float scrollPos = (float) freeSv.computeHorizontalScrollRange() / freeSv.getContentWidth();
+            freeSv.smoothScrollTo((int) (scrollPos * e.getX()), freeSv.getScrollY());
+        } else if (freeSv.isScrolling()) {
             freeSv.stopScroll();
         }
         return true;
@@ -86,4 +98,5 @@ public class TouchNavigation extends GestureDetector.SimpleOnGestureListener imp
     public void onScaleEnd(@NonNull ScaleGestureDetector detector) {
 
     }
+
 }

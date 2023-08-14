@@ -132,18 +132,20 @@ public class FreeScrollView extends View {
             mHorizontalScrollBarTrackRect = new Rect();
         }
         mHorizontalScrollBarTrackRect.left = getScrollX();
-        mHorizontalScrollBarTrackRect.right = getScrollX() + getContentWidth();
+        mHorizontalScrollBarTrackRect.right = getScrollX() + getContentWidth() - getVerticalScrollbarWidth();
 
         mHorizontalScrollBarTrackRect.top = getScrollY() + getContentHeight() - getHorizontalScrollbarHeight();
-        mHorizontalScrollBarRect.bottom = getScrollY() + getContentHeight();
+        mHorizontalScrollBarTrackRect.bottom = getScrollY() + getContentHeight();
     }
 
     private void initHorizontalScrollBarRect() {
         if (mHorizontalScrollBarRect == null) {
             mHorizontalScrollBarRect = new Rect();
         }
-        float scrollPos = (float) getContentWidth() / computeHorizontalScrollRange();
-        int barWidth = (int) (scrollPos * getContentWidth());
+        int realContentWidth = getContentWidth() - getVerticalScrollbarWidth();
+        // We need to exclude the vertical scrollbar section
+        float scrollPos = (float) realContentWidth / computeHorizontalScrollRange();
+        int barWidth = (int) (scrollPos * realContentWidth);
 
         mHorizontalScrollBarRect.left = (int) (getScrollX() * scrollPos);
         mHorizontalScrollBarRect.right = mHorizontalScrollBarRect.left + barWidth;
