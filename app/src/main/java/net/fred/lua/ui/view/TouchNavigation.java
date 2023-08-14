@@ -1,6 +1,5 @@
 package net.fred.lua.ui.view;
 
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -39,7 +38,6 @@ public class TouchNavigation extends GestureDetector.SimpleOnGestureListener imp
                 y = freeSv.screenToViewY((int) e.getY());
         boolean onVerticalScrollbarTrack = freeSv.isOnVerticalScrollBarTrack(x, y);
         boolean onHorizontalScrollbarTrack = freeSv.isOnHorizontalScrollbarTrack(x, y);
-        Log.i("onDown", onVerticalScrollbarTrack + " " + onHorizontalScrollbarTrack);
         if (onVerticalScrollbarTrack || onHorizontalScrollbarTrack) {
             if (onVerticalScrollbarTrack) {
                 touchedScrollBar = SCROLLBAR_VERTICAL;
