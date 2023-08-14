@@ -5,7 +5,6 @@ import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -98,10 +97,16 @@ public class App extends Application {
             CrashHandler.getInstance().install(this);
         }
 
-        Log.i("Application", "redirecting stream");
         redirectOutAndErrStreamToLog();
 
-        Breakpad.init(CacheDirectoryManager.getInstance().getNativeCrashDirectory().toString());
+        Logger.i("Starting new thread for initializing breakpad");
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Breakpad.init(CacheDirectoryManager.getInstance().getNativeCrashDirectory().toString());
+                Logger.i("Breakpad already initialization.");
+            }
+        }).start();
     }
 
     /**

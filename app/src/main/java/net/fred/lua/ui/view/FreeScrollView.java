@@ -21,7 +21,8 @@ import net.fred.lua.common.utils.MathUtils;
 
 // Based on https://github.com/TIIEHenry/CodeEditor/blob/master/CodeEditor/src/main/java/tiiehenry/code/view/TouchNavigationMethod.java
 public class FreeScrollView extends View {
-    public static final int SCROLLBAR_SIZE = MathUtils.dp2px(10);
+    public static final int SCROLLBAR_EXTEND_SIZE = MathUtils.dp2px(20);
+    public static int SCROLLBAR_DEFAULT_SIZE;
     public static final int BOUNDARY_PROMPT_MAX_TOP = 100;
 
     public static final int TOP_BOUNDARY_PROMPT = 1;
@@ -48,7 +49,8 @@ public class FreeScrollView extends View {
     private float mScaleFactor;
     private Paint mLineBrush, mBoundaryPaint;
     private int mDrawBoundaryPrompt;
-    private Rect mHorizontalScrollBarRect, mVerticalScrollBarRect;
+    private Rect mHorizontalScrollBarRect, mVerticalScrollBarTrackRect,
+            mHorizontalScrollBarTrackRect, mVerticalScrollBarRect;
 
     public FreeScrollView(Context context) {
         super(new ContextThemeWrapper(context, R.style.scrollbars_wrapper));
@@ -81,6 +83,8 @@ public class FreeScrollView extends View {
         mScaleFactor = 1.0f;
         mDrawBoundaryPrompt = 0;
 
+        SCROLLBAR_DEFAULT_SIZE = getScrollBarSize();
+
         setFocusable(true);
         setFocusableInTouchMode(true);
 
@@ -89,28 +93,94 @@ public class FreeScrollView extends View {
         setHorizontalFadingEdgeEnabled(true);
         setVerticalFadingEdgeEnabled(true);
         setScrollbarFadingEnabled(false);
-        setScrollBarSize(SCROLLBAR_SIZE);
-
+        setScrollBarSize(SCROLLBAR_DEFAULT_SIZE);
 
         setWillNotDraw(false);
     }
 
-    private void initVerticalScrollBarRect() {
-        if (mVerticalScrollBarRect == null) {
-            mVerticalScrollBarRect = new Rect(); //lazy init
-            mVerticalScrollBarRect.left = getContentWidth() - getVerticalScrollbarWidth();
-            mVerticalScrollBarRect.right = getContentWidth();
+    public void extendScrollbar(boolean invalidate) {
+        if (getScrollBarSize() != SCROLLBAR_EXTEND_SIZE) {
+            setScrollBarSize(SCROLLBAR_EXTEND_SIZE);
+            if (invalidate) {
+                postInvalidate();
+            }
         }
-        //These values change very quickly, so we need to update them
-        float scrollBarPos = (float) getContentHeight() / computeVerticalScrollRange();
-        int scrollBarHeight = (int) scrollBarPos * getHeight();
+    }
 
-        mVerticalScrollBarRect.top = (int) scrollBarPos * getScrollY();
-        mVerticalScrollBarRect.bottom = mVerticalScrollBarRect.top + scrollBarHeight;
+    public void shrinkScrollbar(boolean invalidate) {
+        if (getScrollBarSize() != SCROLLBAR_DEFAULT_SIZE) {
+            setScrollBarSize(SCROLLBAR_DEFAULT_SIZE);
+            if (invalidate) {
+                postInvalidate();
+            }
+        }
+    }
+
+    private void initVerticalScrollBarTrackRect() {
+        if (mVerticalScrollBarTrackRect == null) {
+            mVerticalScrollBarTrackRect = new Rect(); //lazy init
+        }
+        mVerticalScrollBarTrackRect.left = getScrollX() + getContentWidth() - getVerticalScrollbarWidth();
+        mVerticalScrollBarTrackRect.right = getScrollX() + getContentWidth();
+
+        mVerticalScrollBarTrackRect.top = getScrollY();
+        mVerticalScrollBarTrackRect.bottom = getScrollY() + getContentHeight();
+    }
+
+    private void initHorizontalScrollBarTrackRect() {
+        if (mHorizontalScrollBarTrackRect == null) {
+            mHorizontalScrollBarTrackRect = new Rect();
+        }
+        mHorizontalScrollBarTrackRect.left = getScrollX();
+        mHorizontalScrollBarTrackRect.right = getScrollX() + getContentWidth();
+
+        mHorizontalScrollBarTrackRect.top = getScrollY() + getContentHeight() - getHorizontalScrollbarHeight();
+        mHorizontalScrollBarRect.bottom = getScrollY() + getContentHeight();
+    }
+
+    private void initHorizontalScrollBarRect() {
+        if (mHorizontalScrollBarRect == null) {
+            mHorizontalScrollBarRect = new Rect();
+        }
+        float scrollPos = (float) getContentWidth() / computeHorizontalScrollRange();
+        int barWidth = (int) (scrollPos * getContentWidth());
+
+        mHorizontalScrollBarRect.left = (int) (getScrollX() * scrollPos);
+        mHorizontalScrollBarRect.right = mHorizontalScrollBarRect.left + barWidth;
+        mHorizontalScrollBarRect.top = getScrollY() + getContentHeight() - getHorizontalScrollbarHeight();
+        mHorizontalScrollBarRect.left = getScrollY() + getContentHeight();
+    }
+
+    private void initVerticalScrollbarRect() {
+        if (mVerticalScrollBarRect == null) {
+            mVerticalScrollBarRect = new Rect();
+        }
+        float scrollPos = (float) getContentHeight() / computeVerticalScrollRange();
+        int barHeight = (int) (getContentHeight() * scrollPos);
+
+        mVerticalScrollBarRect.left = getScrollX() + getContentWidth() - getVerticalScrollbarWidth();
+        mVerticalScrollBarRect.right = getScrollX() + getContentWidth();
+        mVerticalScrollBarRect.top = (int) (getScrollY() * scrollPos);
+        mVerticalScrollBarRect.bottom = mVerticalScrollBarRect.top + barHeight;
     }
 
     public boolean isOnVerticalScrollBarTrack(int x, int y) {
-        initVerticalScrollBarRect();
+        initVerticalScrollBarTrackRect();
+        return mVerticalScrollBarTrackRect.contains(x, y);
+    }
+
+    public boolean isOnHorizontalScrollbarTrack(int x, int y) {
+        initHorizontalScrollBarTrackRect();
+        return mHorizontalScrollBarTrackRect.contains(x, y);
+    }
+
+    public boolean isOnHorizontalScrollbar(int x, int y) {
+        initHorizontalScrollBarRect();
+        return mHorizontalScrollBarRect.contains(x, y);
+    }
+
+    public boolean isOnVerticalScrollbar(int x, int y) {
+        initVerticalScrollbarRect();
         return mVerticalScrollBarRect.contains(x, y);
     }
 
@@ -214,7 +284,7 @@ public class FreeScrollView extends View {
 
         if ((mDrawBoundaryPrompt & RIGHT_BOUNDARY_PROMPT) > 0) {
             Logger.i("RIGHT");
-            canvas.drawArc(getScrollX() + getWidth() - BOUNDARY_PROMPT_MAX_TOP,
+            canvas.drawArc(getScrollX() + getContentWidth() - BOUNDARY_PROMPT_MAX_TOP,
                     getScrollY(),
                     getScrollX() + getWidth() + BOUNDARY_PROMPT_MAX_TOP,
                     getScrollY() + getHeight(),
@@ -277,6 +347,17 @@ public class FreeScrollView extends View {
         super.scrollTo(x, y);
     }
 
+    public void smoothScrollTo(int targetX, int targetY) {
+        smoothScrollBy(targetX - getScrollX(),
+                targetY - getScrollY());
+    }
+
+    public void smoothScrollBy(int distanceX, int distanceY) {
+        mScroller.startScroll(getScrollX(), getScrollY(),
+                distanceX, distanceY);
+        postInvalidate();
+    }
+
     @Override
     public void computeScroll() {
         if (mScroller.computeScrollOffset()) {
@@ -299,6 +380,11 @@ public class FreeScrollView extends View {
     protected int computeVerticalScrollRange() {
 //        return mDocument.getRowCount() * rowHeight() + getPaddingTop() + getPaddingBottom();
         return getHeight() * 2;
+    }
+
+    @Override
+    protected int computeHorizontalScrollRange() {
+        return getWidth() * 2;
     }
 
     /**
