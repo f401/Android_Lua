@@ -15,7 +15,6 @@ import net.fred.lua.foreign.types.base.Type;
  * Attention: Cannot call macro functions!!!
  */
 public class FunctionCaller extends MemoryController {
-    private static final Pointer.PointerType POINTER_TYPE = Pointer.ofType();
     private final FunctionDescriber describer;
     private final Pointer funcAddress;
 
