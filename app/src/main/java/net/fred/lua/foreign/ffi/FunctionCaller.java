@@ -8,7 +8,7 @@ import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.internal.MemoryController;
 import net.fred.lua.foreign.internal.MemorySegment;
-import net.fred.lua.foreign.types.Type;
+import net.fred.lua.foreign.types.base.Type;
 
 /**
  * The function caller of the native layer.
@@ -62,7 +62,7 @@ public class FunctionCaller extends MemoryController {
 
         long returnSize = describer.getReturnType().getSize(null);
         Pointer returnPointer = null;
-        if (returnSize != 0) {
+        if (returnSize != 0) { //not is void
             MemorySegment returnSegment = MemorySegment.create(returnSize);
             addChild(returnSegment);
             returnPointer = returnSegment.getPointer();

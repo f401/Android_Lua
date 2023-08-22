@@ -1,6 +1,7 @@
 package net.fred.lua.foreign.types;
 
 import net.fred.lua.foreign.Pointer;
+import net.fred.lua.foreign.types.base.Type;
 
 public class PrimaryTypes {
     public static final Type<Pointer> POINTER = Pointer.ofType();

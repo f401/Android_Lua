@@ -36,6 +36,7 @@ import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.internal.MemoryController;
 import net.fred.lua.foreign.internal.MemorySegment;
+import net.fred.lua.foreign.types.base.PointerType;
 
 import java.util.concurrent.ConcurrentHashMap;
 

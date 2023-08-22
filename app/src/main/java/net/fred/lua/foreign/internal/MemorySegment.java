@@ -5,7 +5,7 @@ import androidx.annotation.NonNull;
 import net.fred.lua.common.ArgumentsChecker;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
-import net.fred.lua.foreign.types.Type;
+import net.fred.lua.foreign.types.base.Type;
 
 public class MemorySegment extends BasicMemoryController {
     private final long size;

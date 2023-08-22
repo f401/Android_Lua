@@ -11,7 +11,7 @@ import net.fred.lua.foreign.internal.ForeignValues;
 import net.fred.lua.foreign.internal.MemoryAccessor;
 import net.fred.lua.foreign.internal.MemorySegment;
 import net.fred.lua.foreign.types.PointerTypeImpl;
-import net.fred.lua.foreign.types.Type;
+import net.fred.lua.foreign.types.base.Type;
 
 import java.util.Objects;
 

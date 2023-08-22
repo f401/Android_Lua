@@ -1,6 +1,7 @@
 package net.fred.lua.foreign.types;
 
 import net.fred.lua.common.ArgumentsChecker;
+import net.fred.lua.foreign.types.base.PointerType;
 
 public abstract class PointerTypeImpl<T> implements PointerType<T> {
     protected boolean writeAsPointer;

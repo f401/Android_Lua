@@ -9,7 +9,7 @@ import net.fred.lua.foreign.internal.ForeignValues;
 import net.fred.lua.foreign.internal.MemoryController;
 import net.fred.lua.foreign.internal.MemorySegment;
 import net.fred.lua.foreign.types.PrimaryTypeWrapper;
-import net.fred.lua.foreign.types.Type;
+import net.fred.lua.foreign.types.base.Type;
 
 public final class FunctionDescriber extends MemoryController {
 

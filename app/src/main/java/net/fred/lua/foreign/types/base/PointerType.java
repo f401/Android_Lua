@@ -1,4 +1,4 @@
-package net.fred.lua.foreign.types;
+package net.fred.lua.foreign.types.base;
 
 
 /**

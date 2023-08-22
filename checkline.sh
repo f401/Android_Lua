@@ -20,7 +20,9 @@ done
 #for i in `find . -name "*.cpp"`;do ((line+=`cat -n $i | tail -n 1 | awk '{print $1}'`)) ; done
 #for i in `find . -name "*.c"`;do ((line+=`cat -n $i | tail -n 1 | awk '{print $1}'`)) ; done
 
-echo "***-----------***------Result------***-----------"
+echo "***********************Result*************************"
 echo ""
-echo "lines: $line"
-echo "Max line: $maxLine, file: $maxLineFile"
+echo "Max   line: $maxLine, file: $maxLineFile"
+echo "Total line: $line"
+echo ""
+echo "******************************************************"
