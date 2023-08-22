@@ -134,6 +134,12 @@ public class CacheDirectoryManager {
                 FileUtils.forceDelete(curr);
             }
         } catch (IOException e) {
+            if (zos != null) {
+                try {
+                    zos.closeArchiveEntry();// protect zip file
+                } catch (IOException ignored) {
+                }
+            }
             Log.e(TAG, e.getMessage());
         } finally {
             ThrowableUtils.closeAll(zos);
