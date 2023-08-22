@@ -1,5 +1,6 @@
 #include <jni.h>
 #include <string>
+#include <android/log.h>
 
 extern "C" {
 #include <stdlib.h>
@@ -186,11 +187,17 @@ static int registerMethods(JNIEnv *env) {
     jclass mem_acc = env->FindClass("net/fred/lua/foreign/internal/MemoryAccessor");
     jclass dll = env->FindClass("net/fred/lua/foreign/core/DynamicLoadingLibrary");
     jclass seg = env->FindClass("net/fred/lua/foreign/internal/MemorySegment");
-    env->RegisterNatives(mem_acc,
-                         memoryAccessorMethods,
-                         sizeof(memoryAccessorMethods) / sizeof(memoryAccessorMethods[0]));
-    env->RegisterNatives(dll, dllMethods, sizeof(dllMethods) / sizeof(dllMethods[0]));
-    env->RegisterNatives(seg, seg_methods, sizeof(seg_methods) / sizeof(seg_methods[0]));
+    if (env->RegisterNatives(mem_acc,
+                             memoryAccessorMethods,
+                             sizeof(memoryAccessorMethods) / sizeof(memoryAccessorMethods[0])) ==
+        JNI_ERR ||
+        env->RegisterNatives(dll, dllMethods, sizeof(dllMethods) / sizeof(dllMethods[0])) ==
+        JNI_ERR ||
+        env->RegisterNatives(seg, seg_methods, sizeof(seg_methods) / sizeof(seg_methods[0])) ==
+        JNI_ERR) {
+        throwNativeException(env, "Failed to register natives.");
+        return JNI_ERR;
+    }
     return JNI_OK;
 }
 
@@ -199,7 +206,8 @@ jint JNI_OnLoad(JavaVM *vm, void *reversed) {
     jint version = JNI_ERR;
     JNIEnv *env = nullptr;
 
-    if (vm->GetEnv((void **) &env, JNI_VERSION_1_1) == JNI_OK) {
+    if (vm->GetEnv((void **) &env, JNI_VERSION_1_1) == JNI_OK &&
+        registerMethods(env) == JNI_OK) {
         version = JNI_VERSION_1_6;
     }
 

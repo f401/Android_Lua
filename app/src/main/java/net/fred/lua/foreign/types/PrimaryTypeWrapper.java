@@ -31,6 +31,7 @@ import static net.fred.lua.foreign.internal.MemoryAccessor.putShort;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import net.fred.lua.common.ArgumentsChecker;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.internal.MemoryController;
@@ -239,23 +240,24 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements PointerTy
     }
 
     private final PrimaryType<T> mapperAs;
-    private boolean writeAsPointer, signed;
+    private boolean writeAsPointer;
+    private boolean signed;
+    private boolean mutable;
 
-    public PrimaryTypeWrapper(boolean writeAsPointer, PrimaryType<T> mapperAs, boolean signed) {
+    public PrimaryTypeWrapper(boolean writeAsPointer, boolean signed, boolean mutable, PrimaryType<T> mapperAs) {
         this.writeAsPointer = writeAsPointer;
         this.mapperAs = mapperAs;
         this.signed = signed;
+        this.mutable = mutable;
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> PrimaryTypeWrapper<T> of(Class<T> clazz) {
-        return new PrimaryTypeWrapper<>(false, (PrimaryType<T>) map.get(clazz), true);
+    public static <T> PrimaryTypeWrapper<T> of(Class<T> clazz, boolean mutable) {
+        return new PrimaryTypeWrapper<>(false, true, mutable, (PrimaryType<T>) map.get(clazz));
     }
 
-    @Override
-    public PrimaryTypeWrapper<T> setWriteAsPointer(boolean writeAsPointer) {
-        this.writeAsPointer = writeAsPointer;
-        return this;
+    public static <T> PrimaryTypeWrapper<T> of(Class<T> clazz) {
+        return of(clazz, true);
     }
 
     @Override
@@ -290,7 +292,20 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements PointerTy
     }
 
     public PrimaryTypeWrapper<T> setSigned(boolean signed) {
+        ArgumentsChecker.checkState(mutable, "This is immutable.");
         this.signed = signed;
+        return this;
+    }
+
+    @Override
+    public PrimaryTypeWrapper<T> setWriteAsPointer(boolean writeAsPointer) {
+        ArgumentsChecker.checkState(mutable, "This is immutable.");
+        this.writeAsPointer = writeAsPointer;
+        return this;
+    }
+
+    PrimaryTypeWrapper<T> setMutable(boolean mutable) {
+        this.mutable = mutable;
         return this;
     }
 

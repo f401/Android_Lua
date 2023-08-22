@@ -1,4 +1,4 @@
-package net.fred.lua.foreign.core;
+package net.fred.lua.foreign.types;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -11,7 +11,6 @@ import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.internal.ForeignValues;
 import net.fred.lua.foreign.internal.MemoryAccessor;
 import net.fred.lua.foreign.internal.MemorySegment;
-import net.fred.lua.foreign.types.PointerTypeImpl;
 
 public final class ForeignString extends MemorySegment {
 
@@ -61,8 +60,12 @@ public final class ForeignString extends MemorySegment {
 
     public static class ForeignStringType extends PointerTypeImpl<ForeignString> {
 
-        protected ForeignStringType() {
-            super(true);
+        ForeignStringType() {
+            this(true);
+        }
+
+        ForeignStringType(boolean mutable) {
+            super(true, mutable);
         }
 
         @Override

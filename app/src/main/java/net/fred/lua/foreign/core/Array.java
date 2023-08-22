@@ -76,7 +76,7 @@ public class Array<T> extends MemorySegment {
         private final long size;
 
         protected ArrayType(Type<T> type, long size) {
-            super(true);
+            super(true, true);
             this.size = size;
             this.type = type;
         }

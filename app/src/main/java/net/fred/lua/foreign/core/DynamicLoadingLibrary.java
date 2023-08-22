@@ -21,11 +21,6 @@ public final class DynamicLoadingLibrary extends BasicMemoryController {
         this.cache = new PointerLruCache();
     }
 
-    static {
-        System.loadLibrary("foreign");
-    }
-
-
     public Pointer lookupSymbol(String symbol) throws NativeMethodException {
         ArgumentsChecker.checkStringNotNullOrEmpty(symbol, "Invoker (" + ThrowableUtils.getCallerString() +
                 "), passes null symbol.");
@@ -40,7 +35,6 @@ public final class DynamicLoadingLibrary extends BasicMemoryController {
         Logger.i("Loaded library " + path + ".At 0x" + Long.toHexString(handle.get()));
         return new DynamicLoadingLibrary(handle);
     }
-
     public static native Pointer dlopen(String path, int flags) throws NativeMethodException;
 
     public static native int dlclose(Pointer ptr);
@@ -70,5 +64,9 @@ public final class DynamicLoadingLibrary extends BasicMemoryController {
                 return null;
             }
         }
+    }
+
+    static {
+        System.loadLibrary("foreign");
     }
 }

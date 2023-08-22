@@ -11,9 +11,9 @@ import net.fred.lua.common.Logger;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.core.DynamicLoadingLibrary;
-import net.fred.lua.foreign.core.ForeignString;
 import net.fred.lua.foreign.ffi.FunctionCaller;
-import net.fred.lua.foreign.types.PrimaryTypeWrapper;
+import net.fred.lua.foreign.types.ForeignString;
+import net.fred.lua.foreign.types.PrimaryTypes;
 
 public class Lua5_4 extends Lua {
     protected static DynamicLoadingLibrary dll;
@@ -30,7 +30,7 @@ public class Lua5_4 extends Lua {
         return (Pointer) getOrCreateFromCache("luaL_newstate", new Creator() {
             @Override
             public FunctionCaller action(String symbol) throws NativeMethodException {
-                return FunctionCaller.of(dll.lookupSymbol(symbol), Pointer.ofType());
+                return FunctionCaller.of(dll.lookupSymbol(symbol), PrimaryTypes.POINTER);
             }
         }).call();
     }
@@ -51,7 +51,7 @@ public class Lua5_4 extends Lua {
             @Override
             public FunctionCaller action(String symbol) throws NativeMethodException {
                 return FunctionCaller.of(dll.lookupSymbol(symbol),
-                        PrimaryTypeWrapper.of(void.class), Pointer.ofType());
+                        PrimaryTypes.VOID, PrimaryTypes.POINTER);
             }
         }).call(pointer);
     }
@@ -62,7 +62,7 @@ public class Lua5_4 extends Lua {
             @Override
             public FunctionCaller action(String symbol) throws NativeMethodException {
                 return FunctionCaller.of(dll.lookupSymbol(symbol),
-                        PrimaryTypeWrapper.of(void.class), Pointer.ofType());
+                        PrimaryTypes.VOID, PrimaryTypes.POINTER);
             }
         }).call(pointer);
     }
@@ -73,8 +73,8 @@ public class Lua5_4 extends Lua {
                     @Override
                     public FunctionCaller action(String symbol) throws NativeMethodException {
                         return FunctionCaller.of(dll.lookupSymbol(symbol),
-                                PrimaryTypeWrapper.of(int.class),
-                                Pointer.ofType(), ForeignString.ofType());
+                                PrimaryTypes.INT,
+                                PrimaryTypes.POINTER, PrimaryTypes.STRING);
                     }
                 }
         ).call(pointer, ForeignString.from(file));

@@ -39,4 +39,10 @@ public class ArgumentsChecker {
             throw new IndexOutOfBoundsException("Size: " + size + ", but index: " + idx);
         }
     }
+
+    public static void checkState(boolean state, String msg) {
+        if (!state) {
+            throw new IllegalStateException(msg);
+        }
+    }
 }
