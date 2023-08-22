@@ -10,7 +10,6 @@ import net.fred.lua.common.utils.ThrowableUtils;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.internal.BasicMemoryController;
-import net.fred.lua.foreign.internal.ForeignFunctions;
 import net.fred.lua.foreign.internal.ForeignValues;
 
 public final class DynamicLoadingLibrary extends BasicMemoryController {
@@ -22,14 +21,10 @@ public final class DynamicLoadingLibrary extends BasicMemoryController {
         this.cache = new PointerLruCache();
     }
 
-    public static DynamicLoadingLibrary open(String path) throws NativeMethodException {
-        ArgumentsChecker.checkFileExists(path
-                , "Invoker (" + ThrowableUtils.getCallerString() + "), passes null symbol.");
-
-        Pointer handle = ForeignFunctions.dlopen(path, ForeignValues.RTLD_LAZY);
-        Logger.i("Loaded library " + path + ".At 0x" + Long.toHexString(handle.get()));
-        return new DynamicLoadingLibrary(handle);
+    static {
+        System.loadLibrary("foreign");
     }
+
 
     public Pointer lookupSymbol(String symbol) throws NativeMethodException {
         ArgumentsChecker.checkStringNotNullOrEmpty(symbol, "Invoker (" + ThrowableUtils.getCallerString() +
@@ -37,10 +32,25 @@ public final class DynamicLoadingLibrary extends BasicMemoryController {
         return cache.get(symbol);
     }
 
+    public static DynamicLoadingLibrary open(String path) throws NativeMethodException {
+        ArgumentsChecker.checkFileExists(path
+                , "Invoker (" + ThrowableUtils.getCallerString() + "), passes null symbol.");
+
+        Pointer handle = dlopen(path, ForeignValues.RTLD_LAZY);
+        Logger.i("Loaded library " + path + ".At 0x" + Long.toHexString(handle.get()));
+        return new DynamicLoadingLibrary(handle);
+    }
+
+    public static native Pointer dlopen(String path, int flags) throws NativeMethodException;
+
+    public static native int dlclose(Pointer ptr);
+
+    public static native Pointer dlsym(Pointer handle, String src) throws NativeMethodException;
+
     @Override
     protected void onFree() {
         Logger.i("Release dll at " + pointer);
-        ForeignFunctions.dlclose(pointer);
+        dlclose(pointer);
     }
 
     private class PointerLruCache extends LruCache<String, Pointer> {
@@ -51,7 +61,7 @@ public final class DynamicLoadingLibrary extends BasicMemoryController {
         @Override
         protected Pointer create(@NonNull String key) {
             try {
-                Pointer ptr = ForeignFunctions.dlsym(pointer, key);
+                Pointer ptr = dlsym(pointer, key);
                 Logger.i("Loaded symbol " + key + ".At " + ptr);
                 return ptr;
             } catch (NativeMethodException e) {

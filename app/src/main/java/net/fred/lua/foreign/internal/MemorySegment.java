@@ -41,7 +41,7 @@ public class MemorySegment extends BasicMemoryController {
     @NonNull
     public static Pointer allocate(long size) throws NativeMethodException {
         ArgumentsChecker.checkSize((int) size);
-        return ForeignFunctions.alloc(size);
+        return alloc(size);
     }
 
     /**
@@ -53,12 +53,18 @@ public class MemorySegment extends BasicMemoryController {
         return size;
     }
 
-    public void put(long off, Pointer src) {
-        ForeignFunctions.putPointer(pointer.plus(off), src);
-    }
+    public static native Pointer alloc(long size) throws NativeMethodException;
 
     public void put(long off, Type<?> type, Object obj) throws NativeMethodException {
         type.write(pointer.plus(off), obj);
+    }
+
+    public static native void free(Pointer ptr);
+
+    public static native void memcpy(Pointer dest, Pointer src, long length);
+
+    public void put(long off, Pointer src) {
+        MemoryAccessor.putPointer(pointer.plus(off), src);
     }
 
 }

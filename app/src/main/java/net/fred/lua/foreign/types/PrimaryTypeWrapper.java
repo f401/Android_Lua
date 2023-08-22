@@ -1,19 +1,5 @@
 package net.fred.lua.foreign.types;
 
-import static net.fred.lua.foreign.internal.ForeignFunctions.peekByte;
-import static net.fred.lua.foreign.internal.ForeignFunctions.peekDouble;
-import static net.fred.lua.foreign.internal.ForeignFunctions.peekFloat;
-import static net.fred.lua.foreign.internal.ForeignFunctions.peekInt;
-import static net.fred.lua.foreign.internal.ForeignFunctions.peekLong;
-import static net.fred.lua.foreign.internal.ForeignFunctions.peekPointer;
-import static net.fred.lua.foreign.internal.ForeignFunctions.peekShort;
-import static net.fred.lua.foreign.internal.ForeignFunctions.putByte;
-import static net.fred.lua.foreign.internal.ForeignFunctions.putDouble;
-import static net.fred.lua.foreign.internal.ForeignFunctions.putFloat;
-import static net.fred.lua.foreign.internal.ForeignFunctions.putInt;
-import static net.fred.lua.foreign.internal.ForeignFunctions.putLong;
-import static net.fred.lua.foreign.internal.ForeignFunctions.putPointer;
-import static net.fred.lua.foreign.internal.ForeignFunctions.putShort;
 import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_DOUBLE;
 import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_FLOAT;
 import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_INT16;
@@ -21,18 +7,32 @@ import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_INT32;
 import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_INT64;
 import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_INT8;
 import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_POINTER;
-import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_UIN64;
 import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_UINT16;
 import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_UINT32;
+import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_UINT64;
 import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_UINT8;
+import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_VOID;
 import static net.fred.lua.foreign.internal.ForeignValues.SIZE_OF_POINTER;
+import static net.fred.lua.foreign.internal.MemoryAccessor.peekByte;
+import static net.fred.lua.foreign.internal.MemoryAccessor.peekDouble;
+import static net.fred.lua.foreign.internal.MemoryAccessor.peekFloat;
+import static net.fred.lua.foreign.internal.MemoryAccessor.peekInt;
+import static net.fred.lua.foreign.internal.MemoryAccessor.peekLong;
+import static net.fred.lua.foreign.internal.MemoryAccessor.peekPointer;
+import static net.fred.lua.foreign.internal.MemoryAccessor.peekShort;
+import static net.fred.lua.foreign.internal.MemoryAccessor.putByte;
+import static net.fred.lua.foreign.internal.MemoryAccessor.putDouble;
+import static net.fred.lua.foreign.internal.MemoryAccessor.putFloat;
+import static net.fred.lua.foreign.internal.MemoryAccessor.putInt;
+import static net.fred.lua.foreign.internal.MemoryAccessor.putLong;
+import static net.fred.lua.foreign.internal.MemoryAccessor.putPointer;
+import static net.fred.lua.foreign.internal.MemoryAccessor.putShort;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
-import net.fred.lua.foreign.internal.ForeignValues;
 import net.fred.lua.foreign.internal.MemoryController;
 import net.fred.lua.foreign.internal.MemorySegment;
 
@@ -58,14 +58,18 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements PointerTy
             }
 
             @Override
-            public int getSize(Object obj) {
-                return 1;
+            public Pointer getSignedFFIPointer() {
+                return FFI_TYPE_INT8;
             }
 
-            @NonNull
             @Override
-            public Pointer getFFIPointer() {
-                return signed ? FFI_TYPE_INT8 : FFI_TYPE_UINT8;
+            public Pointer getUnsignedFFIPointer() {
+                return FFI_TYPE_UINT8;
+            }
+
+            @Override
+            public int getSize() {
+                return 1;
             }
 
             @Override
@@ -81,14 +85,18 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements PointerTy
             }
 
             @Override
-            public int getSize(Object obj) {
-                return 2;
+            public Pointer getSignedFFIPointer() {
+                return FFI_TYPE_INT16;
             }
 
-            @NonNull
             @Override
-            public Pointer getFFIPointer() {
-                return signed ? FFI_TYPE_INT16 : FFI_TYPE_UINT16;
+            public Pointer getUnsignedFFIPointer() {
+                return FFI_TYPE_UINT16;
+            }
+
+            @Override
+            public int getSize() {
+                return 2;
             }
 
             @Override
@@ -103,14 +111,18 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements PointerTy
             }
 
             @Override
-            public int getSize(Object obj) {
-                return 4;
+            public Pointer getSignedFFIPointer() {
+                return FFI_TYPE_INT32;
             }
 
-            @NonNull
             @Override
-            public Pointer getFFIPointer() {
-                return signed ? FFI_TYPE_INT32 : FFI_TYPE_UINT32;
+            public Pointer getUnsignedFFIPointer() {
+                return FFI_TYPE_UINT32;
+            }
+
+            @Override
+            public int getSize() {
+                return 4;
             }
 
             @Override
@@ -126,14 +138,18 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements PointerTy
             }
 
             @Override
-            public int getSize(Object obj) {
-                return 8;
+            public Pointer getSignedFFIPointer() {
+                return FFI_TYPE_INT64;
             }
 
-            @NonNull
             @Override
-            public Pointer getFFIPointer() {
-                return signed ? FFI_TYPE_INT64 : FFI_TYPE_UIN64;
+            public Pointer getUnsignedFFIPointer() {
+                return FFI_TYPE_UINT64;
+            }
+
+            @Override
+            public int getSize() {
+                return 8;
             }
 
             @Override
@@ -148,14 +164,18 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements PointerTy
             }
 
             @Override
-            public int getSize(@Nullable Object obj) {
-                return 0;
+            public Pointer getSignedFFIPointer() {
+                return FFI_TYPE_VOID;
             }
 
-            @NonNull
             @Override
-            public Pointer getFFIPointer() {
-                return ForeignValues.FFI_TYPE_VOID;
+            public Pointer getUnsignedFFIPointer() {
+                return FFI_TYPE_VOID;
+            }
+
+            @Override
+            public int getSize() {
+                return 0;
             }
 
             @Override
@@ -170,14 +190,18 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements PointerTy
             }
 
             @Override
-            public int getSize(@Nullable Object obj) {
-                return 4;
+            public Pointer getSignedFFIPointer() {
+                return FFI_TYPE_FLOAT;
             }
 
-            @NonNull
             @Override
-            public Pointer getFFIPointer() {
+            public Pointer getUnsignedFFIPointer() {
                 return FFI_TYPE_FLOAT;
+            }
+
+            @Override
+            public int getSize() {
+                return 4;
             }
 
             @Override
@@ -193,14 +217,18 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements PointerTy
             }
 
             @Override
-            public int getSize(@Nullable Object obj) {
-                return 8;
+            public Pointer getSignedFFIPointer() {
+                return FFI_TYPE_DOUBLE;
             }
 
-            @NonNull
             @Override
-            public Pointer getFFIPointer() {
+            public Pointer getUnsignedFFIPointer() {
                 return FFI_TYPE_DOUBLE;
+            }
+
+            @Override
+            public int getSize() {
+                return 8;
             }
 
             @Override
@@ -211,16 +239,17 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements PointerTy
     }
 
     private final PrimaryType<T> mapperAs;
-    private boolean writeAsPointer;
+    private boolean writeAsPointer, signed;
 
-    public PrimaryTypeWrapper(boolean writeAsPointer, PrimaryType<T> mapperAs) {
+    public PrimaryTypeWrapper(boolean writeAsPointer, PrimaryType<T> mapperAs, boolean signed) {
         this.writeAsPointer = writeAsPointer;
         this.mapperAs = mapperAs;
+        this.signed = signed;
     }
 
     @SuppressWarnings("unchecked")
     public static <T> PrimaryTypeWrapper<T> of(Class<T> clazz) {
-        return new PrimaryTypeWrapper<>(false, (PrimaryType<T>) map.get(clazz));
+        return new PrimaryTypeWrapper<>(false, (PrimaryType<T>) map.get(clazz), true);
     }
 
     @Override
@@ -230,14 +259,14 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements PointerTy
     }
 
     @Override
-    public int getSize(Object obj) {
-        return writeAsPointer ? (int) SIZE_OF_POINTER : mapperAs.getSize(obj);
+    public int getSize(@Nullable Object obj) {
+        return writeAsPointer ? (int) SIZE_OF_POINTER : mapperAs.getSize();
     }
 
     @Nullable
     @Override
     public Pointer getFFIPointer() {
-        return writeAsPointer ? FFI_TYPE_POINTER : mapperAs.getFFIPointer();
+        return writeAsPointer ? FFI_TYPE_POINTER : (signed ? mapperAs.getSignedFFIPointer() : mapperAs.getUnsignedFFIPointer());
     }
 
     @Override
@@ -260,17 +289,20 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements PointerTy
         }
     }
 
-    public abstract static class PrimaryType<T> implements SignedUnsigned<T> {
-        protected boolean signed = false;
+    public PrimaryTypeWrapper<T> setSigned(boolean signed) {
+        this.signed = signed;
+        return this;
+    }
 
-        public abstract void write(@NonNull Pointer dest, @NonNull Object obj);
+    public interface PrimaryType<T> {
+        Pointer getSignedFFIPointer();
 
-        public abstract T read(@NonNull Pointer dest);
+        Pointer getUnsignedFFIPointer();
 
-        @Override
-        public SignedUnsigned<T> setSigned(boolean signed) {
-            this.signed = signed;
-            return this;
-        }
+        int getSize();
+
+        T read(Pointer dest);
+
+        void write(Pointer dest, Object data) throws NativeMethodException;
     }
 }

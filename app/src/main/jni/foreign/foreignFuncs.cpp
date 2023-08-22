@@ -34,10 +34,6 @@ static jobject AllocateSegment(JNIEnv *env, jclass clazz, jlong size) {
     return pointer_create(env, handle);
 }
 
-static jstring GetSystemError(JNIEnv *env, jclass clazz) {
-    return env->NewStringUTF(strerror(errno));
-}
-
 static jobject OpenDll(JNIEnv *env, jclass clazz, jstring jpath, jint flag) {
     const char *path = env->GetStringUTFChars(jpath, JNI_FALSE);
 
@@ -80,11 +76,6 @@ static jobject LookUpSymbol(JNIEnv *env, jclass clazz, jobject handle, jstring n
 
     env->ReleaseStringUTFChars(name, sym);
     return pointer_create(env, result);
-}
-
-static jlong ObtainStringLen(JNIEnv *env, jclass clazz, jobject dest) {
-    GET_POINTER_PARAM(env, dst, dest, -1);
-    return strlen((char *) dst);
 }
 
 //----------------------------------------------------------value handles-----------------------------------------------//
@@ -155,16 +146,21 @@ static jstring ReadString(JNIEnv *env, jclass clazz, jobject dest) {
 
 #undef DEF_PEEK_FUNCS
 
-const static JNINativeMethod methods[] = {
-        {"alloc",              "(J)Lnet/fred/lua/foreign/Pointer;",                                                              (void *) &AllocateSegment},
-        {"free",               "(Lnet/fred/lua/foreign/Pointer;)V",                                                              (void *) &FreePointer},
-        {"strerror",           "()Ljava/lang/String;",                                                                           (void *) &GetSystemError},
-        {"memcpy",             "(Lnet/fred/lua/foreign/Pointer;Lnet/fred/lua/foreign/Pointer;J)V",                               (void *) &CopyMemory},
-        {"dlopen",             "(Ljava/lang/String;I)Lnet/fred/lua/foreign/Pointer;",                                            (void *) &OpenDll},
-        {"dlclose",            "(Lnet/fred/lua/foreign/Pointer;)I",                                                              (void *) &CloseDll},
+const static JNINativeMethod dllMethods[] = {
+        {"dlopen",  "(Ljava/lang/String;I)Lnet/fred/lua/foreign/Pointer;",                              (void *) &OpenDll},
+        {"dlclose", "(Lnet/fred/lua/foreign/Pointer;)I",                                                (void *) &CloseDll},
         {"dlsym",
-                               "(Lnet/fred/lua/foreign/Pointer;Ljava/lang/String;)Lnet/fred/lua/foreign/Pointer;",
-                                                                                                                                 (void *) &LookUpSymbol},
+                    "(Lnet/fred/lua/foreign/Pointer;Ljava/lang/String;)Lnet/fred/lua/foreign/Pointer;", (void *) &LookUpSymbol}
+};
+
+const static JNINativeMethod seg_methods[] = {
+        {"alloc", "(J)Lnet/fred/lua/foreign/Pointer;", (void *) &AllocateSegment},
+        {"free", "(Lnet/fred/lua/foreign/Pointer;)V", (void *) &FreePointer},
+        {"memcpy", "(Lnet/fred/lua/foreign/Pointer;Lnet/fred/lua/foreign/Pointer;J)V",
+         (void *) &CopyMemory},
+};
+
+const static JNINativeMethod memoryAccessorMethods[] = {
         {"putByte",            "(Lnet/fred/lua/foreign/Pointer;B)V",                                                             (void *) &putJavabyte},
         {"putChar",            "(Lnet/fred/lua/foreign/Pointer;C)V",                                                             (void *) &putJavachar},
         {"putShort",           "(Lnet/fred/lua/foreign/Pointer;S)V",                                                             (void *) &putJavashort},
@@ -184,16 +180,18 @@ const static JNINativeMethod methods[] = {
         {"putString",          "(Lnet/fred/lua/foreign/Pointer;Ljava/lang/String;)V",
                                                                                                                                  (void *) &PutString},
         {"peekString",         "(Lnet/fred/lua/foreign/Pointer;)Ljava/lang/String;",                                             (void *) &ReadString},
-        {"obtainStringLength", "(Lnet/fred/lua/foreign/Pointer;)J",                                                              (void *) &ObtainStringLen},
 };
 
 static int registerMethods(JNIEnv *env) {
-    jclass clazz = env->FindClass("net/fred/lua/foreign/internal/ForeignFunctions");
-    if (clazz != nullptr &&
-        env->RegisterNatives(clazz, methods, sizeof(methods) / sizeof(methods[0])) == JNI_OK) {
-        return JNI_OK;
-    }
-    return JNI_ERR;
+    jclass mem_acc = env->FindClass("net/fred/lua/foreign/internal/MemoryAccessor");
+    jclass dll = env->FindClass("net/fred/lua/foreign/core/DynamicLoadingLibrary");
+    jclass seg = env->FindClass("net/fred/lua/foreign/internal/MemorySegment");
+    env->RegisterNatives(mem_acc,
+                         memoryAccessorMethods,
+                         sizeof(memoryAccessorMethods) / sizeof(memoryAccessorMethods[0]));
+    env->RegisterNatives(dll, dllMethods, sizeof(dllMethods) / sizeof(dllMethods[0]));
+    env->RegisterNatives(seg, seg_methods, sizeof(seg_methods) / sizeof(seg_methods[0]));
+    return JNI_OK;
 }
 
 extern "C"
@@ -202,9 +200,7 @@ jint JNI_OnLoad(JavaVM *vm, void *reversed) {
     JNIEnv *env = nullptr;
 
     if (vm->GetEnv((void **) &env, JNI_VERSION_1_1) == JNI_OK) {
-        if (registerMethods(env) == JNI_OK) {
-            version = JNI_VERSION_1_6;
-        }
+        version = JNI_VERSION_1_6;
     }
 
     return version;

@@ -4,8 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import net.fred.lua.common.Logger;
-import net.fred.lua.foreign.internal.ForeignFunctions;
 import net.fred.lua.foreign.internal.ForeignValues;
+import net.fred.lua.foreign.internal.MemoryAccessor;
 import net.fred.lua.foreign.types.Type;
 
 public class Pointer {
@@ -80,12 +80,12 @@ public class Pointer {
 
         @Override
         public Pointer read(@NonNull Pointer dest) {
-            return ForeignFunctions.peekPointer(dest);
+            return MemoryAccessor.peekPointer(dest);
         }
 
         @Override
         public void write(@NonNull Pointer dest, @NonNull Object data) throws NativeMethodException {
-            ForeignFunctions.putPointer(dest, (Pointer) data);
+            MemoryAccessor.putPointer(dest, (Pointer) data);
         }
     }
 }

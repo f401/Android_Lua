@@ -1,39 +1,16 @@
 package net.fred.lua.foreign.internal;
 
-import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 
-/**
- * Contains all native functions that this project need.
- */
-public class ForeignFunctions {
-    public static native Pointer alloc(long size) throws NativeMethodException;
-
-    public static native void free(Pointer ptr);
-
-    /**
-     * I know {@link android.system.Os#strerror(int)}
-     * but this one doesn't have {@code errno}
-     */
-    public static native String strerror();
-
-    public static native void memcpy(Pointer dest, Pointer src, long length);
-
-    public static native Pointer dlopen(String path, int flags) throws NativeMethodException;
-
-    public static native int dlclose(Pointer ptr);
-
-    public static native Pointer dlsym(Pointer handle, String src) throws NativeMethodException;
+public class MemoryAccessor {
+    static {
+        System.loadLibrary("foreign");
+    }
 
     // --------------------------------------------------------String--------------------------------------------------------------------------//
     public static native void putString(Pointer handle, String str);
 
     public static native String peekString(Pointer dest);
-
-    public static native long obtainStringLength(Pointer dest);
-
-
-    //----------------------------------------------------------value handles------------------------------------------------------------------//
 
     public static native void putByte(Pointer ptr, byte value);
 
@@ -73,11 +50,5 @@ public class ForeignFunctions {
 
     public static double peekDouble(Pointer ptr) {
         return Double.longBitsToDouble(peekLong(ptr));
-    }
-
-    //--------------------------------------------------------------libffi--------------------------------------------------------------------/
-
-    static {
-        System.loadLibrary("foreign");
     }
 }

@@ -8,8 +8,8 @@ import net.fred.lua.common.utils.StringUtils;
 import net.fred.lua.common.utils.ThrowableUtils;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
-import net.fred.lua.foreign.internal.ForeignFunctions;
 import net.fred.lua.foreign.internal.ForeignValues;
+import net.fred.lua.foreign.internal.MemoryAccessor;
 import net.fred.lua.foreign.internal.MemorySegment;
 import net.fred.lua.foreign.types.PointerTypeImpl;
 
@@ -40,8 +40,8 @@ public final class ForeignString extends MemorySegment {
             Logger.w(err);
             throw new IllegalArgumentException(err);
         }
-        final Pointer ptr = ForeignFunctions.alloc(length + 1);
-        ForeignFunctions.putString(ptr, str);
+        final Pointer ptr = MemorySegment.alloc(length + 1);
+        MemoryAccessor.putString(ptr, str);
         return new ForeignString(ptr, str);
     }
 
@@ -83,17 +83,17 @@ public final class ForeignString extends MemorySegment {
         @Override
         public ForeignString read(@NonNull Pointer dest) {
             if (writeAsPointer) {
-                dest = ForeignFunctions.peekPointer(dest);
+                dest = MemoryAccessor.peekPointer(dest);
             }
-            return new ForeignString(dest, ForeignFunctions.peekString(dest));
+            return new ForeignString(dest, MemoryAccessor.peekString(dest));
         }
 
         @Override
         public void write(@NonNull Pointer dest, @NonNull Object data) {
             if (writeAsPointer) {
-                ForeignFunctions.putPointer(dest, ((ForeignString) data).pointer);
+                MemoryAccessor.putPointer(dest, ((ForeignString) data).pointer);
             } else {
-                ForeignFunctions.putString(dest, ((ForeignString) data).refer);
+                MemoryAccessor.putString(dest, ((ForeignString) data).refer);
             }
         }
     }

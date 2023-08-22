@@ -20,7 +20,7 @@ public class BasicMemoryController extends MemoryController {
     @Override
     protected void onFree() throws NativeMethodException {
         if (pointer != null) {
-            ForeignFunctions.free(pointer);
+            MemorySegment.free(pointer);
         }
     }
 }

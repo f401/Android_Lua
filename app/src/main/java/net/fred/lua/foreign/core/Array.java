@@ -7,8 +7,8 @@ import net.fred.lua.common.Logger;
 import net.fred.lua.common.utils.StringUtils;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
-import net.fred.lua.foreign.internal.ForeignFunctions;
 import net.fred.lua.foreign.internal.ForeignValues;
+import net.fred.lua.foreign.internal.MemoryAccessor;
 import net.fred.lua.foreign.internal.MemorySegment;
 import net.fred.lua.foreign.types.PointerTypeImpl;
 import net.fred.lua.foreign.types.Type;
@@ -105,9 +105,9 @@ public class Array<T> extends MemorySegment {
         @Override
         public void write(@NonNull Pointer dest, @NonNull Object data) throws NativeMethodException {
             if (writeAsPointer) {
-                ForeignFunctions.putPointer(dest, ((Array<?>) data).getPointer());
+                MemoryAccessor.putPointer(dest, ((Array<?>) data).getPointer());
             } else {
-                ForeignFunctions.memcpy(dest, ((Array<?>) data).getPointer(), evalTotalSize(data));
+                MemorySegment.memcpy(dest, ((Array<?>) data).getPointer(), evalTotalSize(data));
             }
         }
 

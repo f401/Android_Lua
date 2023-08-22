@@ -25,7 +25,7 @@ public class ForeignValues {
     public static final Pointer FFI_TYPE_UINT8;
     public static final Pointer FFI_TYPE_UINT16;
     public static final Pointer FFI_TYPE_UINT32;
-    public static final Pointer FFI_TYPE_UIN64;
+    public static final Pointer FFI_TYPE_UINT64;
 
     public static final Pointer FFI_TYPE_FLOAT;
     public static final Pointer FFI_TYPE_DOUBLE;
@@ -53,7 +53,7 @@ public class ForeignValues {
         FFI_TYPE_UINT8 = Pointer.from(getFFI_TYPE_UINT8());
         FFI_TYPE_UINT16 = Pointer.from(getFFI_TYPE_UINT16());
         FFI_TYPE_UINT32 = Pointer.from(getFFI_TYPE_UINT32());
-        FFI_TYPE_UIN64 = Pointer.from(getFFI_TYPE_UINT64());
+        FFI_TYPE_UINT64 = Pointer.from(getFFI_TYPE_UINT64());
 
         FFI_TYPE_POINTER = Pointer.from(getFFI_TYPE_POINTER());
         FFI_TYPE_VOID = Pointer.from(getFFI_TYPE_VOID());
