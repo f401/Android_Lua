@@ -5,7 +5,6 @@ import androidx.annotation.Nullable;
 import androidx.collection.LruCache;
 
 import net.fred.lua.PathConstants;
-import net.fred.lua.common.Action;
 import net.fred.lua.common.CrashHandler;
 import net.fred.lua.common.Logger;
 import net.fred.lua.foreign.NativeMethodException;
@@ -29,7 +28,7 @@ public class Lua5_4 extends Lua {
         }
         return (Pointer) getOrCreateFromCache("luaL_newstate", new Creator() {
             @Override
-            public FunctionCaller action(String symbol) throws NativeMethodException {
+            public FunctionCaller create(String symbol) throws NativeMethodException {
                 return FunctionCaller.of(dll.lookupSymbol(symbol), PrimaryTypes.POINTER);
             }
         }).call();
@@ -38,7 +37,7 @@ public class Lua5_4 extends Lua {
     private static FunctionCaller getOrCreateFromCache(String symbol, Creator creator) throws NativeMethodException {
         FunctionCaller entry = cache.get(symbol);
         if (entry == null) {
-            FunctionCaller result = creator.action(symbol);
+            FunctionCaller result = creator.create(symbol);
             cache.put(symbol, result);
             return result;
         }
@@ -49,7 +48,7 @@ public class Lua5_4 extends Lua {
     protected void luaL_close() throws NativeMethodException {
         getOrCreateFromCache("lua_close", new Creator() {
             @Override
-            public FunctionCaller action(String symbol) throws NativeMethodException {
+            public FunctionCaller create(String symbol) throws NativeMethodException {
                 return FunctionCaller.of(dll.lookupSymbol(symbol),
                         PrimaryTypes.VOID, PrimaryTypes.POINTER);
             }
@@ -60,7 +59,7 @@ public class Lua5_4 extends Lua {
     public void openlibs() throws NativeMethodException {
         getOrCreateFromCache("luaL_openlibs", new Creator() {
             @Override
-            public FunctionCaller action(String symbol) throws NativeMethodException {
+            public FunctionCaller create(String symbol) throws NativeMethodException {
                 return FunctionCaller.of(dll.lookupSymbol(symbol),
                         PrimaryTypes.VOID, PrimaryTypes.POINTER);
             }
@@ -70,17 +69,17 @@ public class Lua5_4 extends Lua {
     @Override
     public void dofile(String file) throws NativeMethodException {
         getOrCreateFromCache("J_luaL_dofile", new Creator() {
-                    @Override
-                    public FunctionCaller action(String symbol) throws NativeMethodException {
-                        return FunctionCaller.of(dll.lookupSymbol(symbol),
-                                PrimaryTypes.INT,
-                                PrimaryTypes.POINTER, PrimaryTypes.STRING);
-                    }
+            @Override
+            public FunctionCaller create(String symbol) throws NativeMethodException {
+                return FunctionCaller.of(dll.lookupSymbol(symbol),
+                        PrimaryTypes.INT,
+                        PrimaryTypes.POINTER, PrimaryTypes.STRING);
+            }
                 }
         ).call(pointer, ForeignString.from(file));
     }
 
-    public interface Creator extends Action<FunctionCaller, String> {
+    public interface Creator {
 
         /**
          * Called when the corresponding @{code FunctionCaller} is not found,
@@ -92,7 +91,7 @@ public class Lua5_4 extends Lua {
          * @return a new @{code FunctionCaller}
          * @throws NativeMethodException cause by @{link FunctionCaller#of}
          */
-        FunctionCaller action(String symbol) throws NativeMethodException;
+        FunctionCaller create(String symbol) throws NativeMethodException;
     }
 
     private static class FunctionCallerCache extends LruCache<String, FunctionCaller> {

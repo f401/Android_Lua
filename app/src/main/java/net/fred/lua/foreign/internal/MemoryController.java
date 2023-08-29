@@ -6,7 +6,7 @@ import androidx.annotation.Nullable;
 import net.fred.lua.common.ArgumentsChecker;
 import net.fred.lua.common.Flag;
 import net.fred.lua.common.Logger;
-import net.fred.lua.common.NonExceptionAction;
+import net.fred.lua.common.functional.Consumer;
 import net.fred.lua.common.utils.ThrowableUtils;
 import net.fred.lua.foreign.NativeMethodException;
 
@@ -113,13 +113,12 @@ public class MemoryController implements Closeable {
             //This can cause data modification during traversal, resulting in exceptions being thrown.
             List<AutoCloseable> dest = new ArrayList<>(children.size() + 1);
             dest.addAll(children);
-            ThrowableUtils.closeAll(dest, new NonExceptionAction<Void, AutoCloseable>() {
+            ThrowableUtils.closeAll(dest, new Consumer<AutoCloseable>() {
                 @Override
-                public Void action(AutoCloseable param) {
+                public void accept(AutoCloseable param) {
                     if (param instanceof MemoryController) {
                         ((MemoryController) param).detachParent();
                     }
-                    return null;
                 }
             });
             children = null;
