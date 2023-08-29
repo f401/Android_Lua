@@ -3,6 +3,7 @@ package net.fred.lua.foreign.core;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import net.fred.lua.common.ArgumentsChecker;
 import net.fred.lua.common.Logger;
 import net.fred.lua.common.utils.StringUtils;
 import net.fred.lua.foreign.NativeMethodException;
@@ -10,10 +11,7 @@ import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.internal.ForeignValues;
 import net.fred.lua.foreign.internal.MemoryAccessor;
 import net.fred.lua.foreign.internal.MemorySegment;
-import net.fred.lua.foreign.types.PointerTypeImpl;
-import net.fred.lua.foreign.types.base.Type;
-
-import java.util.Objects;
+import net.fred.lua.foreign.types.Type;
 
 /**
  * Array of native layers.
@@ -39,6 +37,7 @@ public class Array<T> extends MemorySegment {
 
     /**
      * Create type of array.
+     * Pointer in the native layer.
      *
      * @param type Null when it does not need to be read.
      * @param size 0 when it does not need to be read.
@@ -71,48 +70,35 @@ public class Array<T> extends MemorySegment {
         return mType.read(evalDataOff(idx));
     }
 
-    public static class ArrayType<T> extends PointerTypeImpl<Array<T>> {
+    public static class ArrayType<T> implements Type<Array<T>> {
         private final Type<T> type;
         private final long size;
 
         protected ArrayType(Type<T> type, long size) {
-            super(true, true);
             this.size = size;
             this.type = type;
         }
 
         @Override
         public int getSize(@Nullable Object obj) {
-            if (writeAsPointer) {
-                return (int) ForeignValues.SIZE_OF_POINTER;
-            }
-            Objects.requireNonNull(obj);
-            return evalTotalSize(obj);
+            return (int) ForeignValues.SIZE_OF_POINTER;
         }
 
         @Nullable
         @Override
         public Pointer getFFIPointer() {
-            return writeAsPointer ? ForeignValues.FFI_TYPE_POINTER : null;
+            return ForeignValues.FFI_TYPE_POINTER;
         }
 
         @Override
         public Array<T> read(@NonNull Pointer dest) {
-            Objects.requireNonNull(type);
+            ArgumentsChecker.checkNotNull(type, "Cannot read when type is null.");
             return new Array<>(dest, size, type);
         }
 
         @Override
         public void write(@NonNull Pointer dest, @NonNull Object data) throws NativeMethodException {
-            if (writeAsPointer) {
-                MemoryAccessor.putPointer(dest, ((Array<?>) data).getPointer());
-            } else {
-                MemorySegment.memcpy(dest, ((Array<?>) data).getPointer(), evalTotalSize(data));
-            }
-        }
-
-        private int evalTotalSize(Object array) {
-            return ((Array<?>) array).evalTotalSize();
+            MemoryAccessor.putPointer(dest, ((Array<?>) data).getPointer());
         }
     }
 }

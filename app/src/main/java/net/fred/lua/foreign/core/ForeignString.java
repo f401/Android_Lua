@@ -1,4 +1,4 @@
-package net.fred.lua.foreign.types;
+package net.fred.lua.foreign.core;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -11,6 +11,7 @@ import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.internal.ForeignValues;
 import net.fred.lua.foreign.internal.MemoryAccessor;
 import net.fred.lua.foreign.internal.MemorySegment;
+import net.fred.lua.foreign.types.Type;
 
 public final class ForeignString extends MemorySegment {
 
@@ -58,46 +59,28 @@ public final class ForeignString extends MemorySegment {
         return new ForeignStringType();
     }
 
-    public static class ForeignStringType extends PointerTypeImpl<ForeignString> {
-
-        ForeignStringType() {
-            this(true);
-        }
-
-        ForeignStringType(boolean mutable) {
-            super(true, mutable);
-        }
+    public static class ForeignStringType implements Type<ForeignString> {
 
         @Override
         public int getSize(@Nullable Object obj) {
-            if (writeAsPointer) {
-                return (int) ForeignValues.SIZE_OF_POINTER;
-            } else {
-                return obj != null ? (int) ((ForeignString) obj).size() : DEFAULT_SIZE;
-            }
+            return (int) ForeignValues.SIZE_OF_POINTER;
         }
 
         @Nullable
         @Override
         public Pointer getFFIPointer() {
-            return writeAsPointer ? ForeignValues.FFI_TYPE_POINTER : null;
+            return ForeignValues.FFI_TYPE_POINTER;
         }
 
         @Override
         public ForeignString read(@NonNull Pointer dest) {
-            if (writeAsPointer) {
-                dest = MemoryAccessor.peekPointer(dest);
-            }
+            dest = MemoryAccessor.peekPointer(dest);
             return new ForeignString(dest, MemoryAccessor.peekString(dest));
         }
 
         @Override
         public void write(@NonNull Pointer dest, @NonNull Object data) {
-            if (writeAsPointer) {
-                MemoryAccessor.putPointer(dest, ((ForeignString) data).pointer);
-            } else {
-                MemoryAccessor.putString(dest, ((ForeignString) data).refer);
-            }
+            MemoryAccessor.putPointer(dest, ((ForeignString) data).pointer);
         }
     }
 }

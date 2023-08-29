@@ -10,9 +10,9 @@ import net.fred.lua.common.Logger;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.core.DynamicLoadingLibrary;
+import net.fred.lua.foreign.core.ForeignString;
+import net.fred.lua.foreign.core.PrimaryTypes;
 import net.fred.lua.foreign.ffi.FunctionCaller;
-import net.fred.lua.foreign.types.ForeignString;
-import net.fred.lua.foreign.types.PrimaryTypes;
 
 public class Lua5_4 extends Lua {
     protected static DynamicLoadingLibrary dll;

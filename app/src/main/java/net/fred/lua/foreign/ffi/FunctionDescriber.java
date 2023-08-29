@@ -5,11 +5,11 @@ import androidx.annotation.Nullable;
 
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
+import net.fred.lua.foreign.core.PrimaryTypeWrapper;
 import net.fred.lua.foreign.internal.ForeignValues;
 import net.fred.lua.foreign.internal.MemoryController;
 import net.fred.lua.foreign.internal.MemorySegment;
-import net.fred.lua.foreign.types.PrimaryTypeWrapper;
-import net.fred.lua.foreign.types.base.Type;
+import net.fred.lua.foreign.types.Type;
 
 public final class FunctionDescriber extends MemoryController {
 

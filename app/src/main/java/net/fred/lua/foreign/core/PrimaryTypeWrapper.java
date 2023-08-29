@@ -1,4 +1,4 @@
-package net.fred.lua.foreign.types;
+package net.fred.lua.foreign.core;
 
 import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_DOUBLE;
 import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_FLOAT;
@@ -6,26 +6,22 @@ import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_INT16;
 import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_INT32;
 import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_INT64;
 import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_INT8;
-import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_POINTER;
 import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_UINT16;
 import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_UINT32;
 import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_UINT64;
 import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_UINT8;
 import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_VOID;
-import static net.fred.lua.foreign.internal.ForeignValues.SIZE_OF_POINTER;
 import static net.fred.lua.foreign.internal.MemoryAccessor.peekByte;
 import static net.fred.lua.foreign.internal.MemoryAccessor.peekDouble;
 import static net.fred.lua.foreign.internal.MemoryAccessor.peekFloat;
 import static net.fred.lua.foreign.internal.MemoryAccessor.peekInt;
 import static net.fred.lua.foreign.internal.MemoryAccessor.peekLong;
-import static net.fred.lua.foreign.internal.MemoryAccessor.peekPointer;
 import static net.fred.lua.foreign.internal.MemoryAccessor.peekShort;
 import static net.fred.lua.foreign.internal.MemoryAccessor.putByte;
 import static net.fred.lua.foreign.internal.MemoryAccessor.putDouble;
 import static net.fred.lua.foreign.internal.MemoryAccessor.putFloat;
 import static net.fred.lua.foreign.internal.MemoryAccessor.putInt;
 import static net.fred.lua.foreign.internal.MemoryAccessor.putLong;
-import static net.fred.lua.foreign.internal.MemoryAccessor.putPointer;
 import static net.fred.lua.foreign.internal.MemoryAccessor.putShort;
 
 import androidx.annotation.NonNull;
@@ -35,19 +31,18 @@ import net.fred.lua.common.ArgumentsChecker;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.internal.MemoryController;
-import net.fred.lua.foreign.internal.MemorySegment;
-import net.fred.lua.foreign.types.base.PointerType;
+import net.fred.lua.foreign.types.Type;
 
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Packaging for basic types.
- *
+ * <p>
  * Note: Free is only required after using @{link PointerType#writeAsPointer}.
  *
  * @param <T> Basic types of packaging required.
  */
-public class PrimaryTypeWrapper<T> extends MemoryController implements PointerType<T> {
+public class PrimaryTypeWrapper<T> extends MemoryController implements Type<T> {
     private static final ConcurrentHashMap<Class<?>, PrimaryType<?>> map;
 
     static {
@@ -241,12 +236,10 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements PointerTy
     }
 
     private final PrimaryType<T> mapperAs;
-    private boolean writeAsPointer;
     private boolean signed;
-    private boolean mutable;
+    private final boolean mutable;
 
-    public PrimaryTypeWrapper(boolean writeAsPointer, boolean signed, boolean mutable, PrimaryType<T> mapperAs) {
-        this.writeAsPointer = writeAsPointer;
+    public PrimaryTypeWrapper(boolean signed, boolean mutable, PrimaryType<T> mapperAs) {
         this.mapperAs = mapperAs;
         this.signed = signed;
         this.mutable = mutable;
@@ -254,7 +247,7 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements PointerTy
 
     @SuppressWarnings("unchecked")
     public static <T> PrimaryTypeWrapper<T> of(Class<T> clazz, boolean mutable) {
-        return new PrimaryTypeWrapper<>(false, true, mutable, (PrimaryType<T>) map.get(clazz));
+        return new PrimaryTypeWrapper<>(true, mutable, (PrimaryType<T>) map.get(clazz));
     }
 
     public static <T> PrimaryTypeWrapper<T> of(Class<T> clazz) {
@@ -263,50 +256,28 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements PointerTy
 
     @Override
     public int getSize(@Nullable Object obj) {
-        return writeAsPointer ? (int) SIZE_OF_POINTER : mapperAs.getSize();
+        return mapperAs.getSize();
     }
 
     @Nullable
     @Override
     public Pointer getFFIPointer() {
-        return writeAsPointer ? FFI_TYPE_POINTER : (signed ? mapperAs.getSignedFFIPointer() : mapperAs.getUnsignedFFIPointer());
+        return (signed ? mapperAs.getSignedFFIPointer() : mapperAs.getUnsignedFFIPointer());
     }
 
     @Override
     public T read(@NonNull Pointer dest) {
-        if (writeAsPointer) {
-            dest = peekPointer(dest);
-        }
         return mapperAs.read(dest);
     }
 
     @Override
     public void write(@NonNull Pointer dest, @NonNull Object data) throws NativeMethodException {
-        if (writeAsPointer) {
-            MemorySegment memorySegment = MemorySegment.create(getSize(data));
-            addChild(memorySegment);
-            mapperAs.write(memorySegment.getPointer(), data);
-            putPointer(dest, memorySegment.getPointer());
-        } else {
-            mapperAs.write(dest, data);
-        }
+        mapperAs.write(dest, data);
     }
 
     public PrimaryTypeWrapper<T> setSigned(boolean signed) {
         ArgumentsChecker.checkState(mutable, "This is immutable.");
         this.signed = signed;
-        return this;
-    }
-
-    @Override
-    public PrimaryTypeWrapper<T> setWriteAsPointer(boolean writeAsPointer) {
-        ArgumentsChecker.checkState(mutable, "This is immutable.");
-        this.writeAsPointer = writeAsPointer;
-        return this;
-    }
-
-    PrimaryTypeWrapper<T> setMutable(boolean mutable) {
-        this.mutable = mutable;
         return this;
     }
 

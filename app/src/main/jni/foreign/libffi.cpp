@@ -14,7 +14,7 @@ static jclass class_type;
 #define EQUAL_TO_NULL(ENV, NEEDLE) (NEEDLE == nullptr || env->IsSameObject(NEEDLE, nullptr))
 
 #define LOAD_CLASS_TYPE(ENV, EXPR) \
-FIND_CLASS(ENV, type, "net/fred/lua/foreign/types/base/Type"); \
+FIND_CLASS(ENV, type, "net/fred/lua/foreign/types/Type"); \
 IF_NULL_RETURN(class_type, EXPR)
 
 static void *get_type_ffi_pointer(JNIEnv *env, jobject type) {

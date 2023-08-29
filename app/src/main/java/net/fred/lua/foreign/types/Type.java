@@ -1,4 +1,4 @@
-package net.fred.lua.foreign.types.base;
+package net.fred.lua.foreign.types;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;

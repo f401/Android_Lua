@@ -6,7 +6,7 @@ import androidx.annotation.Nullable;
 import net.fred.lua.common.Logger;
 import net.fred.lua.foreign.internal.ForeignValues;
 import net.fred.lua.foreign.internal.MemoryAccessor;
-import net.fred.lua.foreign.types.base.Type;
+import net.fred.lua.foreign.types.Type;
 
 public class Pointer {
     private long address;

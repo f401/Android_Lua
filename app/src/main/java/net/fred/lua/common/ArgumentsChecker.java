@@ -26,6 +26,12 @@ public class ArgumentsChecker {
         }
     }
 
+    public static void checkNotNull(Object needle, String msg) {
+        if (needle == null) {
+            throw new NullPointerException(msg);
+        }
+    }
+
     public static void checkSize(int value) {
         check(value >= 0, "Value must be greater than or equal to 0.(" + value + ")");
     }
