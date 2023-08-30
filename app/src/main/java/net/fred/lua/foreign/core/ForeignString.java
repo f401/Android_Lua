@@ -41,7 +41,7 @@ public final class ForeignString extends MemorySegment {
             throw new IllegalArgumentException(err);
         }
         final Pointer ptr = MemorySegment.alloc(length + 1);
-        MemoryAccessor.putString(ptr, str);
+        MemoryAccessor.putStringUnchecked(ptr, str);
         return new ForeignString(ptr, str);
     }
 
@@ -75,12 +75,12 @@ public final class ForeignString extends MemorySegment {
         @Override
         public ForeignString read(@NonNull Pointer dest) {
             dest = MemoryAccessor.peekPointer(dest);
-            return new ForeignString(dest, MemoryAccessor.peekString(dest));
+            return new ForeignString(dest, MemoryAccessor.peekStringUnchecked(dest));
         }
 
         @Override
         public void write(@NonNull Pointer dest, @NonNull Object data) {
-            MemoryAccessor.putPointer(dest, ((ForeignString) data).pointer);
+            MemoryAccessor.putPointerUnchecked(dest, ((ForeignString) data).pointer);
         }
     }
 }

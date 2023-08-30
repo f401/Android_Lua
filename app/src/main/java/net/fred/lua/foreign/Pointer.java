@@ -85,7 +85,7 @@ public class Pointer {
 
         @Override
         public void write(@NonNull Pointer dest, @NonNull Object data) throws NativeMethodException {
-            MemoryAccessor.putPointer(dest, (Pointer) data);
+            MemoryAccessor.putPointerUnchecked(dest, (Pointer) data);
         }
     }
 }

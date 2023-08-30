@@ -17,12 +17,12 @@ import static net.fred.lua.foreign.internal.MemoryAccessor.peekFloat;
 import static net.fred.lua.foreign.internal.MemoryAccessor.peekInt;
 import static net.fred.lua.foreign.internal.MemoryAccessor.peekLong;
 import static net.fred.lua.foreign.internal.MemoryAccessor.peekShort;
-import static net.fred.lua.foreign.internal.MemoryAccessor.putByte;
-import static net.fred.lua.foreign.internal.MemoryAccessor.putDouble;
-import static net.fred.lua.foreign.internal.MemoryAccessor.putFloat;
-import static net.fred.lua.foreign.internal.MemoryAccessor.putInt;
-import static net.fred.lua.foreign.internal.MemoryAccessor.putLong;
-import static net.fred.lua.foreign.internal.MemoryAccessor.putShort;
+import static net.fred.lua.foreign.internal.MemoryAccessor.putByteUnchecked;
+import static net.fred.lua.foreign.internal.MemoryAccessor.putDoubleUnchecked;
+import static net.fred.lua.foreign.internal.MemoryAccessor.putFloatUnchecked;
+import static net.fred.lua.foreign.internal.MemoryAccessor.putIntUnchecked;
+import static net.fred.lua.foreign.internal.MemoryAccessor.putLongUnchecked;
+import static net.fred.lua.foreign.internal.MemoryAccessor.putShortUnchecked;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -51,7 +51,7 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements Type<T> {
 
             @Override
             public void write(@NonNull Pointer dest, @NonNull Object obj) {
-                putByte(dest, (byte) obj);
+                putByteUnchecked(dest, (byte) obj);
             }
 
             @Override
@@ -78,7 +78,7 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements Type<T> {
 
             @Override
             public void write(@NonNull Pointer dest, @NonNull Object obj) {
-                putShort(dest, (short) obj);
+                putShortUnchecked(dest, (short) obj);
             }
 
             @Override
@@ -104,7 +104,7 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements Type<T> {
         map.put(int.class, new PrimaryType<Integer>() {
             @Override
             public void write(@NonNull Pointer dest, @NonNull Object obj) {
-                putInt(dest, (int) obj);
+                putIntUnchecked(dest, (int) obj);
             }
 
             @Override
@@ -131,7 +131,7 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements Type<T> {
 
             @Override
             public void write(@NonNull Pointer dest, @NonNull Object obj) {
-                putLong(dest, (long) obj);
+                putLongUnchecked(dest, (long) obj);
             }
 
             @Override
@@ -183,7 +183,7 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements Type<T> {
         map.put(float.class, new PrimaryType<Float>() {
             @Override
             public void write(@NonNull Pointer dest, @NonNull Object obj) {
-                putFloat(dest, (Float) obj);
+                putFloatUnchecked(dest, (Float) obj);
             }
 
             @Override
@@ -210,7 +210,7 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements Type<T> {
         map.put(double.class, new PrimaryType<Double>() {
             @Override
             public void write(@NonNull Pointer dest, @NonNull Object obj) {
-                putDouble(dest, (double) obj);
+                putDoubleUnchecked(dest, (double) obj);
             }
 
             @Override

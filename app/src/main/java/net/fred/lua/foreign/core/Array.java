@@ -98,7 +98,7 @@ public class Array<T> extends MemorySegment {
 
         @Override
         public void write(@NonNull Pointer dest, @NonNull Object data) throws NativeMethodException {
-            MemoryAccessor.putPointer(dest, ((Array<?>) data).getPointer());
+            MemoryAccessor.putPointerUnchecked(dest, ((Array<?>) data).getPointer());
         }
     }
 }

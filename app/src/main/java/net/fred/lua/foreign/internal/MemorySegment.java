@@ -64,7 +64,7 @@ public class MemorySegment extends BasicMemoryController {
     public static native void memcpy(Pointer dest, Pointer src, long length);
 
     public void put(long off, Pointer src) {
-        MemoryAccessor.putPointer(pointer.plus(off), src);
+        MemoryAccessor.putPointerUnchecked(pointer.plus(off), src);
     }
 
 }

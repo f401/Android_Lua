@@ -7,29 +7,30 @@ public class MemoryAccessor {
         System.loadLibrary("foreign");
     }
 
-    // --------------------------------------------------------String--------------------------------------------------------------------------//
-    public static native void putString(Pointer handle, String str);
+    // Put data without checking.
+    // This may be dangerous.
+    public static native void putStringUnchecked(Pointer handle, String str);
 
-    public static native String peekString(Pointer dest);
+    public static native String peekStringUnchecked(Pointer dest);
 
-    public static native void putByte(Pointer ptr, byte value);
+    public static native void putByteUnchecked(Pointer ptr, byte value);
 
-    public static native void putChar(Pointer ptr, char value);
+    public static native void putCharUnchecked(Pointer ptr, char value);
 
-    public static native void putShort(Pointer ptr, short value);
+    public static native void putShortUnchecked(Pointer ptr, short value);
 
-    public static native void putInt(Pointer ptr, int value);
+    public static native void putIntUnchecked(Pointer ptr, int value);
 
-    public static native void putLong(Pointer ptr, long value);
+    public static native void putLongUnchecked(Pointer ptr, long value);
 
-    public static native void putPointer(Pointer ptr, Pointer value);
+    public static native void putPointerUnchecked(Pointer ptr, Pointer value);
 
-    public static void putFloat(Pointer ptr, float value) {
-        putInt(ptr, Float.floatToIntBits(value));
+    public static void putFloatUnchecked(Pointer ptr, float value) {
+        putIntUnchecked(ptr, Float.floatToIntBits(value));
     }
 
-    public static void putDouble(Pointer ptr, double value) {
-        putLong(ptr, Double.doubleToLongBits(value));
+    public static void putDoubleUnchecked(Pointer ptr, double value) {
+        putLongUnchecked(ptr, Double.doubleToLongBits(value));
     }
 
     public static native byte peekByte(Pointer ptr);
