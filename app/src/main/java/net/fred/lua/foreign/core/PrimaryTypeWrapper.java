@@ -11,18 +11,6 @@ import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_UINT32;
 import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_UINT64;
 import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_UINT8;
 import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_VOID;
-import static net.fred.lua.foreign.internal.MemoryAccessor.peekByte;
-import static net.fred.lua.foreign.internal.MemoryAccessor.peekDouble;
-import static net.fred.lua.foreign.internal.MemoryAccessor.peekFloat;
-import static net.fred.lua.foreign.internal.MemoryAccessor.peekInt;
-import static net.fred.lua.foreign.internal.MemoryAccessor.peekLong;
-import static net.fred.lua.foreign.internal.MemoryAccessor.peekShort;
-import static net.fred.lua.foreign.internal.MemoryAccessor.putByteUnchecked;
-import static net.fred.lua.foreign.internal.MemoryAccessor.putDoubleUnchecked;
-import static net.fred.lua.foreign.internal.MemoryAccessor.putFloatUnchecked;
-import static net.fred.lua.foreign.internal.MemoryAccessor.putIntUnchecked;
-import static net.fred.lua.foreign.internal.MemoryAccessor.putLongUnchecked;
-import static net.fred.lua.foreign.internal.MemoryAccessor.putShortUnchecked;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -30,7 +18,7 @@ import androidx.annotation.Nullable;
 import net.fred.lua.common.ArgumentsChecker;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
-import net.fred.lua.foreign.internal.MemoryController;
+import net.fred.lua.foreign.internal.MemoryAccessor;
 import net.fred.lua.foreign.types.Type;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,7 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @param <T> Basic types of packaging required.
  */
-public class PrimaryTypeWrapper<T> extends MemoryController implements Type<T> {
+public class PrimaryTypeWrapper<T> implements Type<T> {
     private static final ConcurrentHashMap<Class<?>, PrimaryType<?>> map;
 
     static {
@@ -50,8 +38,8 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements Type<T> {
         map.put(byte.class, new PrimaryType<Byte>() {
 
             @Override
-            public void write(@NonNull Pointer dest, @NonNull Object obj) {
-                putByteUnchecked(dest, (byte) obj);
+            public void write(MemoryAccessor accessor, @NonNull Pointer dest, @NonNull Object obj) {
+                accessor.putByte(dest, (byte) obj);
             }
 
             @Override
@@ -70,15 +58,15 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements Type<T> {
             }
 
             @Override
-            public Byte read(@NonNull Pointer dest) {
-                return peekByte(dest);
+            public Byte read(MemoryAccessor accessor, @NonNull Pointer dest) {
+                return accessor.peekByte(dest);
             }
         });
         map.put(short.class, new PrimaryType<Short>() {
 
             @Override
-            public void write(@NonNull Pointer dest, @NonNull Object obj) {
-                putShortUnchecked(dest, (short) obj);
+            public void write(MemoryAccessor accessor, @NonNull Pointer dest, @NonNull Object obj) {
+                accessor.putShort(dest, (short) obj);
             }
 
             @Override
@@ -97,14 +85,14 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements Type<T> {
             }
 
             @Override
-            public Short read(@NonNull Pointer dest) {
-                return peekShort(dest);
+            public Short read(MemoryAccessor accessor, @NonNull Pointer dest) {
+                return accessor.peekShort(dest);
             }
         });
         map.put(int.class, new PrimaryType<Integer>() {
             @Override
-            public void write(@NonNull Pointer dest, @NonNull Object obj) {
-                putIntUnchecked(dest, (int) obj);
+            public void write(MemoryAccessor accessor, @NonNull Pointer dest, @NonNull Object obj) {
+                accessor.putInt(dest, (int) obj);
             }
 
             @Override
@@ -123,15 +111,15 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements Type<T> {
             }
 
             @Override
-            public Integer read(@NonNull Pointer dest) {
-                return peekInt(dest);
+            public Integer read(MemoryAccessor accessor, @NonNull Pointer dest) {
+                return accessor.peekInt(dest);
             }
         });
         map.put(long.class, new PrimaryType<Long>() {
 
             @Override
-            public void write(@NonNull Pointer dest, @NonNull Object obj) {
-                putLongUnchecked(dest, (long) obj);
+            public void write(MemoryAccessor accessor, @NonNull Pointer dest, @NonNull Object obj) {
+                accessor.putLong(dest, (long) obj);
             }
 
             @Override
@@ -150,13 +138,13 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements Type<T> {
             }
 
             @Override
-            public Long read(@NonNull Pointer dest) {
-                return peekLong(dest);
+            public Long read(MemoryAccessor accessor, @NonNull Pointer dest) {
+                return accessor.peekLong(dest);
             }
         });
         map.put(void.class, new PrimaryType<Void>() {
             @Override
-            public void write(@NonNull Pointer dest, @NonNull Object obj) {
+            public void write(MemoryAccessor accessor, @NonNull Pointer dest, @NonNull Object obj) {
                 throw new UnsupportedOperationException();
             }
 
@@ -176,14 +164,14 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements Type<T> {
             }
 
             @Override
-            public Void read(@NonNull Pointer dest) {
+            public Void read(MemoryAccessor accessor, @NonNull Pointer dest) {
                 return null;
             }
         });
         map.put(float.class, new PrimaryType<Float>() {
             @Override
-            public void write(@NonNull Pointer dest, @NonNull Object obj) {
-                putFloatUnchecked(dest, (Float) obj);
+            public void write(MemoryAccessor accessor, @NonNull Pointer dest, @NonNull Object obj) {
+                accessor.putFloat(dest, (Float) obj);
             }
 
             @Override
@@ -202,15 +190,15 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements Type<T> {
             }
 
             @Override
-            public Float read(@NonNull Pointer dest) {
-                return peekFloat(dest);
+            public Float read(MemoryAccessor accessor, @NonNull Pointer dest) {
+                return accessor.peekFloat(dest);
             }
         });
 
         map.put(double.class, new PrimaryType<Double>() {
             @Override
-            public void write(@NonNull Pointer dest, @NonNull Object obj) {
-                putDoubleUnchecked(dest, (double) obj);
+            public void write(MemoryAccessor accessor, @NonNull Pointer dest, @NonNull Object obj) {
+                accessor.putDouble(dest, (double) obj);
             }
 
             @Override
@@ -229,8 +217,8 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements Type<T> {
             }
 
             @Override
-            public Double read(@NonNull Pointer dest) {
-                return peekDouble(dest);
+            public Double read(MemoryAccessor accessor, @NonNull Pointer dest) {
+                return accessor.peekDouble(dest);
             }
         });
     }
@@ -266,13 +254,13 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements Type<T> {
     }
 
     @Override
-    public T read(@NonNull Pointer dest) {
-        return mapperAs.read(dest);
+    public T read(MemoryAccessor accessor, @NonNull Pointer dest) {
+        return mapperAs.read(accessor, dest);
     }
 
     @Override
-    public void write(@NonNull Pointer dest, @NonNull Object data) throws NativeMethodException {
-        mapperAs.write(dest, data);
+    public void write(MemoryAccessor accessor, @NonNull Pointer dest, @NonNull Object data) throws NativeMethodException {
+        mapperAs.write(accessor, dest, data);
     }
 
     public PrimaryTypeWrapper<T> setSigned(boolean signed) {
@@ -288,8 +276,8 @@ public class PrimaryTypeWrapper<T> extends MemoryController implements Type<T> {
 
         int getSize();
 
-        T read(Pointer dest);
+        T read(MemoryAccessor accessor, Pointer dest);
 
-        void write(Pointer dest, Object data) throws NativeMethodException;
+        void write(MemoryAccessor accessor, Pointer dest, Object data) throws NativeMethodException;
     }
 }

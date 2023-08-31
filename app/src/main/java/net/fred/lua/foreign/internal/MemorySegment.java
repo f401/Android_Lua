@@ -56,15 +56,15 @@ public class MemorySegment extends BasicMemoryController {
     public static native Pointer alloc(long size) throws NativeMethodException;
 
     public void put(long off, Type<?> type, Object obj) throws NativeMethodException {
-        type.write(pointer.plus(off), obj);
+        type.write(MemoryAccessor.UNCHECKED, pointer.plus(off), obj);
+    }
+
+    public void put(long off, Pointer src) {
+        MemoryAccessor.putPointerUnchecked(pointer.plus(off), src);
     }
 
     public static native void free(Pointer ptr);
 
     public static native void memcpy(Pointer dest, Pointer src, long length);
-
-    public void put(long off, Pointer src) {
-        MemoryAccessor.putPointerUnchecked(pointer.plus(off), src);
-    }
 
 }

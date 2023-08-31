@@ -73,13 +73,13 @@ public final class ForeignString extends MemorySegment {
         }
 
         @Override
-        public ForeignString read(@NonNull Pointer dest) {
-            dest = MemoryAccessor.peekPointer(dest);
+        public ForeignString read(MemoryAccessor accessor, @NonNull Pointer dest) {
+            dest = MemoryAccessor.peekPointerUnchecked(dest);
             return new ForeignString(dest, MemoryAccessor.peekStringUnchecked(dest));
         }
 
         @Override
-        public void write(@NonNull Pointer dest, @NonNull Object data) {
+        public void write(MemoryAccessor accessor, @NonNull Pointer dest, @NonNull Object data) {
             MemoryAccessor.putPointerUnchecked(dest, ((ForeignString) data).pointer);
         }
     }

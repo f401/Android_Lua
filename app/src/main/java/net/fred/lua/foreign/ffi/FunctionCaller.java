@@ -6,8 +6,8 @@ import net.fred.lua.common.ArgumentsChecker;
 import net.fred.lua.common.Logger;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
+import net.fred.lua.foreign.internal.MemoryAccessor;
 import net.fred.lua.foreign.internal.MemoryController;
-import net.fred.lua.foreign.internal.MemorySegment;
 import net.fred.lua.foreign.types.Type;
 
 /**
@@ -36,6 +36,7 @@ public class FunctionCaller extends MemoryController {
 
     /**
      * Calculate the total size of parameters.
+     * Called from native. jni/foreign/foreignFuncs.cpp
      *
      * @param params Parameters to be calculated.
      * @return Total size required.
@@ -58,24 +59,16 @@ public class FunctionCaller extends MemoryController {
         if (typedParams != null) {
             ArgumentsChecker.check(typedParams.length == params.length, "The length of the passed in parameter does not match the descriptor");
         }
-
-        long returnSize = describer.getReturnType().getSize(null);
-        Pointer returnPointer = null;
-        if (returnSize != 0) { //not is void
-            MemorySegment returnSegment = MemorySegment.create(returnSize);
-            addChild(returnSegment);
-            returnPointer = returnSegment.getPointer();
-        }
-        ffi_call(describer.prepareCIF().getPointer(), funcAddress, returnPointer,
-                typedParams, params);
-        return describer.getReturnType().read(returnPointer);
+        return ffi_call(MemoryAccessor.UNCHECKED, describer.prepareCIF().getPointer(), funcAddress,
+                typedParams, params, describer.getReturnType());
     }
 
     public FunctionDescriber getDescriber() {
         return describer;
     }
 
-    protected native void ffi_call(Pointer cif, Pointer funcAddress, Pointer returnSegment, Type<?>[] typedParams, Object[] params);
+    protected native Object ffi_call(MemoryAccessor accessor, // Usual for MemoryAccessor.UNCHECKED
+                                     Pointer cif, Pointer funcAddress, Type<?>[] typedParams, Object[] params, Type<?> returnType);
 
     @Override
     protected void onFree() throws NativeMethodException {

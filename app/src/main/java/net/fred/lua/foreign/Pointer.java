@@ -79,12 +79,12 @@ public class Pointer {
         }
 
         @Override
-        public Pointer read(@NonNull Pointer dest) {
-            return MemoryAccessor.peekPointer(dest);
+        public Pointer read(MemoryAccessor accessor, @NonNull Pointer dest) {
+            return MemoryAccessor.peekPointerUnchecked(dest);
         }
 
         @Override
-        public void write(@NonNull Pointer dest, @NonNull Object data) throws NativeMethodException {
+        public void write(MemoryAccessor accessor, @NonNull Pointer dest, @NonNull Object data) throws NativeMethodException {
             MemoryAccessor.putPointerUnchecked(dest, (Pointer) data);
         }
     }

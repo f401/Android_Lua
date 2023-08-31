@@ -35,12 +35,6 @@ public final class FunctionDescriber extends MemoryController {
         return new FunctionDescriber(returnType, params);
     }
 
-    private static void releaseParams(Type<?> type) throws NativeMethodException {
-        if (type instanceof PrimaryTypeWrapper) {
-            ((PrimaryTypeWrapper<?>) type).close();
-        }
-    }
-
     public Type<?>[] getParams() {
         return params;
     }
@@ -88,22 +82,6 @@ public final class FunctionDescriber extends MemoryController {
         }
         return cif;
     }
-
-    @Override
-    protected void onFree() throws NativeMethodException {
-        super.onFree();
-        releaseParams(returnType);
-        if (params != null) {
-            for (Type<?> type : params) {
-                releaseParams(type);
-            }
-        }
-    }
-
-    public int obtainFFISize() {
-        return (int) ForeignValues.SIZE_OF_FFI_CIF;
-    }
-
     public void cleanCache() {
         freeChildren();
     }

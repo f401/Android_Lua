@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
+import net.fred.lua.foreign.internal.MemoryAccessor;
 
 public interface Type<T> {
 
@@ -19,7 +20,7 @@ public interface Type<T> {
     @Nullable
     Pointer getFFIPointer();
 
-    T read(@NonNull Pointer dest);
+    T read(MemoryAccessor accessor, @NonNull Pointer dest);
 
-    void write(@NonNull Pointer dest, @NonNull Object data) throws NativeMethodException;
+    void write(MemoryAccessor accessor, @NonNull Pointer dest, @NonNull Object data) throws NativeMethodException;
 }

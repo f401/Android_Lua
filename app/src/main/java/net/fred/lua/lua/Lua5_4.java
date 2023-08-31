@@ -96,12 +96,7 @@ public class Lua5_4 extends Lua {
 
     private static class FunctionCallerCache extends LruCache<String, FunctionCaller> {
         public FunctionCallerCache() {
-            super(256);
-        }
-
-        @Override
-        protected int sizeOf(@NonNull String key, @NonNull FunctionCaller value) {
-            return value.getDescriber().obtainFFISize();
+            super(16);
         }
 
         @Override

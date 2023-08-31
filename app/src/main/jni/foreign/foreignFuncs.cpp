@@ -162,25 +162,25 @@ const static JNINativeMethod seg_methods[] = {
 };
 
 const static JNINativeMethod memoryAccessorMethods[] = {
-        {"putByteUnchecked",    "(Lnet/fred/lua/foreign/Pointer;B)V",                 (void *) &putJavabyte},
-        {"putCharUnchecked",    "(Lnet/fred/lua/foreign/Pointer;C)V",                 (void *) &putJavachar},
-        {"putShortUnchecked",   "(Lnet/fred/lua/foreign/Pointer;S)V",                 (void *) &putJavashort},
-        {"putIntUnchecked",     "(Lnet/fred/lua/foreign/Pointer;I)V",                 (void *) &putJavaint},
-        {"putLongUnchecked",    "(Lnet/fred/lua/foreign/Pointer;J)V",                 (void *) &putJavalong},
-        {"putPointerUnchecked", "(Lnet/fred/lua/foreign/Pointer;Lnet/fred/lua/foreign/Pointer;)V",
-                                                                                      (void *) &putJavaPointer},
+        {"putByteUnchecked",     "(Lnet/fred/lua/foreign/Pointer;B)V",                 (void *) &putJavabyte},
+        {"putCharUnchecked",     "(Lnet/fred/lua/foreign/Pointer;C)V",                 (void *) &putJavachar},
+        {"putShortUnchecked",    "(Lnet/fred/lua/foreign/Pointer;S)V",                 (void *) &putJavashort},
+        {"putIntUnchecked",      "(Lnet/fred/lua/foreign/Pointer;I)V",                 (void *) &putJavaint},
+        {"putLongUnchecked",     "(Lnet/fred/lua/foreign/Pointer;J)V",                 (void *) &putJavalong},
+        {"putPointerUnchecked",  "(Lnet/fred/lua/foreign/Pointer;Lnet/fred/lua/foreign/Pointer;)V",
+                                                                                       (void *) &putJavaPointer},
 
-        {"peekByte",            "(Lnet/fred/lua/foreign/Pointer;)B",                  (void *) &peekJavabyte},
-        {"peekChar",            "(Lnet/fred/lua/foreign/Pointer;)C",                  (void *) &peekJavachar},
-        {"peekShort",           "(Lnet/fred/lua/foreign/Pointer;)S",                  (void *) &peekJavashort},
-        {"peekInt",             "(Lnet/fred/lua/foreign/Pointer;)I",                  (void *) &peekJavaint},
-        {"peekLong",            "(Lnet/fred/lua/foreign/Pointer;)J",                  (void *) &peekJavalong},
-        {"peekPointer",         "(Lnet/fred/lua/foreign/Pointer;)Lnet/fred/lua/foreign/Pointer;",
-                                                                                      (void *) &peekJavaPointer},
+        {"peekByteUnchecked",    "(Lnet/fred/lua/foreign/Pointer;)B",                  (void *) &peekJavabyte},
+        {"peekCharUnchecked",    "(Lnet/fred/lua/foreign/Pointer;)C",                  (void *) &peekJavachar},
+        {"peekShortUnchecked",   "(Lnet/fred/lua/foreign/Pointer;)S",                  (void *) &peekJavashort},
+        {"peekIntUnchecked",     "(Lnet/fred/lua/foreign/Pointer;)I",                  (void *) &peekJavaint},
+        {"peekLongUnchecked",    "(Lnet/fred/lua/foreign/Pointer;)J",                  (void *) &peekJavalong},
+        {"peekPointerUnchecked", "(Lnet/fred/lua/foreign/Pointer;)Lnet/fred/lua/foreign/Pointer;",
+                                                                                       (void *) &peekJavaPointer},
 
-        {"putStringUnchecked",  "(Lnet/fred/lua/foreign/Pointer;Ljava/lang/String;)V",
-                                                                                      (void *) &PutString},
-        {"peekStringUnchecked", "(Lnet/fred/lua/foreign/Pointer;)Ljava/lang/String;", (void *) &ReadString},
+        {"putStringUnchecked",   "(Lnet/fred/lua/foreign/Pointer;Ljava/lang/String;)V",
+                                                                                       (void *) &PutString},
+        {"peekStringUnchecked",  "(Lnet/fred/lua/foreign/Pointer;)Ljava/lang/String;", (void *) &ReadString},
 };
 
 static int registerMethods(JNIEnv *env) {

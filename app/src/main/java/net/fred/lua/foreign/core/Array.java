@@ -62,12 +62,12 @@ public class Array<T> extends MemorySegment {
 
     public void write(int idx, T data) throws NativeMethodException {
         Pointer off = evalDataOff(idx);
-        mType.write(off, data);
+        mType.write(MemoryAccessor.UNCHECKED, off, data);
         Logger.i(StringUtils.templateOf("Write {}, at {}.", data, off));
     }
 
     public T get(int idx) {
-        return mType.read(evalDataOff(idx));
+        return mType.read(MemoryAccessor.UNCHECKED, evalDataOff(idx));
     }
 
     public static class ArrayType<T> implements Type<Array<T>> {
@@ -91,13 +91,13 @@ public class Array<T> extends MemorySegment {
         }
 
         @Override
-        public Array<T> read(@NonNull Pointer dest) {
+        public Array<T> read(MemoryAccessor accessor, @NonNull Pointer dest) {
             ArgumentsChecker.checkNotNull(type, "Cannot read when type is null.");
             return new Array<>(dest, size, type);
         }
 
         @Override
-        public void write(@NonNull Pointer dest, @NonNull Object data) throws NativeMethodException {
+        public void write(MemoryAccessor accessor, @NonNull Pointer dest, @NonNull Object data) throws NativeMethodException {
             MemoryAccessor.putPointerUnchecked(dest, ((Array<?>) data).getPointer());
         }
     }

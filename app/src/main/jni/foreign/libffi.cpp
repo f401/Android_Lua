@@ -69,17 +69,22 @@ Java_net_fred_lua_foreign_ffi_FunctionDescriber_prep_1cif(JNIEnv *env, jobject t
     return ffi_prep_cif(cif, FFI_DEFAULT_ABI, params_len, returnType, params);
 }
 extern "C"
-JNIEXPORT void JNICALL
-Java_net_fred_lua_foreign_ffi_FunctionCaller_ffi_1call(JNIEnv *env, jobject thiz, jobject _cif,
+JNIEXPORT jobject JNICALL
+Java_net_fred_lua_foreign_ffi_FunctionCaller_ffi_1call(JNIEnv *env, jobject thiz,
+                                                       jobject mem_accessor,
+                                                       jobject _cif,
                                                        jobject _func_address,
-                                                       jobject _return_segment,
                                                        jobjectArray _typed_params,// describer.getParams()
-                                                       jobjectArray _params) {
+                                                       jobjectArray _params,
+                                                       jobject return_type) {
     jclass class_functionCaller = env->GetObjectClass(thiz);
-    static jmethodID method_functionCaller_evalTotalSize;
+    static jmethodID method_functionCaller_evalTotalSize, method_type_getSize;
+    FIND_INSTANCE_METHOD(env, type, getSize, "getSize", "(Ljava/lang/Object;)I");
+    IF_NULL_RETURN(method_type_getSize, nullptr);
+
     FIND_INSTANCE_METHOD(env, functionCaller, evalTotalSize, "evalParamsTotalSize",
                          "([Ljava/lang/Object;)J");
-    IF_NULL_RETURN(method_functionCaller_evalTotalSize,);
+    IF_NULL_RETURN(method_functionCaller_evalTotalSize, nullptr);
 
     void **params_ptr = nullptr;
     jsize length = 0;
@@ -91,13 +96,11 @@ Java_net_fred_lua_foreign_ffi_FunctionCaller_ffi_1call(JNIEnv *env, jobject thiz
         params_ptr = (void **) alloca(sizeof(void *) * length); //lazy init
         jint off = 0;
 
-        LOAD_CLASS_TYPE(env,);
-        static jmethodID method_type_write, method_type_getSize;
-        FIND_INSTANCE_METHOD(env, type, getSize, "getSize", "(Ljava/lang/Object;)I");
-        IF_NULL_RETURN(method_type_getSize,);
+        LOAD_CLASS_TYPE(env, nullptr);
+        static jmethodID method_type_write;
         FIND_INSTANCE_METHOD(env, type, write, "write",
-                             "(Lnet/fred/lua/foreign/Pointer;Ljava/lang/Object;)V");
-        IF_NULL_RETURN(method_type_write,);
+                             "(Lnet/fred/lua/foreign/internal/MemoryAccessor;Lnet/fred/lua/foreign/Pointer;Ljava/lang/Object;)V");
+        IF_NULL_RETURN(method_type_write, nullptr);
 
         for (jsize i = 0; i < length; ++i) {
             jobject typed = env->GetObjectArrayElement(_typed_params, i);
@@ -107,7 +110,7 @@ Java_net_fred_lua_foreign_ffi_FunctionCaller_ffi_1call(JNIEnv *env, jobject thiz
             params_ptr[i] = dest_ptr;
 
             jobject dest = pointer_create(env, dest_ptr);
-            env->CallVoidMethod(typed, method_type_write, dest, param);
+            env->CallVoidMethod(typed, method_type_write, mem_accessor, dest, param);
             env->DeleteLocalRef(dest);
 
             off += env->CallIntMethod(typed, method_type_getSize, param);
@@ -116,8 +119,26 @@ Java_net_fred_lua_foreign_ffi_FunctionCaller_ffi_1call(JNIEnv *env, jobject thiz
             env->DeleteLocalRef(param);
         }
     }
-    GET_POINTER_PARAM(env, cif, _cif,);
-    GET_POINTER_PARAM(env, func_addr, _func_address,);
-    GET_POINTER_PARAM(env, ret_seg, _return_segment,);
-    ffi_call((ffi_cif *) cif, (void (*)()) func_addr, ret_seg, params_ptr);
+    void *return_segment = nullptr;
+    int rsize;
+    if ((rsize = env->CallIntMethod(return_type, method_type_getSize, nullptr)) != 0) {
+        return_segment = alloca(rsize);
+    }
+    GET_POINTER_PARAM(env, cif, _cif, nullptr);
+    GET_POINTER_PARAM(env, func_addr, _func_address, nullptr);
+    //real call
+    ffi_call((ffi_cif *) cif, (void (*)()) func_addr, return_segment, params_ptr);
+
+    if (rsize != 0) {
+        static jmethodID method_type_read;
+        FIND_INSTANCE_METHOD(env, type, read, "read",
+                             "(Lnet/fred/lua/foreign/internal/MemoryAccessor;Lnet/fred/lua/foreign/Pointer;)Ljava/lang/Object;");
+        IF_NULL_RETURN(method_type_read, nullptr);
+
+        jobject _ret_ptr = pointer_create(env, return_segment);
+        IF_NULL_RETURN(_ret_ptr, nullptr);
+
+        return env->CallObjectMethod(return_type, method_type_read, mem_accessor, _ret_ptr);
+    }
+    return nullptr;
 }
