@@ -106,7 +106,7 @@ public class App extends Application {
                 Breakpad.init(CacheDirectoryManager.getInstance().getNativeCrashDirectory().toString());
                 Logger.i("Breakpad already initialization.");
             }
-        }).start();
+        }, "Breakpad Initializer").start();
     }
 
     /**
@@ -119,19 +119,18 @@ public class App extends Application {
         if (Build.VERSION.SDK_INT >= //Build.VERSION_CODES.P
                 28) {
             return getProcessName();
-        } else {
-            int pid = android.os.Process.myPid();
-            ActivityManager manager = (ActivityManager)
-                    getSystemService(ACTIVITY_SERVICE);
-            List<ActivityManager.RunningAppProcessInfo> runningApps = manager.getRunningAppProcesses();
-            if (runningApps == null) return null;
-            for (ActivityManager.RunningAppProcessInfo process : runningApps) {
-                if (process.pid == pid) {
-                    return process.processName;
-                }
-            }
-            return null;
         }
+        int pid = android.os.Process.myPid();
+        ActivityManager manager = (ActivityManager)
+                getSystemService(ACTIVITY_SERVICE);
+        List<ActivityManager.RunningAppProcessInfo> runningApps = manager.getRunningAppProcesses();
+        if (runningApps == null) return null;
+        for (ActivityManager.RunningAppProcessInfo process : runningApps) {
+            if (process.pid == pid) {
+                return process.processName;
+            }
+        }
+        return null;
     }
 
     /**
