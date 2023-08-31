@@ -61,17 +61,22 @@ public class TouchNavigation extends GestureDetector.SimpleOnGestureListener imp
     }
 
     @Override
-    public boolean onSingleTapConfirmed(@NonNull MotionEvent e) {
-        if (touchedScrollBar == SCROLLBAR_VERTICAL) {
-            float scrollPos = (float) freeSv.computeVerticalScrollRange() / freeSv.getContentHeight();
-            freeSv.smoothScrollTo(freeSv.getScrollX(), (int) (scrollPos * e.getY()));
-        } else if (touchedScrollBar == SCROLLBAR_HORIZONTAL) {
-            float scrollPos = (float) freeSv.computeHorizontalScrollRange() / freeSv.getContentWidth();
-            freeSv.smoothScrollTo((int) (scrollPos * e.getX()), freeSv.getScrollY());
-        } else if (freeSv.isScrolling()) {
-            freeSv.stopScroll();
+    public boolean onSingleTapUp(@NonNull MotionEvent e) {
+        if (touchedScrollBar > 0) {
+            if (touchedScrollBar == SCROLLBAR_VERTICAL) {
+                float scrollPos = (float) freeSv.computeVerticalScrollRange() / freeSv.getContentHeight();
+                freeSv.smoothScrollTo(freeSv.getScrollX(), (int) (scrollPos * e.getY()));
+            } else if (touchedScrollBar == SCROLLBAR_HORIZONTAL) {
+                float scrollPos = (float) freeSv.computeHorizontalScrollRange() / freeSv.getContentWidth();
+                freeSv.smoothScrollTo((int) (scrollPos * e.getX()), freeSv.getScrollY());
+            }
+            return true;
         }
-        return true;
+        if (freeSv.isScrolling()) {
+            freeSv.stopScroll();
+            return true;
+        }
+        return false;
     }
 
     @Override
