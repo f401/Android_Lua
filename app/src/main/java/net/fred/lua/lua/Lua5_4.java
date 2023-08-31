@@ -75,8 +75,7 @@ public class Lua5_4 extends Lua {
                         PrimaryTypes.INT,
                         PrimaryTypes.POINTER, PrimaryTypes.STRING);
             }
-                }
-        ).call(pointer, ForeignString.from(file));
+        }).call(pointer, ForeignString.from(file));
     }
 
     public interface Creator {
