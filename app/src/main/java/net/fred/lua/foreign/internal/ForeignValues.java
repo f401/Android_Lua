@@ -5,7 +5,7 @@ import net.fred.lua.foreign.Pointer;
 /**
  * Contains all native values that this project need.
  */
-public class ForeignValues {
+public final class ForeignValues {
 
     public static final Pointer NULL;
     public static final int RTLD_LAZY;

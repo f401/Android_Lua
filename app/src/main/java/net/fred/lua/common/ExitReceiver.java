@@ -5,7 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-public class ExitReceiver extends BroadcastReceiver {
+public final class ExitReceiver extends BroadcastReceiver {
 
     private final Activity activity;
 

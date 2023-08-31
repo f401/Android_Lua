@@ -20,7 +20,7 @@ import net.fred.lua.common.Logger;
 import net.fred.lua.common.utils.ClipboardUtils;
 import net.fred.lua.common.utils.MathUtils;
 
-public class CrashActivity extends AppCompatActivity {
+public final class CrashActivity extends AppCompatActivity {
     private String content;
 
     @Override

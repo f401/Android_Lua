@@ -14,8 +14,7 @@ import java.io.PrintWriter;
 /**
  * 该类用来扫描 Log 类输出的日志并存储到文件中
  */
-
-public class LogScanner {
+public final class LogScanner {
 
     private static LogScanner instance;
     private final Flag flag;
@@ -66,7 +65,6 @@ public class LogScanner {
                         getLogScannerFile());
                 while (flag.getFlag()) {
                     Process process = new ProcessBuilder("logcat").redirectErrorStream(true).start();
-//                    Process pro = new ProcessBuilder().command("logcat", "-c").redirectErrorStream(true).start();
                     InputStream is = process.getInputStream();
                     int len;
                     byte[] buffer = new byte[1024];

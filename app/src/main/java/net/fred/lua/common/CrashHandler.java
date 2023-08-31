@@ -22,7 +22,7 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-public class CrashHandler implements Thread.UncaughtExceptionHandler {
+public final class CrashHandler implements Thread.UncaughtExceptionHandler {
     public static final String EXTRA_ERROR_CONTENT = "ErrorContent";
     private static CrashHandler instance;
     public File crashFile;

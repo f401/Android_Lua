@@ -115,7 +115,7 @@ public class App extends Application {
      * @return current process name.
      */
     @Nullable
-    public String getCurrentProcessName() {
+    public final String getCurrentProcessName() {
         if (Build.VERSION.SDK_INT >= //Build.VERSION_CODES.P
                 28) {
             return getProcessName();
@@ -138,7 +138,7 @@ public class App extends Application {
      *
      * @return For main process, true.
      */
-    public boolean isMainProcess() {
+    public final boolean isMainProcess() {
         try {
             return getPackageName(). //prevent java.lang.NullPointerException
                     equals(getCurrentProcessName());

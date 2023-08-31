@@ -11,7 +11,7 @@ import java.util.Objects;
  * @param <F> The first type.
  * @param <S> The second type.
  */
-public class Pair<F, S> {
+public final class Pair<F, S> {
     public F first;
     public S second;
 

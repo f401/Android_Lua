@@ -14,7 +14,7 @@ import net.fred.lua.foreign.types.Type;
  * The function caller of the native layer.
  * Attention: Cannot call macro functions!!!
  */
-public class FunctionCaller extends MemoryController {
+public final class FunctionCaller extends MemoryController {
     private final FunctionDescriber describer;
     private final Pointer funcAddress;
 
@@ -67,8 +67,8 @@ public class FunctionCaller extends MemoryController {
         return describer;
     }
 
-    protected native Object ffi_call(MemoryAccessor accessor, // Usual for MemoryAccessor.UNCHECKED
-                                     Pointer cif, Pointer funcAddress, Type<?>[] typedParams, Object[] params, Type<?> returnType);
+    private native Object ffi_call(MemoryAccessor accessor, // Usual for MemoryAccessor.UNCHECKED
+                                   Pointer cif, Pointer funcAddress, Type<?>[] typedParams, Object[] params, Type<?> returnType);
 
     @Override
     protected void onFree() throws NativeMethodException {

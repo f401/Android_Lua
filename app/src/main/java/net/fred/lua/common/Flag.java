@@ -3,7 +3,7 @@ package net.fred.lua.common;
 /**
  * A thread safety flag
  */
-public class Flag {
+public final class Flag {
 
     private boolean flag;
 

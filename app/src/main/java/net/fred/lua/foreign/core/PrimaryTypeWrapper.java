@@ -30,7 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @param <T> Basic types of packaging required.
  */
-public class PrimaryTypeWrapper<T> implements Type<T> {
+public final class PrimaryTypeWrapper<T> implements Type<T> {
     private static final ConcurrentHashMap<Class<?>, PrimaryType<?>> map;
 
     static {

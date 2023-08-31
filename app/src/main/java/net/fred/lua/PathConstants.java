@@ -7,7 +7,7 @@ import androidx.annotation.NonNull;
 import net.fred.lua.common.utils.FileUtils;
 import net.fred.lua.common.utils.StringUtils;
 
-public class PathConstants {
+public final class PathConstants {
     public static String NATIVE_LIBRARY_DIR;
 
     public static void init(@NonNull Context ctx) {

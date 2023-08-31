@@ -16,13 +16,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.zip.ZipEntry;
 
-public class CacheDirectoryManager {
+public final class CacheDirectoryManager {
     private static final String TAG = "CacheDirectoryManager";
 
     private static volatile CacheDirectoryManager instance;
     private final File cacheDirectory;
 
-    protected CacheDirectoryManager(Context ctx) {
+    private CacheDirectoryManager(Context ctx) {
         this.cacheDirectory = ctx.getExternalCacheDir();
 
         net.fred.lua.common.utils.FileUtils.makeDirs(getNativeCrashDirectory().toString());
