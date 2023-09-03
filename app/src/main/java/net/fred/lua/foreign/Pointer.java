@@ -66,6 +66,43 @@ public class Pointer {
         return new PointerType();
     }
 
+    private static Pointer max(Pointer first, Pointer second) {
+        return first.address > second.address ? first : second;
+    }
+
+    private static Pointer min(Pointer first, Pointer second) {
+        return first.address < second.address ? first : second;
+    }
+
+    public static Pointer bigger(@NonNull Pointer first, @NonNull Pointer second) {
+        // 正常来说, 计算机中有符号的整数最高位为符号位(0为正, 1为负)(二进制反码)
+        // 例如:
+        // 1111 1111 1111 1111 (Short) (代表-1)
+        // 1111 1111 1111 1110 (Short) (Short.MAX_VALUE)
+        // 但 Linux中地址的表述都是无符号整数
+        // 所以上面两个数字在无符号时代表的整数就不一样
+        // 1111 1111 1111 1111 (Short) (代表65535) (无符号) (unsigned short)
+        // 1111 1111 1111 1110 (Short) (Short.MAX_VALUE) (无符号) (unsigned short)
+        // Long同理
+
+        if (first.equals(second)) return second;
+
+        // 这时两者都大于0或小于0(都有符号位或没有)，可以正常比较
+        if ((first.address > 0 && second.address > 0) ||
+                (first.address < 0 && second.address < 0)) {
+            return max(first, second);
+        } else
+        // if ((first.address < 0 && second.address > 0) || (first.address > 0 && second.address < 0))
+        {
+            return min(first, second);
+        }
+
+    }
+
+    public final boolean biggerThan(@NonNull Pointer other) {
+        return bigger(this, other).equals(this);
+    }
+
     public static class PointerType implements Type<Pointer> {
         @Override
         public int getSize(@Nullable Object obj) {
