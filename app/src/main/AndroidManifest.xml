@@ -34,7 +34,9 @@
             android:label="@string/unknown_exception_happened"
             android:process="net.fred.luacrash" />
 
-        <activity android:name=".ui.activities.ViewTestActivity" />
+        <activity
+            android:name=".ui.activities.ViewTestActivity"
+            android:hardwareAccelerated="true" />
     </application>
 
 </manifest>

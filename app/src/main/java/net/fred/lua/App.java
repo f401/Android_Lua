@@ -12,7 +12,6 @@ import androidx.multidex.MultiDex;
 
 import net.fred.lua.common.CrashHandler;
 import net.fred.lua.common.Logger;
-import net.fred.lua.foreign.Breakpad;
 import net.fred.lua.io.CacheDirectoryManager;
 import net.fred.lua.io.LogScanner;
 
@@ -98,15 +97,6 @@ public class App extends Application {
         }
 
         redirectOutAndErrStreamToLog();
-
-        Logger.i("Starting new thread for initializing breakpad");
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Breakpad.init(CacheDirectoryManager.getInstance().getNativeCrashDirectory().toString());
-                Logger.i("Breakpad already initialization.");
-            }
-        }, "Breakpad Initializer").start();
     }
 
     /**
@@ -115,14 +105,14 @@ public class App extends Application {
      * @return current process name.
      */
     @Nullable
-    public final String getCurrentProcessName() {
+    public static String getCurrentProcessName() {
         if (Build.VERSION.SDK_INT >= //Build.VERSION_CODES.P
                 28) {
             return getProcessName();
         }
         int pid = android.os.Process.myPid();
         ActivityManager manager = (ActivityManager)
-                getSystemService(ACTIVITY_SERVICE);
+                instance.getSystemService(ACTIVITY_SERVICE);
         List<ActivityManager.RunningAppProcessInfo> runningApps = manager.getRunningAppProcesses();
         if (runningApps == null) return null;
         for (ActivityManager.RunningAppProcessInfo process : runningApps) {
@@ -138,9 +128,9 @@ public class App extends Application {
      *
      * @return For main process, true.
      */
-    public final boolean isMainProcess() {
+    public static boolean isMainProcess() {
         try {
-            return getPackageName(). //prevent java.lang.NullPointerException
+            return instance.getPackageName(). //prevent java.lang.NullPointerException
                     equals(getCurrentProcessName());
         } catch (Exception e) {
             return false;

@@ -140,7 +140,9 @@ public final class CacheDirectoryManager {
                 } catch (IOException ignored) {
                 }
             }
-            Log.e(TAG, e.getMessage());
+            if (e.getMessage() != null) {
+                Log.e(TAG, e.getMessage());
+            }
         } finally {
             ThrowableUtils.closeAll(zos);
         }

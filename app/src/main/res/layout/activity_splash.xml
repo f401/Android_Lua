@@ -11,5 +11,6 @@
         android:gravity="center|center_vertical|center_horizontal"
         android:id="@+id/activity_splash_tv" />
 
+
 </RelativeLayout>
 

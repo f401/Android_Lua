@@ -3,6 +3,7 @@ package net.fred.lua.ui.activities;
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -10,36 +11,38 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import net.fred.lua.R;
-import net.fred.lua.common.Flag;
+import net.fred.lua.common.Logger;
+import net.fred.lua.common.TaskExecutor;
 import net.fred.lua.common.activity.BaseActivity;
+import net.fred.lua.foreign.Breakpad;
+import net.fred.lua.io.CacheDirectoryManager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 
+@SuppressLint("CustomSplashScreen")
 public class SplashActivity extends BaseActivity {
-
     public static final int PERMISSION_REQUEST_CODE = 10101;
     public static final int GOTO_SETTINGS_ACTIVITY = 368;
-    public static final int START_TIME = 1000;
 
-    private Handler startMainHandler;
-    private final Flag isPermissionRequestFinished = new Flag(false);
+    private CountDownLatch counter = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
         TextView tv = findViewById(R.id.activity_splash_tv);
-        startMainHandler = new Handler();
 
         hideActionBar();
 
@@ -48,20 +51,53 @@ public class SplashActivity extends BaseActivity {
         tv.setWidth(metrics.widthPixels / 2);
         tv.setHeight(metrics.heightPixels / 2);
 
-        handleRWPermission();
-        startMainHandler.postDelayed(new Runnable() {
+        TaskExecutor executor = new TaskExecutor.Builder()
+                .addTask(new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                handleRWPermission();
+                            }
+                        });
+                    }
+                }, "Permission Request"))
+                .addTask(new Runnable() {
+                    @Override
+                    public void run() {
+                        Breakpad.init(CacheDirectoryManager.getInstance().getNativeCrashDirectory().toString());
+                        Logger.i("Breakpad already initialization.");
+                        countDownTask();
+                    }
+                }).build();
+        counter = new CountDownLatch(executor.getTotalTaskCount());
+        // Must execute after initiation
+        final ExecutorService service = executor.executeTasks();
+
+        new Thread(new Runnable() {
             @Override
             public void run() {
-                if (isPermissionRequestFinished.getFlag()) {
-                    startMainHandler.removeCallbacks(this);
-                    Intent realMain = new Intent(SplashActivity.this, MainActivity.class);
-                    startActivity(realMain);
-                    finish();
-                } else {
-                    startMainHandler.postDelayed(this, START_TIME);
+                for (; ; ) {
+                    try {
+                        counter.await();
+                        Intent realMain = new Intent(SplashActivity.this, MainActivity.class);
+                        startActivity(realMain);
+                        finish();
+                        service.shutdownNow();
+                        break;
+                    } catch (InterruptedException ignored) {
+                    }
                 }
             }
-        }, START_TIME);
+        }, "Main Starter").start();
+    }
+
+    /**
+     * Make counter decrease
+     */
+    private void countDownTask() {
+        counter.countDown();
     }
 
     private void hideActionBar() {
@@ -79,7 +115,8 @@ public class SplashActivity extends BaseActivity {
         if (Build.VERSION.SDK_INT >= 23 && !hasRWPermission()) {
             requestRWPermission();
         } else {
-            isPermissionRequestFinished.setFlag(true);
+            // We already have read and write permissions.
+            countDownTask();
         }
     }
 
@@ -93,7 +130,7 @@ public class SplashActivity extends BaseActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (GOTO_SETTINGS_ACTIVITY == requestCode)
-            isPermissionRequestFinished.setFlag(true);
+            countDownTask();
     }
 
     private List<String> getNotAllowedPermissionList(String[] permissions, int[] grantResults) {
@@ -113,7 +150,7 @@ public class SplashActivity extends BaseActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         List<String> notAllowed;
         if (requestCode == PERMISSION_REQUEST_CODE && (notAllowed =
@@ -144,13 +181,13 @@ public class SplashActivity extends BaseActivity {
                             @Override
                             public void onClick(DialogInterface p1, int p2) {
                                 p1.dismiss();
-                                isPermissionRequestFinished.setFlag(true);
+                                countDownTask();
                             }
                         }).create();
                 alert.show();
             }
         } else {
-            isPermissionRequestFinished.setFlag(true);
+            countDownTask();
         }
     }
 }

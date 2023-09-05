@@ -3,7 +3,7 @@
     <string name="restart">重启</string>
     <string name="copied">已复制</string>
     <string name="unknown_exception_happened">发生未知异常</string>
-    <string name="splash_activity_show">一个敷衍的启动界面</string>
+    <string name="splash_activity_show">正在初始化</string>
     <string name="request_permission_failed_content"> 读写被禁用，有可能导致意外的异常。请到设置中打开该权限。\n点击确定到设置界面。</string>
     <string name="warning">警告</string>
     <string name="confirm">确定</string>

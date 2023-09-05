@@ -13,6 +13,7 @@ import net.fred.lua.io.CacheDirectoryManager;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 
@@ -30,7 +31,7 @@ public final class Logger implements AutoCloseable {
 
         try {
             logFile.createNewFile();
-            stream = new PrintStream(logFile);
+            stream = new PrintStream(new FileOutputStream(logFile, true));
         } catch (IOException e) {
             CrashHandler.fastHandleException(e);
         }
