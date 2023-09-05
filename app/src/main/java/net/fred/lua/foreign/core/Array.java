@@ -8,6 +8,7 @@ import net.fred.lua.common.Logger;
 import net.fred.lua.common.utils.StringUtils;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
+import net.fred.lua.foreign.internal.CheckedMemoryAccessor;
 import net.fred.lua.foreign.internal.ForeignValues;
 import net.fred.lua.foreign.internal.MemoryAccessor;
 import net.fred.lua.foreign.internal.MemorySegment;
@@ -21,10 +22,12 @@ import net.fred.lua.foreign.types.Type;
 public class Array<T> extends MemorySegment {
 
     private final Type<T> mType;
+    private final CheckedMemoryAccessor checkedMemoryAccessor;
 
     protected Array(Pointer src, long len, Type<T> type) {
         super(src, len);
         this.mType = type;
+        this.checkedMemoryAccessor = new CheckedMemoryAccessor(src, len);
     }
 
     public static <T> Array<T> create(Type<T> type, long length) throws NativeMethodException {
@@ -62,12 +65,12 @@ public class Array<T> extends MemorySegment {
 
     public void write(int idx, T data) throws NativeMethodException {
         Pointer off = evalDataOff(idx);
-        mType.write(MemoryAccessor.UNCHECKED, off, data);
+        mType.write(checkedMemoryAccessor, off, data);
         Logger.i(StringUtils.templateOf("Write {}, at {}.", data, off));
     }
 
     public T get(int idx) {
-        return mType.read(MemoryAccessor.UNCHECKED, evalDataOff(idx));
+        return mType.read(checkedMemoryAccessor, evalDataOff(idx));
     }
 
     public static class ArrayType<T> implements Type<Array<T>> {

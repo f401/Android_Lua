@@ -9,6 +9,7 @@ import net.fred.lua.foreign.types.Type;
 
 public class MemorySegment extends BasicMemoryController {
     private final long size;
+    private final CheckedMemoryAccessor checkedMemoryAccessor;
 
     /**
      * See {@link MemorySegment#create}
@@ -16,6 +17,7 @@ public class MemorySegment extends BasicMemoryController {
     public MemorySegment(Pointer src, long size) {
         super(src);
         this.size = size;
+        checkedMemoryAccessor = new CheckedMemoryAccessor(src, size);
     }
 
     /**
@@ -56,11 +58,11 @@ public class MemorySegment extends BasicMemoryController {
     public static native Pointer alloc(long size) throws NativeMethodException;
 
     public void put(long off, Type<?> type, Object obj) throws NativeMethodException {
-        type.write(MemoryAccessor.UNCHECKED, pointer.plus(off), obj);
+        type.write(checkedMemoryAccessor, pointer.plus(off), obj);
     }
 
     public void put(long off, Pointer src) {
-        MemoryAccessor.putPointerUnchecked(pointer.plus(off), src);
+        checkedMemoryAccessor.putPointer(pointer.plus(off), src);
     }
 
     public static native void free(Pointer ptr);

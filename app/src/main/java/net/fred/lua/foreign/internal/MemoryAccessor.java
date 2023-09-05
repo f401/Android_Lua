@@ -92,6 +92,10 @@ public class MemoryAccessor {
         putDoubleUnchecked(ptr, value);
     }
 
+    public void putPointer(Pointer dest, Pointer ptr) {
+        putPointerUnchecked(dest, ptr);
+    }
+
     public byte peekByte(Pointer ptr) {
         return peekByteUnchecked(ptr);
     }

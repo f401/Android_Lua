@@ -66,15 +66,11 @@ public class Pointer {
         return new PointerType();
     }
 
-    private static Pointer max(Pointer first, Pointer second) {
-        return first.address > second.address ? first : second;
-    }
-
     private static Pointer min(Pointer first, Pointer second) {
         return first.address < second.address ? first : second;
     }
 
-    public static Pointer bigger(@NonNull Pointer first, @NonNull Pointer second) {
+    public final boolean biggerThan(@NonNull Pointer other) {
         // 正常来说, 计算机中有符号的整数最高位为符号位(0为正, 1为负)(二进制反码)
         // 例如:
         // 1111 1111 1111 1111 (Short) (代表-1)
@@ -85,22 +81,18 @@ public class Pointer {
         // 1111 1111 1111 1110 (Short) (Short.MAX_VALUE) (无符号) (unsigned short)
         // Long同理
 
-        if (first.equals(second)) return second;
+        if (this.equals(other)) return false;
 
         // 这时两者都大于0或小于0(都有符号位或没有)，可以正常比较
-        if ((first.address > 0 && second.address > 0) ||
-                (first.address < 0 && second.address < 0)) {
-            return max(first, second);
+        if ((this.address > 0 && other.address > 0) ||
+                (this.address < 0 && other.address < 0)) {
+            return this.address > other.address;
         } else
         // if ((first.address < 0 && second.address > 0) || (first.address > 0 && second.address < 0))
         {
-            return min(first, second);
+            return this.address < 0;
         }
 
-    }
-
-    public final boolean biggerThan(@NonNull Pointer other) {
-        return bigger(this, other).equals(this);
     }
 
     public static class PointerType implements Type<Pointer> {

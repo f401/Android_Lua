@@ -96,6 +96,12 @@ public class CheckedMemoryAccessor extends MemoryAccessor {
     }
 
     @Override
+    public void putPointer(Pointer dest, Pointer ptr) {
+        checkBoundary(dest);
+        super.putPointer(dest, ptr);
+    }
+
+    @Override
     public Pointer peekPointer(Pointer dest) {
         checkBoundary(dest);
         return super.peekPointer(dest);
