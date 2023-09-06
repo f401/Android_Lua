@@ -38,6 +38,7 @@ Java_net_fred_lua_foreign_ffi_FunctionDescriber_prep_1cif(JNIEnv *env, jobject t
                                                           jobject return_type,
                                                           jobjectArray _params) {
     GET_POINTER_PARAM(env, cif, _cif, -1);
+    LOAD_CLASS_TYPE(env, -1);
     return prep_cif(env, thiz, cif, return_type, _params);
 }
 
@@ -87,6 +88,7 @@ Java_net_fred_lua_foreign_ffi_FunctionCaller_ffi_1call(JNIEnv *env, jobject thiz
                                                        jobjectArray _typed_params,// describer.getParams()
                                                        jobjectArray _params,
                                                        jobject return_type) {
+    LOAD_CLASS_TYPE(env, nullptr);
     jclass class_functionCaller = env->GetObjectClass(thiz);
     static jmethodID method_functionCaller_evalTotalSize, method_type_getSize;
     FIND_INSTANCE_METHOD(env, type, getSize, "getSize", "(Ljava/lang/Object;)I");

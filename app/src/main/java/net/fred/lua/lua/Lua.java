@@ -14,10 +14,11 @@ public abstract class Lua extends BasicMemoryController {
 
     @Override
     protected void onFree() throws NativeMethodException {
-        luaL_close();
+        lua_close();
     }
 
-    protected abstract void luaL_close() throws NativeMethodException;
+    protected abstract void lua_close() throws NativeMethodException;
+
     public abstract void openlibs() throws NativeMethodException;
 
     public abstract void dofile(String file) throws NativeMethodException;

@@ -108,7 +108,7 @@ public class Pointer {
         }
 
         @Override
-        public Pointer read(MemoryAccessor accessor, @NonNull Pointer dest) {
+        public Pointer read(MemoryAccessor accessor, @NonNull Pointer dest) throws NativeMethodException {
             return MemoryAccessor.peekPointerUnchecked(dest);
         }
 

@@ -3,7 +3,6 @@ package net.fred.lua.foreign.ffi;
 import androidx.annotation.Nullable;
 
 import net.fred.lua.common.ArgumentsChecker;
-import net.fred.lua.common.Logger;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.internal.MemoryAccessor;
@@ -78,6 +77,12 @@ public final class FunctionCaller extends MemoryController {
                 typedParams, params, describer.getReturnType());
     }
 
+    public Object callThenClose(Object... args) throws NativeMethodException {
+        Object result = call(args);
+        close();
+        return result;
+    }
+
     public FunctionDescriber getDescriber() {
         return describer;
     }
@@ -89,7 +94,6 @@ public final class FunctionCaller extends MemoryController {
     @Override
     protected void onFree() throws NativeMethodException {
         super.onFree();
-        Logger.i("Releasing Caller.");
         describer.close();
     }
 }

@@ -74,7 +74,11 @@ public class Array<T> extends MemorySegment {
     }
 
     public T get(int idx) {
-        return mType.read(checkedMemoryAccessor, evalDataOff(idx));
+        try {
+            return mType.read(checkedMemoryAccessor, evalDataOff(idx));
+        } catch (NativeMethodException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static class ArrayType<T> implements Type<Array<T>> {
@@ -98,7 +102,7 @@ public class Array<T> extends MemorySegment {
         }
 
         @Override
-        public Array<T> read(MemoryAccessor accessor, @NonNull Pointer dest) {
+        public Array<T> read(MemoryAccessor accessor, @NonNull Pointer dest) throws NativeMethodException {
             ArgumentsChecker.checkNotNull(type, "Cannot read when type is null.");
             return new Array<>(dest, size, type);
         }

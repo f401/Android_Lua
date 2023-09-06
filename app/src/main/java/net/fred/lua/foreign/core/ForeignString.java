@@ -78,9 +78,9 @@ public final class ForeignString extends MemorySegment {
         }
 
         @Override
-        public ForeignString read(MemoryAccessor accessor, @NonNull Pointer dest) {
+        public ForeignString read(MemoryAccessor accessor, @NonNull Pointer dest) throws NativeMethodException {
             dest = MemoryAccessor.peekPointerUnchecked(dest);
-            return new ForeignString(dest, MemoryAccessor.peekStringUnchecked(dest));
+            return ForeignString.from(accessor.peekString(dest));
         }
 
         @Override

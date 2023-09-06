@@ -45,7 +45,7 @@ public class Lua5_4 extends Lua {
     }
 
     @Override
-    protected void luaL_close() throws NativeMethodException {
+    protected void lua_close() throws NativeMethodException {
         getOrCreateFromCache("lua_close", new Creator() {
             @Override
             public FunctionCaller create(String symbol) throws NativeMethodException {

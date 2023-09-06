@@ -20,7 +20,7 @@ public interface Type<T> {
     @Nullable
     Pointer getFFIPointer();
 
-    T read(MemoryAccessor accessor, @NonNull Pointer dest);
+    T read(MemoryAccessor accessor, @NonNull Pointer dest) throws NativeMethodException;
 
     void write(MemoryAccessor accessor, @NonNull Pointer dest, @NonNull Object data) throws NativeMethodException;
 }

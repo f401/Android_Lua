@@ -16,9 +16,9 @@ import net.fred.lua.common.CrashHandler;
 import net.fred.lua.common.Logger;
 import net.fred.lua.common.activity.BaseActivity;
 import net.fred.lua.foreign.Breakpad;
-import net.fred.lua.foreign.core.DynamicLoadingLibrary;
 import net.fred.lua.io.CStandardOutputInput;
 import net.fred.lua.io.CacheDirectoryManager;
+import net.fred.lua.lua.Lua54LibraryProxy;
 import net.fred.lua.lua.Lua5_4;
 
 import java.io.IOException;
@@ -40,9 +40,13 @@ public class MainActivity extends BaseActivity {
             @Override
             public void onClick(View p1) {
                 try {
-                    DynamicLoadingLibrary dll = DynamicLoadingLibrary.open("liblua.so");
-                    dll.lookupSymbol(editText.getText().toString());
-                    dll.close();
+                    Lua54LibraryProxy proxy = Lua54LibraryProxy.create();
+                    CStandardOutputInput.getInstance().redirectStandardOutTo(
+                            getExternalCacheDir() + "/lua_out.txt"
+                    );
+                    proxy.openlibs();
+                    proxy.dofile("/sdcard/l.lua");
+                    proxy.close();
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }

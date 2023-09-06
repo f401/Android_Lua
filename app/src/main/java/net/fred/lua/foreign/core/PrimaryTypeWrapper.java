@@ -254,7 +254,7 @@ public final class PrimaryTypeWrapper<T> implements Type<T> {
     }
 
     @Override
-    public T read(MemoryAccessor accessor, @NonNull Pointer dest) {
+    public T read(MemoryAccessor accessor, @NonNull Pointer dest) throws NativeMethodException {
         return mapperAs.read(accessor, dest);
     }
 
