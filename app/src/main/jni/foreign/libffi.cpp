@@ -28,12 +28,21 @@ static void *get_type_ffi_pointer(JNIEnv *env, jobject type) {
     return pointer_get_from(env, env->CallObjectMethod(type, method_type_get_pointer));
 }
 
+static jint
+prep_cif(JNIEnv *env, jobject thiz, void *_cif, jobject return_type, jobjectArray _params);
+
 extern "C"
 JNIEXPORT jint JNICALL
 Java_net_fred_lua_foreign_ffi_FunctionDescriber_prep_1cif(JNIEnv *env, jobject thiz,
-                                                          jobject __cif,
+                                                          jobject _cif,
                                                           jobject return_type,
                                                           jobjectArray _params) {
+    GET_POINTER_PARAM(env, cif, _cif, -1);
+    return prep_cif(env, thiz, cif, return_type, _params);
+}
+
+static jint
+prep_cif(JNIEnv *env, jobject thiz, void *_cif, jobject return_type, jobjectArray _params) {
     auto *returnType = static_cast<ffi_type *>(get_type_ffi_pointer(env, return_type));
     IF_NULL_RETURN(returnType, -1);
 
@@ -43,7 +52,6 @@ Java_net_fred_lua_foreign_ffi_FunctionDescriber_prep_1cif(JNIEnv *env, jobject t
     IF_NULL_RETURN(method_desc_request, -1);
 
     // Obtain a pointer to store CIF (already allocated by the Java layer).
-    GET_POINTER_PARAM(env, _cif, __cif, -1);
     auto *cif = (ffi_cif *) _cif;
 
     //solve params
@@ -68,10 +76,12 @@ Java_net_fred_lua_foreign_ffi_FunctionDescriber_prep_1cif(JNIEnv *env, jobject t
     }
     return ffi_prep_cif(cif, FFI_DEFAULT_ABI, params_len, returnType, params);
 }
+
 extern "C"
 JNIEXPORT jobject JNICALL
 Java_net_fred_lua_foreign_ffi_FunctionCaller_ffi_1call(JNIEnv *env, jobject thiz,
                                                        jobject mem_accessor,
+                                                       jobject func_describer,
                                                        jobject _cif,
                                                        jobject _func_address,
                                                        jobjectArray _typed_params,// describer.getParams()
@@ -87,7 +97,7 @@ Java_net_fred_lua_foreign_ffi_FunctionCaller_ffi_1call(JNIEnv *env, jobject thiz
     IF_NULL_RETURN(method_functionCaller_evalTotalSize, nullptr);
 
     void **params_ptr = nullptr;
-    jsize length = 0;
+    jsize length;
     //assign params data
     if (!(EQUAL_TO_NULL(env, _params) || (length = env->GetArrayLength(_typed_params)) == 0)) {
         // Save pointers that truly store data
@@ -124,7 +134,16 @@ Java_net_fred_lua_foreign_ffi_FunctionCaller_ffi_1call(JNIEnv *env, jobject thiz
     if ((rsize = env->CallIntMethod(return_type, method_type_getSize, nullptr)) != 0) {
         return_segment = alloca(rsize);
     }
-    GET_POINTER_PARAM(env, cif, _cif, nullptr);
+    void *cif = alloca(sizeof(ffi_cif));
+    if (EQUAL_TO_NULL(env, _cif)) {
+        if (prep_cif(env, func_describer, cif, return_type, _typed_params) != FFI_OK) {
+            return nullptr;
+        }
+    } else {
+        GET_POINTER_PARAM(env, __cif, _cif, nullptr);
+        cif = __cif;
+    }
+
     GET_POINTER_PARAM(env, func_addr, _func_address, nullptr);
     //real call
     ffi_call((ffi_cif *) cif, (void (*)()) func_addr, return_segment, params_ptr);

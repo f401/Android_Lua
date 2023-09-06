@@ -71,7 +71,7 @@ public class Lua5_4 extends Lua {
         getOrCreateFromCache("J_luaL_dofile", new Creator() {
             @Override
             public FunctionCaller create(String symbol) throws NativeMethodException {
-                return FunctionCaller.of(dll.lookupSymbol(symbol),
+                return FunctionCaller.of(false, dll.lookupSymbol(symbol),
                         PrimaryTypes.INT,
                         PrimaryTypes.POINTER, PrimaryTypes.STRING);
             }

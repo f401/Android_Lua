@@ -18,20 +18,31 @@ public final class FunctionCaller extends MemoryController {
     private final FunctionDescriber describer;
     private final Pointer funcAddress;
 
-    public FunctionCaller(FunctionDescriber describer, Pointer funcAddress) {
+    /**
+     * If this is true, close is necessary. Default is true.
+     */
+    private final boolean useCache;
+
+    public FunctionCaller(FunctionDescriber describer, Pointer funcAddress, boolean useCache) {
         this.describer = describer;
         this.funcAddress = funcAddress;
+        this.useCache = useCache;
     }
 
     /**
      * Create a Function Caller.
+     *
      * @param address Address of the function to be called.
-     * @param rt @{link FunctionDescriber#of}.
-     * @param pt @{link FunctionDescriber#of}.
+     * @param rt      @{link FunctionDescriber#of}.
+     * @param pt      @{link FunctionDescriber#of}.
      * @return a Function Caller.
      */
     public static FunctionCaller of(Pointer address, Type<?> rt, @Nullable Type<?>... pt) {
-        return new FunctionCaller(FunctionDescriber.of(rt, pt), address);
+        return of(true, address, rt, pt);
+    }
+
+    public static FunctionCaller of(boolean useCache, Pointer address, Type<?> rt, @Nullable Type<?>... pt) {
+        return new FunctionCaller(FunctionDescriber.of(rt, pt), address, useCache);
     }
 
     /**
@@ -59,7 +70,11 @@ public final class FunctionCaller extends MemoryController {
         if (typedParams != null) {
             ArgumentsChecker.check(typedParams.length == params.length, "The length of the passed in parameter does not match the descriptor");
         }
-        return ffi_call(MemoryAccessor.UNCHECKED, describer.prepareCIF().getPointer(), funcAddress,
+        Pointer ffi = null;
+        if (useCache) {
+            ffi = describer.prepareCIF().getPointer();
+        }
+        return ffi_call(MemoryAccessor.UNCHECKED, describer, ffi, funcAddress,
                 typedParams, params, describer.getReturnType());
     }
 
@@ -68,6 +83,7 @@ public final class FunctionCaller extends MemoryController {
     }
 
     private native Object ffi_call(MemoryAccessor accessor, // Usual for MemoryAccessor.UNCHECKED
+                                   FunctionDescriber describer,
                                    Pointer cif, Pointer funcAddress, Type<?>[] typedParams, Object[] params, Type<?> returnType);
 
     @Override
