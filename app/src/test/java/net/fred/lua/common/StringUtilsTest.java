@@ -1,4 +1,4 @@
-package net.fred.lua.foreign.common;
+package net.fred.lua.common;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

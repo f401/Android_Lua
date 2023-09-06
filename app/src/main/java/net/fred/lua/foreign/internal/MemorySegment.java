@@ -55,8 +55,6 @@ public class MemorySegment extends BasicMemoryController {
         return size;
     }
 
-    public static native Pointer alloc(long size) throws NativeMethodException;
-
     public void put(long off, Type<?> type, Object obj) throws NativeMethodException {
         type.write(checkedMemoryAccessor, pointer.plus(off), obj);
     }
@@ -64,6 +62,8 @@ public class MemorySegment extends BasicMemoryController {
     public void put(long off, Pointer src) {
         checkedMemoryAccessor.putPointer(pointer.plus(off), src);
     }
+
+    protected static native Pointer alloc(long size) throws NativeMethodException;
 
     public static native void free(Pointer ptr);
 

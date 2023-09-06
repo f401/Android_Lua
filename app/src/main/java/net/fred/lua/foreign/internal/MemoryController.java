@@ -18,7 +18,7 @@ public class MemoryController implements Closeable {
     private Flag freed;
 
     /**
-     * @{value #children} Contains objects that need to be released together when this object is released.
+     * Contains objects that need to be released together when this object is released.
      */
     private List<AutoCloseable> children;
 
@@ -50,6 +50,7 @@ public class MemoryController implements Closeable {
             freeChildren();
             if (parent != null) {
                 parent.removeChild(this);
+                parent = null;
             }
             freed.setFlag(true);
         } else {

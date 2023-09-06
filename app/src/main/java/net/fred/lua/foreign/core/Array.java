@@ -5,7 +5,9 @@ import androidx.annotation.Nullable;
 
 import net.fred.lua.common.ArgumentsChecker;
 import net.fred.lua.common.Logger;
+import net.fred.lua.common.cleaner.Cleaner;
 import net.fred.lua.common.utils.StringUtils;
+import net.fred.lua.foreign.Deallocate;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.internal.CheckedMemoryAccessor;
@@ -35,7 +37,9 @@ public class Array<T> extends MemorySegment {
         long totalSize = length * type.getSize(null);
         Pointer ptr = MemorySegment.allocate(totalSize);
         Logger.i(StringUtils.templateOf("Create {} size of Segment at {}.", totalSize, ptr));
-        return new Array<>(ptr, length, type);
+        final Array<T> array = new Array<>(ptr, length, type);
+        Cleaner.createPhantom(array, new Deallocate(array.getFreed(), ptr, Deallocate.FREE));
+        return array;
     }
 
     /**
