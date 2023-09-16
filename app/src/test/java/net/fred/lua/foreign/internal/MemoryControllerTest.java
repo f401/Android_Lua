@@ -1,10 +1,11 @@
 package net.fred.lua.foreign.internal;
 
-import org.junit.Test;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import net.fred.lua.foreign.NativeMethodException;
+
+import org.junit.Test;
 
 public class MemoryControllerTest {
     @Test
@@ -17,8 +18,8 @@ public class MemoryControllerTest {
         base.freeChildren();
         assertFalse(base.hasChild());
         base.close();
-        assertTrue(base.getFreed().getFlag());
-        assertTrue(child.getFreed().getFlag());
+        assertTrue(base.isClosed());
+        assertTrue(child.isClosed());
 
         System.out.println("addChild passed!");
     }
@@ -30,8 +31,8 @@ public class MemoryControllerTest {
         base.addChild(child);
         base.close();
 
-        assertTrue(base.getFreed().getFlag());
-        assertTrue(base.getFreed().getFlag());
+        assertTrue(base.isClosed());
+        assertTrue(base.isClosed());
 
         System.out.println("Free together passed!");
     }
@@ -44,7 +45,7 @@ public class MemoryControllerTest {
 
         child.close();
         assertFalse(base.hasChild());
-        assertTrue(child.getFreed().getFlag());
+        assertTrue(child.isClosed());
 
         base.close();
     }

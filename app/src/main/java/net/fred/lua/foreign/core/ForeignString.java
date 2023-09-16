@@ -4,10 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import net.fred.lua.common.Logger;
-import net.fred.lua.common.cleaner.Cleaner;
 import net.fred.lua.common.utils.StringUtils;
 import net.fred.lua.common.utils.ThrowableUtils;
-import net.fred.lua.foreign.Deallocate;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.internal.ForeignValues;
@@ -46,7 +44,6 @@ public final class ForeignString extends MemorySegment {
         MemoryAccessor.putStringUnchecked(ptr, str);
 
         final ForeignString result = new ForeignString(ptr, str);
-        Cleaner.createPhantom(result, new Deallocate(result.getFreed(), ptr, Deallocate.FREE));
         return result;
     }
 

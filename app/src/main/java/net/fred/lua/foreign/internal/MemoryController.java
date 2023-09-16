@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import net.fred.lua.common.ArgumentsChecker;
-import net.fred.lua.common.Flag;
 import net.fred.lua.common.Logger;
 import net.fred.lua.common.functional.Consumer;
 import net.fred.lua.common.utils.ThrowableUtils;
@@ -13,9 +12,10 @@ import net.fred.lua.foreign.NativeMethodException;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MemoryController implements Closeable {
-    private Flag freed;
+    private final AtomicBoolean closed;
 
     /**
      * Contains objects that need to be released together when this object is released.
@@ -26,51 +26,42 @@ public class MemoryController implements Closeable {
     private MemoryController parent;
 
     public MemoryController() {
-        this.freed = new Flag(false);
-    }
-    
-    @NonNull
-    public final Flag getFreed() {
-        return freed;
-    }
-
-    public final void setFreed(@NonNull Flag freed) {
-        this.freed = freed;
-    }
-
-    @Nullable
-    public MemoryController getParent() {
-        return parent;
+        this.closed = new AtomicBoolean(false);
     }
 
     @Override
     public final void close() throws NativeMethodException {
-        if (!this.freed.getFlag()) {
+        if (this.closed.compareAndSet(false, true)) {
             onFree();
             freeChildren();
             if (parent != null) {
                 parent.removeChild(this);
                 parent = null;
             }
-            freed.setFlag(true);
         } else {
             Logger.e("Pointer freed twice");
-            throw new RuntimeException("Pointer freed twice");
         }
     }
 
+    public final boolean isClosed() {
+        return this.closed.get();
+    }
+
     public void addChild(@Nullable AutoCloseable segment) {
-        ArgumentsChecker.check(!this.getFreed().getFlag(), "Father has been released.");
+        ArgumentsChecker.check(!this.closed.get(), "Father has been released.");
         if (segment != this && segment != null) {
-            if (children == null) {
-                children = new ArrayList<>(2);
+            synchronized (this) {
+                if (children == null) {
+                    children = new ArrayList<>(2);
+                }
+
+                if (segment instanceof MemoryController) {
+                    MemoryController child = (MemoryController) segment;
+                    ArgumentsChecker.check(!checkIsParent(child), "The required registered son is the father of the current object.");
+                    child.attachParent(this);
+                    children.add(segment);
+                }
             }
-            if (segment instanceof MemoryController) {
-                MemoryController child = (MemoryController) segment;
-                ArgumentsChecker.check(!checkIsParent(child), "The required registered son is the father of the current object.");
-                child.attachParent(this);
-            }
-            children.add(segment);
         }
     }
 
@@ -79,11 +70,12 @@ public class MemoryController implements Closeable {
                 "The current object already has a father. If you want to replace it, please call 'detachParent' first`.");
         ArgumentsChecker.check(this != parent,
                 "Cannot set oneself as Parent.");
-        this.parent = parent;
-        onAttachParent(parent);
+        synchronized (this) {
+            this.parent = parent;
+        }
     }
 
-    public final void detachParent() {
+    public synchronized final void detachParent() {
         this.parent = null;
     }
 
@@ -98,7 +90,7 @@ public class MemoryController implements Closeable {
      *
      * @param child The object you want to delete.
      */
-    public final void removeChild(@NonNull MemoryController child) {
+    public synchronized final void removeChild(@NonNull MemoryController child) {
         if (children.remove(child)) {
             child.detachParent();
         }
@@ -110,19 +102,21 @@ public class MemoryController implements Closeable {
 
     public final void freeChildren() {
         if (children != null && children.size() != 0) {
-            //During the deletion process, the subclass will call the remove method.
-            //This can cause data modification during traversal, resulting in exceptions being thrown.
-            List<AutoCloseable> dest = new ArrayList<>(children.size() + 1);
-            dest.addAll(children);
-            ThrowableUtils.closeAll(dest, new Consumer<AutoCloseable>() {
-                @Override
-                public void accept(AutoCloseable param) {
-                    if (param instanceof MemoryController) {
-                        ((MemoryController) param).detachParent();
+            // During the deletion process, the subclass will call the remove method.
+            // This can cause data modification during traversal, resulting in exceptions being thrown.
+            synchronized (this) {
+                List<AutoCloseable> dest = new ArrayList<>(children.size() + 1);
+                dest.addAll(children);
+                ThrowableUtils.closeAll(dest, new Consumer<AutoCloseable>() {
+                    @Override
+                    public void accept(AutoCloseable param) {
+                        if (param instanceof MemoryController) {
+                            ((MemoryController) param).detachParent();
+                        }
                     }
-                }
-            });
-            children = null;
+                });
+                children = null;
+            }
         }
     }
 
@@ -148,14 +142,5 @@ public class MemoryController implements Closeable {
      *
      */
     protected void onFree() throws NativeMethodException {
-    }
-
-    /**
-     * Called by @{see #attachParent}
-     * Called when setting the parent.
-     *
-     * @param parent The set parent.
-     */
-    protected void onAttachParent(@NonNull MemoryController parent) {
     }
 }
