@@ -27,12 +27,11 @@ public class Cleaner {
                 }
             }, "Cleaner");
             thread.setDaemon(true);
-            thread.setPriority(3);
             thread.start();
         }
     }
 
-    public static PhantomCleaner createPhantom(Object obj, Runnable cleaner) {
+    public static Cleanable createPhantom(Object obj, Runnable cleaner) {
         return new PhantomCleaner(obj, cleaner);
     }
 
@@ -47,5 +46,9 @@ public class Cleaner {
                 ((Cleanable) obj).clean();
             }
         }
+    }
+
+    public interface Cleanable {
+        void clean();
     }
 }
