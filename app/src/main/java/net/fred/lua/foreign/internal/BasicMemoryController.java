@@ -1,26 +1,35 @@
 package net.fred.lua.foreign.internal;
 
-import androidx.annotation.Nullable;
-
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 
 public class BasicMemoryController extends MemoryController {
 
-    protected Pointer pointer;
-
-    protected BasicMemoryController(@Nullable Pointer pointer) {
-        this.pointer = pointer;
+    protected BasicMemoryController(SinglePointerHolder holder) {
+        super(holder);
     }
 
     public final Pointer getPointer() {
-        return pointer;
+        return getPointerHolder().pointer;
     }
 
     @Override
-    protected void onFree() throws NativeMethodException {
-        if (pointer != null) {
-            MemorySegment.free(pointer);
+    public SinglePointerHolder getPointerHolder() {
+        return (SinglePointerHolder) super.getPointerHolder();
+    }
+
+    public static class SinglePointerHolder implements MemoryController.PointerHolder {
+        protected Pointer pointer;
+
+        protected SinglePointerHolder(Pointer pointer) {
+            this.pointer = pointer;
+        }
+
+        @Override
+        public void onFree() throws NativeMethodException {
+            if (pointer != null) {
+                MemorySegment.free(pointer);
+            }
         }
     }
 }

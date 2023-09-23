@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 
 import net.fred.lua.common.ArgumentsChecker;
 import net.fred.lua.common.Logger;
+import net.fred.lua.common.cleaner.Cleaner;
 import net.fred.lua.common.functional.Consumer;
 import net.fred.lua.common.utils.ThrowableUtils;
 import net.fred.lua.foreign.NativeMethodException;
@@ -15,24 +16,41 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MemoryController implements Closeable {
+
+    public static final MemoryController.PointerHolder EMPTY_HOLDER = new MemoryController.PointerHolder() {
+        @Override
+        public void onFree() throws NativeMethodException {
+        }
+    };
+
     private final AtomicBoolean closed;
 
     /**
      * Contains objects that need to be released together when this object is released.
      */
     private List<AutoCloseable> children;
-
     @Nullable
     private MemoryController parent;
+    private final Cleaner.ReferenceCleanable cleaner;
+    private final PointerHolderCleanerImpl holder;
 
+    /**
+     * Use when no custom release function is required.
+     */
     public MemoryController() {
+        this(EMPTY_HOLDER);
+    }
+
+    public MemoryController(PointerHolder holder) {
         this.closed = new AtomicBoolean(false);
+        this.holder = new PointerHolderCleanerImpl(holder);
+        this.cleaner = Cleaner.createPhantom(this, this.holder);
     }
 
     @Override
     public final void close() throws NativeMethodException {
         if (this.closed.compareAndSet(false, true)) {
-            onFree();
+            cleaner.performCleanup();
             freeChildren();
             if (parent != null) {
                 parent.removeChild(this);
@@ -45,6 +63,18 @@ public class MemoryController implements Closeable {
 
     public final boolean isClosed() {
         return this.closed.get();
+    }
+
+    public PointerHolder getPointerHolder() {
+        return this.holder.target;
+    }
+
+    public final AutoCloseable childAt(int idx) {
+        return children.get(idx);
+    }
+
+    public boolean hasChild() {
+        return children != null && children.size() != 0;
     }
 
     public void addChild(@Nullable AutoCloseable segment) {
@@ -96,9 +126,7 @@ public class MemoryController implements Closeable {
         }
     }
 
-    public final AutoCloseable childAt(int idx) {
-        return children.get(idx);
-    }
+
 
     public final void freeChildren() {
         if (children != null && children.size() != 0) {
@@ -120,9 +148,6 @@ public class MemoryController implements Closeable {
         }
     }
 
-    public boolean hasChild() {
-        return children != null && children.size() != 0;
-    }
 
     /**
      * Called by @{see #close}.
@@ -142,5 +167,26 @@ public class MemoryController implements Closeable {
      *
      */
     protected void onFree() throws NativeMethodException {
+    }
+
+    protected interface PointerHolder {
+        void onFree() throws NativeMethodException;
+    }
+
+    /**
+     * Packaging for Cleanable.
+     */
+    private static class PointerHolderCleanerImpl implements Cleaner.Cleanable {
+
+        private final PointerHolder target;
+
+        PointerHolderCleanerImpl(PointerHolder target) {
+            this.target = target;
+        }
+
+        @Override
+        public void clean() throws NativeMethodException {
+            target.onFree();
+        }
     }
 }

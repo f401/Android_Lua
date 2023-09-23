@@ -31,7 +31,7 @@ public class Cleaner {
         }
     }
 
-    public static Cleanable createPhantom(Object obj, Runnable cleaner) {
+    public static ReferenceCleanable createPhantom(Object obj, Cleanable cleaner) {
         return new PhantomCleaner(obj, cleaner);
     }
 
@@ -42,13 +42,17 @@ public class Cleaner {
     private static void tryPending() {
         Reference<?> obj;
         while ((obj = queue.poll()) != null) {
-            if (obj instanceof Cleanable) {
-                ((Cleanable) obj).clean();
+            if (obj instanceof ReferenceCleanable) {
+                ((ReferenceCleanable) obj).performCleanup();
             }
         }
     }
 
+    public interface ReferenceCleanable {
+        void performCleanup();
+    }
+
     public interface Cleanable {
-        void clean();
+        void clean() throws Exception;
     }
 }
