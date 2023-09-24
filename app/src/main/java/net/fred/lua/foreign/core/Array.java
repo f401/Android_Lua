@@ -57,7 +57,7 @@ public class Array<T> extends MemorySegment {
     }
 
     private Pointer evalDataOff(int idx) {
-        return pointer.plus((long) idx * mType.getSize(null));
+        return getPointer().plus((long) idx * mType.getSize(null));
     }
 
     public int evalTotalSize() {

@@ -19,7 +19,18 @@ public class Lua5_4 extends Lua {
     private static final FunctionCallerCache cache = new FunctionCallerCache();
 
     public Lua5_4() throws NativeMethodException {
-        super(new_state());
+        super(new SinglePointerHolder(new_state()) {
+            @Override
+            public void onFree() throws NativeMethodException {
+                getOrCreateFromCache("lua_close", new Creator() {
+                    @Override
+                    public FunctionCaller create(String symbol) throws NativeMethodException {
+                        return FunctionCaller.of(dll.lookupSymbol(symbol),
+                                PrimaryTypes.VOID, PrimaryTypes.POINTER);
+                    }
+                }).call(pointer);
+            }
+        });
     }
 
     protected static Pointer new_state() throws NativeMethodException {
@@ -45,17 +56,6 @@ public class Lua5_4 extends Lua {
     }
 
     @Override
-    protected void lua_close() throws NativeMethodException {
-        getOrCreateFromCache("lua_close", new Creator() {
-            @Override
-            public FunctionCaller create(String symbol) throws NativeMethodException {
-                return FunctionCaller.of(dll.lookupSymbol(symbol),
-                        PrimaryTypes.VOID, PrimaryTypes.POINTER);
-            }
-        }).call(pointer);
-    }
-
-    @Override
     public void openlibs() throws NativeMethodException {
         getOrCreateFromCache("luaL_openlibs", new Creator() {
             @Override
@@ -63,7 +63,7 @@ public class Lua5_4 extends Lua {
                 return FunctionCaller.of(dll.lookupSymbol(symbol),
                         PrimaryTypes.VOID, PrimaryTypes.POINTER);
             }
-        }).call(pointer);
+        }).call(getPointer());
     }
 
     @Override
@@ -75,7 +75,7 @@ public class Lua5_4 extends Lua {
                         PrimaryTypes.INT,
                         PrimaryTypes.POINTER, PrimaryTypes.STRING);
             }
-        }).call(pointer, ForeignString.from(file));
+        }).call(getPointer(), ForeignString.from(file));
     }
 
     public interface Creator {

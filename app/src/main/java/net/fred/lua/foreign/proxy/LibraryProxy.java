@@ -19,7 +19,7 @@ public class LibraryProxy {
         return proxyInstance;
     }
 
-    private static class Closer implements Runnable {
+    private static class Closer implements Cleaner.Cleanable {
         private final DynamicLoadingLibrary dll;
 
         private Closer(DynamicLoadingLibrary dll) {
@@ -27,7 +27,7 @@ public class LibraryProxy {
         }
 
         @Override
-        public void run() {
+        public void clean() {
             try {
                 dll.close();
             } catch (NativeMethodException e) {

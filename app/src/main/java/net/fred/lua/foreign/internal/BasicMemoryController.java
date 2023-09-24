@@ -21,7 +21,7 @@ public class BasicMemoryController extends MemoryController {
     public static class SinglePointerHolder implements MemoryController.PointerHolder {
         protected Pointer pointer;
 
-        protected SinglePointerHolder(Pointer pointer) {
+        public SinglePointerHolder(Pointer pointer) {
             this.pointer = pointer;
         }
 

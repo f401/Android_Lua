@@ -26,6 +26,7 @@ public final class FunctionCaller extends MemoryController {
         this.describer = describer;
         this.funcAddress = funcAddress;
         this.useCache = useCache;
+        addChild(describer);
     }
 
     /**
@@ -90,10 +91,4 @@ public final class FunctionCaller extends MemoryController {
     private native Object ffi_call(MemoryAccessor accessor, // Usual for MemoryAccessor.UNCHECKED
                                    FunctionDescriber describer,
                                    Pointer cif, Pointer funcAddress, Type<?>[] typedParams, Object[] params, Type<?> returnType);
-
-    @Override
-    protected void onFree() throws NativeMethodException {
-        super.onFree();
-        describer.close();
-    }
 }

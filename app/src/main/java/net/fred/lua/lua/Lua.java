@@ -3,21 +3,13 @@ package net.fred.lua.lua;
 import androidx.annotation.Nullable;
 
 import net.fred.lua.foreign.NativeMethodException;
-import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.internal.BasicMemoryController;
 
 public abstract class Lua extends BasicMemoryController {
 
-    protected Lua(@Nullable Pointer pointer) {
-        super(pointer);
+    protected Lua(@Nullable SinglePointerHolder holder) {
+        super(holder);
     }
-
-    @Override
-    protected void onFree() throws NativeMethodException {
-        lua_close();
-    }
-
-    protected abstract void lua_close() throws NativeMethodException;
 
     public abstract void openlibs() throws NativeMethodException;
 

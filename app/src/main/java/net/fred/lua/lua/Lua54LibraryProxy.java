@@ -13,7 +13,13 @@ public class Lua54LibraryProxy extends Lua {
             , LuaLib.class);
 
     protected Lua54LibraryProxy(@Nullable Pointer pointer) {
-        super(pointer);
+        super(new SinglePointerHolder(pointer) {
+            @Override
+            public void onFree() throws NativeMethodException {
+                // Super pointer.
+                lib.lua_close(pointer);
+            }
+        });
     }
 
     protected static Pointer newState() {
@@ -25,18 +31,13 @@ public class Lua54LibraryProxy extends Lua {
     }
 
     @Override
-    protected void lua_close() throws NativeMethodException {
-        lib.lua_close(pointer);
-    }
-
-    @Override
     public void openlibs() throws NativeMethodException {
-        lib.luaL_openlibs(pointer);
+        lib.luaL_openlibs(getPointer());
     }
 
     @Override
     public void dofile(String file) throws NativeMethodException {
-        lib.J_luaL_dofile(pointer, ForeignString.from(file));
+        lib.J_luaL_dofile(getPointer(), ForeignString.from(file));
     }
 
     public interface LuaLib {

@@ -32,7 +32,7 @@ public class MemoryController implements Closeable {
     @Nullable
     private MemoryController parent;
     private final Cleaner.ReferenceCleanable cleaner;
-    private final PointerHolderCleanerImpl holder;
+    private final PointerHolderCleanerWrapper holder;
 
     /**
      * Use when no custom release function is required.
@@ -43,10 +43,11 @@ public class MemoryController implements Closeable {
 
     public MemoryController(PointerHolder holder) {
         this.closed = new AtomicBoolean(false);
-        this.holder = new PointerHolderCleanerImpl(holder);
+        this.holder = new PointerHolderCleanerWrapper(holder);
         this.cleaner = Cleaner.createPhantom(this, this.holder);
     }
 
+    /*** Release this object. After releasing it, you cannot touch it at all. */
     @Override
     public final void close() throws NativeMethodException {
         if (this.closed.compareAndSet(false, true)) {
@@ -126,8 +127,6 @@ public class MemoryController implements Closeable {
         }
     }
 
-
-
     public final void freeChildren() {
         if (children != null && children.size() != 0) {
             // During the deletion process, the subclass will call the remove method.
@@ -148,27 +147,6 @@ public class MemoryController implements Closeable {
         }
     }
 
-
-    /**
-     * Called by @{see #close}.
-     * <p>
-     * This function is called when the pointer is released.
-     * Can ensure that the flag is only called once without modification.
-     * <p>
-     * If you don't want to call the free function to release,
-     * Rewrite and implement your own release function.
-     * <p>
-     * Very few cases require rewriting this method, and in most cases, only @{link MemoryController#addChild} needs to be used.
-     * And @{link BasicMemoryController}.
-     * <p>
-     * However, sometimes, children are used as management methods for memory usage rather than being
-     * 'released together', and in these cases, the method also needs to be rewritten.
-     * For example, @{link net.fred.lua.foreign.ffi.FunctionCaller} and @{link net.fred.lua.foreign.ffi.FunctionDescriber}
-     *
-     */
-    protected void onFree() throws NativeMethodException {
-    }
-
     protected interface PointerHolder {
         void onFree() throws NativeMethodException;
     }
@@ -176,11 +154,11 @@ public class MemoryController implements Closeable {
     /**
      * Packaging for Cleanable.
      */
-    private static class PointerHolderCleanerImpl implements Cleaner.Cleanable {
+    private static class PointerHolderCleanerWrapper implements Cleaner.Cleanable {
 
         private final PointerHolder target;
 
-        PointerHolderCleanerImpl(PointerHolder target) {
+        PointerHolderCleanerWrapper(PointerHolder target) {
             this.target = target;
         }
 

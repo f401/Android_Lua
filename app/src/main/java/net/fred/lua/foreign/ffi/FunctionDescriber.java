@@ -11,6 +11,9 @@ import net.fred.lua.foreign.internal.MemoryController;
 import net.fred.lua.foreign.internal.MemorySegment;
 import net.fred.lua.foreign.types.Type;
 
+/**
+ * Store CIF in a cached manner.
+ */
 public final class FunctionDescriber extends MemoryController {
 
     @Nullable
@@ -71,6 +74,7 @@ public final class FunctionDescriber extends MemoryController {
      * @throws NativeMethodException etc...
      */
     public MemorySegment prepareCIF() throws NativeMethodException {
+        // search in cache.
         if (hasChild()) {
             return (MemorySegment) childAt(0);
         }
@@ -82,6 +86,7 @@ public final class FunctionDescriber extends MemoryController {
         }
         return cif;
     }
+
     public void cleanCache() {
         freeChildren();
     }
