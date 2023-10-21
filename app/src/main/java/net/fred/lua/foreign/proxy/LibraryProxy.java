@@ -1,10 +1,10 @@
 package net.fred.lua.foreign.proxy;
 
-import net.fred.lua.common.Logger;
 import net.fred.lua.common.cleaner.Cleaner;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.core.DynamicLoadingLibrary;
 import net.fred.lua.foreign.ffi.FunctionCaller;
+import net.fred.lua.io.Logger;
 
 import java.lang.reflect.Proxy;
 

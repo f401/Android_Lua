@@ -17,6 +17,7 @@ import net.fred.lua.common.activity.CrashActivity;
 import net.fred.lua.common.utils.DateUtils;
 import net.fred.lua.common.utils.FileUtils;
 import net.fred.lua.io.CacheDirectoryManager;
+import net.fred.lua.io.Logger;
 
 import java.io.File;
 import java.io.PrintWriter;

@@ -5,12 +5,12 @@ import androidx.collection.LruCache;
 
 import net.fred.lua.common.ArgumentsChecker;
 import net.fred.lua.common.CrashHandler;
-import net.fred.lua.common.Logger;
 import net.fred.lua.common.utils.ThrowableUtils;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.internal.BasicMemoryController;
 import net.fred.lua.foreign.internal.ForeignValues;
+import net.fred.lua.io.Logger;
 
 public final class DynamicLoadingLibrary extends BasicMemoryController {
 

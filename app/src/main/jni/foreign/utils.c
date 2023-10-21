@@ -14,7 +14,7 @@ static jmethodID method_pointer_get;
 
 
 #define LOAD_CLASS_LOGGER(ENV, IF_FAILED_RETURN) \
-FIND_CLASS(env, logger, "net/fred/lua/common/Logger"); \
+FIND_CLASS(env, logger, "net/fred/lua/io/Logger"); \
 IF_NULL_RETURN(class_logger, IF_FAILED_RETURN)
 
 #define LOAD_CLASS_POINTER(ENV, IF_FAILED_RETURN) \

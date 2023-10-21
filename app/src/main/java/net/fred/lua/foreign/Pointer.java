@@ -3,10 +3,10 @@ package net.fred.lua.foreign;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import net.fred.lua.common.Logger;
 import net.fred.lua.foreign.internal.ForeignValues;
 import net.fred.lua.foreign.internal.MemoryAccessor;
 import net.fred.lua.foreign.types.Type;
+import net.fred.lua.io.Logger;
 
 public class Pointer {
     private long address;

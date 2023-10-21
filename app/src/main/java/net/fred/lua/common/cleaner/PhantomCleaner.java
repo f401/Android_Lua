@@ -1,6 +1,6 @@
 package net.fred.lua.common.cleaner;
 
-import net.fred.lua.common.Logger;
+import net.fred.lua.io.Logger;
 
 import java.lang.ref.PhantomReference;
 import java.util.concurrent.ConcurrentLinkedQueue;

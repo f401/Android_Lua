@@ -16,8 +16,8 @@ import android.widget.OverScroller;
 import androidx.annotation.Nullable;
 
 import net.fred.lua.R;
-import net.fred.lua.common.Logger;
 import net.fred.lua.common.utils.MathUtils;
+import net.fred.lua.io.Logger;
 
 // Based on https://github.com/TIIEHenry/CodeEditor/blob/master/CodeEditor/src/main/java/tiiehenry/code/view/TouchNavigationMethod.java
 public class FreeScrollView extends View {

@@ -20,11 +20,11 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import net.fred.lua.R;
-import net.fred.lua.common.Logger;
 import net.fred.lua.common.TaskExecutor;
 import net.fred.lua.common.activity.BaseActivity;
 import net.fred.lua.foreign.Breakpad;
 import net.fred.lua.io.CacheDirectoryManager;
+import net.fred.lua.io.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -94,7 +94,8 @@ public class SplashActivity extends BaseActivity {
     }
 
     /**
-     * Make counter decrease
+     * Make counter decrease.
+     * Called when the task is completed.
      */
     private void countDownTask() {
         counter.countDown();

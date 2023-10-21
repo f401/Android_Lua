@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import net.fred.lua.common.ArgumentsChecker;
-import net.fred.lua.common.Logger;
 import net.fred.lua.common.utils.StringUtils;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
@@ -13,6 +12,7 @@ import net.fred.lua.foreign.internal.ForeignValues;
 import net.fred.lua.foreign.internal.MemoryAccessor;
 import net.fred.lua.foreign.internal.MemorySegment;
 import net.fred.lua.foreign.types.Type;
+import net.fred.lua.io.Logger;
 
 /**
  * Array of native layers.

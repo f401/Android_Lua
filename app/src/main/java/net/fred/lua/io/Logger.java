@@ -1,4 +1,4 @@
-package net.fred.lua.common;
+package net.fred.lua.io;
 
 import android.util.Log;
 
@@ -8,33 +8,26 @@ import net.fred.lua.App;
 import net.fred.lua.common.utils.DateUtils;
 import net.fred.lua.common.utils.StringUtils;
 import net.fred.lua.common.utils.ThrowableUtils;
-import net.fred.lua.io.CacheDirectoryManager;
 
-import org.apache.commons.io.FileUtils;
-
-import java.io.File;
+import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public final class Logger implements AutoCloseable {
 
     private static Logger logger;
-    private PrintStream stream;
+    /**
+     * 0 for free, 1 for using.
+     */
+    private final AtomicInteger streamMutex;
+    private OutputStream stream;
 
     private Logger() {
-        File logFile = CacheDirectoryManager.getInstance().getLoggerFile();
-
-        if (logFile.exists()) {
-            FileUtils.deleteQuietly(logFile);
-        }
-
-        try {
-            logFile.createNewFile();
-            stream = new PrintStream(new FileOutputStream(logFile, true));
-        } catch (IOException e) {
-            CrashHandler.fastHandleException(e);
-        }
+        stream = new ByteArrayOutputStream();
+        streamMutex = new AtomicInteger(0);
     }
 
     @NonNull
@@ -50,7 +43,7 @@ public final class Logger implements AutoCloseable {
         return logger;
     }
 
-    public static PrintStream stream() {
+    public static OutputStream stream() {
         return getInstance().stream;
     }
 
@@ -93,13 +86,34 @@ public final class Logger implements AutoCloseable {
     }
 
     public static void write(String msg) {
-        Log.i("logger", msg);
-        stream().print(msg);
+        Log.i("Logger", msg);
+        final AtomicInteger streamMutex = getInstance().streamMutex;
+        try {
+            for (; ; ) {
+                if (streamMutex.compareAndSet(0, 1)) {
+                    stream().write(msg.getBytes(StandardCharsets.UTF_8));
+                    streamMutex.set(0);
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            Log.e("logger", "Logger error " + ThrowableUtils.getThrowableMessage(e));
+        }
     }
 
     public static void write(int i) {
-        Log.i("logger", String.valueOf(i));
-        stream().write(i);
+        final AtomicInteger streamMutex = getInstance().streamMutex;
+        try {
+            for (; ; ) {
+                if (streamMutex.compareAndSet(0, 1)) {
+                    stream().write(i);
+                    streamMutex.set(0);
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            Log.e("logger", "Logger error " + ThrowableUtils.getThrowableMessage(e));
+        }
     }
 
     public static void writeLine(String msg) {
@@ -107,9 +121,26 @@ public final class Logger implements AutoCloseable {
     }
 
     @Override
-    public void close() {
+    public void close() throws IOException {
         if (stream != null)
             stream.close();
+    }
+
+    /**
+     * Called from @{link CacheDirectoryManager#compressLatestLogs}
+     * This function transfers the data from ByteArrayOutputStream to the log file and changes the stream to FileOutputStream.
+     */
+    void onLogfilePrepared() throws IOException {
+        for (; ; ) {
+            if (streamMutex.compareAndSet(0, 1)) {
+                byte[] saved = ((ByteArrayOutputStream) stream).toByteArray();
+                stream = new FileOutputStream(CacheDirectoryManager.getInstance().getLoggerFile());
+                stream.write(saved);
+
+                streamMutex.set(0);
+                break;
+            }
+        }
     }
 
 }

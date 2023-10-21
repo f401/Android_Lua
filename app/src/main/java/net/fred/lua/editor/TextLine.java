@@ -4,10 +4,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import net.fred.lua.common.ArgumentsChecker;
-import net.fred.lua.common.Logger;
 import net.fred.lua.common.Pair;
 import net.fred.lua.common.utils.ThrowableUtils;
 import net.fred.lua.editor.lang.Language;
+import net.fred.lua.io.Logger;
 
 public class TextLine implements Text {
     public static final int DEFAULT_SIZE = 32;

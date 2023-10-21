@@ -13,11 +13,11 @@ import androidx.annotation.NonNull;
 
 import net.fred.lua.R;
 import net.fred.lua.common.CrashHandler;
-import net.fred.lua.common.Logger;
 import net.fred.lua.common.activity.BaseActivity;
 import net.fred.lua.foreign.Breakpad;
 import net.fred.lua.io.CStandardOutputInput;
 import net.fred.lua.io.CacheDirectoryManager;
+import net.fred.lua.io.Logger;
 import net.fred.lua.lua.Lua54LibraryProxy;
 import net.fred.lua.lua.Lua5_4;
 
@@ -81,7 +81,7 @@ public class MainActivity extends BaseActivity {
             }
         });
 
-        ((Button) findViewById(R.id.activity_main_start_view_test)).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.activity_main_start_view_test).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent i = new Intent(MainActivity.this, ViewTestActivity.class);

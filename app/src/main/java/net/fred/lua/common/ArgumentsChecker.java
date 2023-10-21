@@ -2,6 +2,7 @@ package net.fred.lua.common;
 
 import net.fred.lua.common.utils.FileUtils;
 import net.fred.lua.common.utils.StringUtils;
+import net.fred.lua.io.Logger;
 
 
 public class ArgumentsChecker {

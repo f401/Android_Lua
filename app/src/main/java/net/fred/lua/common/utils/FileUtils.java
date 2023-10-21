@@ -1,7 +1,7 @@
 package net.fred.lua.common.utils;
 
 import net.fred.lua.common.CrashHandler;
-import net.fred.lua.common.Logger;
+import net.fred.lua.io.Logger;
 
 import java.io.File;
 import java.io.IOException;

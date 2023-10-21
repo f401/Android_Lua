@@ -1,10 +1,8 @@
 package net.fred.lua.io;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 
-import net.fred.lua.common.Flag;
+import net.fred.lua.common.CrashHandler;
 import net.fred.lua.common.utils.ThrowableUtils;
 
 import java.io.IOException;
@@ -17,10 +15,8 @@ import java.io.PrintWriter;
 public final class LogScanner {
 
     private static LogScanner instance;
-    private final Flag flag;
 
     private LogScanner() {
-        flag = new Flag(true);
     }
 
     @NonNull
@@ -38,17 +34,10 @@ public final class LogScanner {
                 try {
                     new ProcessBuilder("logcat", "-c").start().waitFor();
                 } catch (InterruptedException | IOException ignored) {
+                    Logger.e("Clean Logcat Buffer failed!");
                 }
             }
         }).start();
-    }
-
-    public void setFlag(boolean flag) {
-        this.flag.setFlag(flag);
-    }
-
-    public boolean getFlag() {
-        return this.flag.getFlag();
     }
 
     public void start() {
@@ -63,19 +52,19 @@ public final class LogScanner {
             try {
                 outputStream = new PrintWriter(CacheDirectoryManager.getInstance().
                         getLogScannerFile());
-                while (flag.getFlag()) {
+                while (!Thread.currentThread().isInterrupted()) {
                     Process process = new ProcessBuilder("logcat").redirectErrorStream(true).start();
                     InputStream is = process.getInputStream();
                     int len;
                     byte[] buffer = new byte[1024];
-                    while (flag.getFlag() && (len = is.read(buffer)) > -1) {
+                    while (!Thread.currentThread().isInterrupted() && (len = is.read(buffer)) > -1) {
                         outputStream.print(new String(buffer, 0, len));
                         outputStream.flush();
                     }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
-                Log.e("Scanner", ThrowableUtils.getThrowableMessage(e));
+                CrashHandler.fastHandleException(e);
             } finally {
                 ThrowableUtils.closeAll(outputStream);
             }

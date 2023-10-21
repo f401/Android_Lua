@@ -119,6 +119,7 @@ public final class CacheDirectoryManager {
         File logZipDirectory = getLogZipDirectory();
         net.fred.lua.common.utils.FileUtils.makeDirs(logZipDirectory.getAbsolutePath());
 
+        // Now compress them into a zip file
         ZipArchiveOutputStream zos = null;
         try {
             zos = new ZipArchiveOutputStream(new File(logZipDirectory,
@@ -131,8 +132,11 @@ public final class CacheDirectoryManager {
                 zos.putArchiveEntry(zae);
                 zos.write(FileUtils.readFileToByteArray(curr));
                 zos.closeArchiveEntry();
+                // Remove saved file.
                 FileUtils.forceDelete(curr);
             }
+
+            Logger.getInstance().onLogfilePrepared();
         } catch (IOException e) {
             if (zos != null) {
                 try {

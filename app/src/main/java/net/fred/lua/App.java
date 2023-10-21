@@ -11,9 +11,9 @@ import androidx.annotation.Nullable;
 import androidx.multidex.MultiDex;
 
 import net.fred.lua.common.CrashHandler;
-import net.fred.lua.common.Logger;
 import net.fred.lua.io.CacheDirectoryManager;
 import net.fred.lua.io.LogScanner;
+import net.fred.lua.io.Logger;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -97,6 +97,7 @@ public class App extends Application {
         }
 
         redirectOutAndErrStreamToLog();
+        // More work is in ui.activities.SplashActivity
     }
 
     /**

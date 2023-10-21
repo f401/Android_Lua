@@ -4,11 +4,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import net.fred.lua.common.ArgumentsChecker;
-import net.fred.lua.common.Logger;
 import net.fred.lua.common.cleaner.Cleaner;
 import net.fred.lua.common.functional.Consumer;
 import net.fred.lua.common.utils.ThrowableUtils;
 import net.fred.lua.foreign.NativeMethodException;
+import net.fred.lua.io.Logger;
 
 import java.io.Closeable;
 import java.util.ArrayList;
