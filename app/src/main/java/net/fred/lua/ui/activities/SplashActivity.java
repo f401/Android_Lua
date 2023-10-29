@@ -58,6 +58,9 @@ public class SplashActivity extends BaseActivity {
         tv.setWidth(metrics.widthPixels / 2);
         tv.setHeight(metrics.heightPixels / 2);
 
+        handleRWPermission();
+        mPermissionRequestFinished = true;
+
         TaskExecutor executor = new TaskExecutor.Builder()
                 .addTask(new Thread(new Runnable() {
                     @Override
@@ -65,9 +68,6 @@ public class SplashActivity extends BaseActivity {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                handleRWPermission();
-                                mPermissionRequestFinished = true;
-
                                 Context ctx = App.getInstance();
                                 PathConstants.init(ctx);
                                 CacheDirectoryManager.install(ctx);
@@ -131,9 +131,6 @@ public class SplashActivity extends BaseActivity {
     private void handleRWPermission() {
         if (Build.VERSION.SDK_INT >= 23 && !hasRWPermission()) {
             requestRWPermission();
-        } else {
-            // We already have read and write permissions.
-            countDownTask();
         }
     }
 
@@ -141,13 +138,6 @@ public class SplashActivity extends BaseActivity {
         Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
         intent.setData(Uri.fromParts("package", getPackageName(), null));
         startActivityForResult(intent, GOTO_SETTINGS_ACTIVITY);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (GOTO_SETTINGS_ACTIVITY == requestCode)
-            countDownTask();
     }
 
     private List<String> getNotAllowedPermissionList(String[] permissions, int[] grantResults) {
@@ -198,13 +188,10 @@ public class SplashActivity extends BaseActivity {
                             @Override
                             public void onClick(DialogInterface p1, int p2) {
                                 p1.dismiss();
-                                countDownTask();
                             }
                         }).create();
                 alert.show();
             }
-        } else {
-            countDownTask();
         }
     }
 }
