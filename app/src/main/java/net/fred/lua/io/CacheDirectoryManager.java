@@ -3,6 +3,7 @@ package net.fred.lua.io;
 import android.content.Context;
 import android.util.Log;
 
+import net.fred.lua.common.ArgumentsChecker;
 import net.fred.lua.common.utils.DateUtils;
 import net.fred.lua.common.utils.StringUtils;
 import net.fred.lua.common.utils.ThrowableUtils;
@@ -24,7 +25,7 @@ public final class CacheDirectoryManager {
 
     private CacheDirectoryManager(Context ctx) {
         this.cacheDirectory = ctx.getExternalCacheDir();
-
+        ArgumentsChecker.check(cacheDirectory != null, "Cache Directory file is null!");
         net.fred.lua.common.utils.FileUtils.makeDirs(getNativeCrashDirectory().toString());
     }
 
@@ -136,6 +137,7 @@ public final class CacheDirectoryManager {
                 FileUtils.forceDelete(curr);
             }
 
+            // notice `logger` buffer can write to file.
             Logger.getInstance().onLogfilePrepared();
         } catch (IOException e) {
             if (zos != null) {

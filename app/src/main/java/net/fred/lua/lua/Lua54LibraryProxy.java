@@ -13,13 +13,13 @@ public class Lua54LibraryProxy extends Lua {
             , LuaLib.class);
 
     protected Lua54LibraryProxy(@Nullable Pointer pointer) {
-        super(new SinglePointerHolder(pointer) {
-            @Override
-            public void onFree() throws NativeMethodException {
-                // Super pointer.
-                lib.lua_close(pointer);
-            }
-        });
+        super(pointer);
+    }
+
+    @Override
+    public void onFree() throws NativeMethodException {
+        super.onFree();
+        lib.lua_close(getPointer());
     }
 
     protected static Pointer newState() {

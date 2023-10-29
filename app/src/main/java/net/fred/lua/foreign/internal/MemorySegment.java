@@ -15,7 +15,7 @@ public class MemorySegment extends BasicMemoryController {
      * See {@link MemorySegment#create}
      */
     public MemorySegment(Pointer src, long size) {
-        super(new SinglePointerHolder(src));
+        super(src);
         this.size = size;
         checkedMemoryAccessor = new CheckedMemoryAccessor(src, size);
     }
@@ -61,6 +61,12 @@ public class MemorySegment extends BasicMemoryController {
 
     public void put(long off, Pointer src) {
         checkedMemoryAccessor.putPointer(getPointer().plus(off), src);
+    }
+
+    @Override
+    public void onFree() throws NativeMethodException {
+        super.onFree();
+        free(getPointer());
     }
 
     protected static native Pointer alloc(long size) throws NativeMethodException;

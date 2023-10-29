@@ -19,18 +19,7 @@ public class Lua5_4 extends Lua {
     private static final FunctionCallerCache cache = new FunctionCallerCache();
 
     public Lua5_4() throws NativeMethodException {
-        super(new SinglePointerHolder(new_state()) {
-            @Override
-            public void onFree() throws NativeMethodException {
-                getOrCreateFromCache("lua_close", new Creator() {
-                    @Override
-                    public FunctionCaller create(String symbol) throws NativeMethodException {
-                        return FunctionCaller.of(dll.lookupSymbol(symbol),
-                                PrimaryTypes.VOID, PrimaryTypes.POINTER);
-                    }
-                }).call(pointer);
-            }
-        });
+        super(new_state());
     }
 
     protected static Pointer new_state() throws NativeMethodException {
@@ -43,6 +32,16 @@ public class Lua5_4 extends Lua {
                 return FunctionCaller.of(dll.lookupSymbol(symbol), PrimaryTypes.POINTER);
             }
         }).call();
+    }
+
+    @Override
+    public void onFree() throws NativeMethodException {
+        getOrCreateFromCache("lua_close", new Creator() {
+            @Override
+            public FunctionCaller create(String symbol) throws NativeMethodException {
+                return FunctionCaller.of(dll.lookupSymbol(symbol), PrimaryTypes.VOID, PrimaryTypes.POINTER);
+            }
+        }).call(getPointer());
     }
 
     private static FunctionCaller getOrCreateFromCache(String symbol, Creator creator) throws NativeMethodException {

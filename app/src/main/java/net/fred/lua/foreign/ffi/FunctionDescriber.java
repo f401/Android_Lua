@@ -60,6 +60,7 @@ public final class FunctionDescriber extends MemoryController {
     /**
      * Called from native. @{link #prep_cif} (libffi.cpp)
      */
+    @SuppressWarnings("unused")
     private long requestMemory(long size) throws NativeMethodException {
         MemorySegment segment = MemorySegment.create(size);
         addChild(segment);
@@ -85,9 +86,5 @@ public final class FunctionDescriber extends MemoryController {
             throw new NativeMethodException("Result: " + result);
         }
         return cif;
-    }
-
-    public void cleanCache() {
-        freeChildren();
     }
 }

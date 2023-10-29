@@ -5,6 +5,7 @@ import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -19,11 +20,15 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import net.fred.lua.App;
+import net.fred.lua.PathConstants;
 import net.fred.lua.R;
+import net.fred.lua.common.CrashHandler;
 import net.fred.lua.common.TaskExecutor;
 import net.fred.lua.common.activity.BaseActivity;
 import net.fred.lua.foreign.Breakpad;
 import net.fred.lua.io.CacheDirectoryManager;
+import net.fred.lua.io.LogScanner;
 import net.fred.lua.io.Logger;
 
 import java.util.ArrayList;
@@ -35,6 +40,8 @@ import java.util.concurrent.ExecutorService;
 public class SplashActivity extends BaseActivity {
     public static final int PERMISSION_REQUEST_CODE = 10101;
     public static final int GOTO_SETTINGS_ACTIVITY = 368;
+
+    private boolean mPermissionRequestFinished = false;
 
     private CountDownLatch counter = null;
 
@@ -59,18 +66,27 @@ public class SplashActivity extends BaseActivity {
                             @Override
                             public void run() {
                                 handleRWPermission();
+                                mPermissionRequestFinished = true;
+
+                                Context ctx = App.getInstance();
+                                PathConstants.init(ctx);
+                                CacheDirectoryManager.install(ctx);
+                                Logger.i("Cache directory manager already installed.");
+
+                                if (App.isMainProcess()) {
+                                    CrashHandler.getInstance().install(ctx);
+                                    CacheDirectoryManager.getInstance().compressLatestLogs();
+                                }
+
+                                Logger.i("Starting logger scanner");
+                                LogScanner.getInstance().start();
+                                Breakpad.init(CacheDirectoryManager.getInstance().getNativeCrashDirectory().toString());
+                                Logger.i("Breakpad already initialization.");
+                                countDownTask();
                             }
                         });
                     }
-                }, "Permission Request"))
-                .addTask(new Runnable() {
-                    @Override
-                    public void run() {
-                        Breakpad.init(CacheDirectoryManager.getInstance().getNativeCrashDirectory().toString());
-                        Logger.i("Breakpad already initialization.");
-                        countDownTask();
-                    }
-                }).build();
+                }, "Permission Request")).build();
         counter = new CountDownLatch(executor.getTotalTaskCount());
         // Must execute after initiation
         final ExecutorService service = executor.executeTasks();

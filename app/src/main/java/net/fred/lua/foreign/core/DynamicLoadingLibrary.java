@@ -17,7 +17,7 @@ public final class DynamicLoadingLibrary extends BasicMemoryController {
     private final PointerLruCache cache;
 
     private DynamicLoadingLibrary(Pointer ptr) {
-        super(new DLLPointerHolder(ptr));
+        super(ptr);
         this.cache = new PointerLruCache();
     }
 
@@ -35,22 +35,17 @@ public final class DynamicLoadingLibrary extends BasicMemoryController {
         Logger.i("Loaded library " + path + ".At 0x" + Long.toHexString(handle.get()));
         return new DynamicLoadingLibrary(handle);
     }
+
     public static native Pointer dlopen(String path, int flags) throws NativeMethodException;
+
     public static native int dlclose(Pointer ptr);
 
     public static native Pointer dlsym(Pointer handle, String src) throws NativeMethodException;
 
-    private static class DLLPointerHolder extends BasicMemoryController.SinglePointerHolder {
-
-        protected DLLPointerHolder(Pointer pointer) {
-            super(pointer);
-        }
-
-        @Override
-        public void onFree() throws NativeMethodException {
-            Logger.i("Release dll at " + pointer);
-            dlclose(pointer);
-        }
+    @Override
+    public void onFree() {
+        Logger.i("Release dll at " + pointer);
+        dlclose(pointer);
     }
 
     private class PointerLruCache extends LruCache<String, Pointer> {

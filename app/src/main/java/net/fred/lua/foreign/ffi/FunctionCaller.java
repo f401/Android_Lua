@@ -52,6 +52,7 @@ public final class FunctionCaller extends MemoryController {
      * @param params Parameters to be calculated.
      * @return Total size required.
      */
+    @SuppressWarnings("unused")
     private long evalParamsTotalSize(Object... params) {
         long size = 0;
         for (int i = 0; i < params.length; i++) {
@@ -82,10 +83,6 @@ public final class FunctionCaller extends MemoryController {
         Object result = call(args);
         close();
         return result;
-    }
-
-    public FunctionDescriber getDescriber() {
-        return describer;
     }
 
     private native Object ffi_call(MemoryAccessor accessor, // Usual for MemoryAccessor.UNCHECKED

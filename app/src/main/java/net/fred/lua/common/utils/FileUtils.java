@@ -1,10 +1,11 @@
 package net.fred.lua.common.utils;
 
-import net.fred.lua.common.CrashHandler;
 import net.fred.lua.io.Logger;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public final class FileUtils {
 
@@ -22,17 +23,31 @@ public final class FileUtils {
         try {
             org.apache.commons.io.FileUtils.forceMkdir(dir);
         } catch (IOException e) {
-            CrashHandler.fastHandleException(e);
+            Logger.w("Make directory method 1 failed. trying method 2." + e.getMessage());
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
         }
     }
 
     public static void writeFile(File file, String content, boolean append) {
         if (file == null || content == null) return;
         try {
-            org.apache.commons.io.FileUtils.forceMkdirParent(file);
+            makeDirs(file.getParentFile());
             org.apache.commons.io.FileUtils.writeStringToFile(file, content, "UTF-8", append);
         } catch (IOException e) {
-            CrashHandler.fastHandleException(e);
+            Logger.w("Write file method 1 failed. trying method 2." + e.getMessage());
+            makeDirs(file.getParentFile());
+            FileOutputStream fileOutputStream = null;
+            try {
+                fileOutputStream = new FileOutputStream(file, append);
+                byte[] data = content.getBytes(StandardCharsets.UTF_8);
+                fileOutputStream.write(data, 0, data.length);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            } finally {
+                ThrowableUtils.closeAll(fileOutputStream);
+            }
         }
     }
 

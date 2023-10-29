@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import net.fred.lua.common.ArgumentsChecker;
-import net.fred.lua.common.cleaner.Cleaner;
 import net.fred.lua.common.functional.Consumer;
 import net.fred.lua.common.utils.ThrowableUtils;
 import net.fred.lua.foreign.NativeMethodException;
@@ -17,12 +16,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MemoryController implements Closeable {
 
-    public static final MemoryController.PointerHolder EMPTY_HOLDER = new MemoryController.PointerHolder() {
-        @Override
-        public void onFree() throws NativeMethodException {
-        }
-    };
-
     private final AtomicBoolean closed;
 
     /**
@@ -31,27 +24,16 @@ public class MemoryController implements Closeable {
     private List<AutoCloseable> children;
     @Nullable
     private MemoryController parent;
-    private final Cleaner.ReferenceCleanable cleaner;
-    private final PointerHolderCleanerWrapper holder;
 
-    /**
-     * Use when no custom release function is required.
-     */
     public MemoryController() {
-        this(EMPTY_HOLDER);
-    }
-
-    public MemoryController(PointerHolder holder) {
         this.closed = new AtomicBoolean(false);
-        this.holder = new PointerHolderCleanerWrapper(holder);
-        this.cleaner = Cleaner.createPhantom(this, this.holder);
     }
 
     /*** Release this object. After releasing it, you cannot touch it at all. */
     @Override
     public final void close() throws NativeMethodException {
         if (this.closed.compareAndSet(false, true)) {
-            cleaner.performCleanup();
+            onFree();
             freeChildren();
             if (parent != null) {
                 parent.removeChild(this);
@@ -64,10 +46,6 @@ public class MemoryController implements Closeable {
 
     public final boolean isClosed() {
         return this.closed.get();
-    }
-
-    public PointerHolder getPointerHolder() {
-        return this.holder.target;
     }
 
     public final AutoCloseable childAt(int idx) {
@@ -147,24 +125,15 @@ public class MemoryController implements Closeable {
         }
     }
 
-    protected interface PointerHolder {
-        void onFree() throws NativeMethodException;
+    protected void onFree() throws NativeMethodException {
     }
 
-    /**
-     * Packaging for Cleanable.
-     */
-    private static class PointerHolderCleanerWrapper implements Cleaner.Cleanable {
-
-        private final PointerHolder target;
-
-        PointerHolderCleanerWrapper(PointerHolder target) {
-            this.target = target;
-        }
-
-        @Override
-        public void clean() throws NativeMethodException {
-            target.onFree();
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        if (!closed.get()) {
+            Logger.e("Memory hasn't released yet!, Object " + this);
+            close();
         }
     }
 }

@@ -10,8 +10,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.multidex.MultiDex;
 
-import net.fred.lua.common.CrashHandler;
-import net.fred.lua.io.CacheDirectoryManager;
 import net.fred.lua.io.LogScanner;
 import net.fred.lua.io.Logger;
 
@@ -81,20 +79,6 @@ public class App extends Application {
         super.onCreate();
         instance = this;
         LogScanner.cleanBuffer();
-
-        PathConstants.init(this);
-        CacheDirectoryManager.install(this);
-
-        if (isMainProcess()) {
-            CacheDirectoryManager.getInstance().compressLatestLogs();
-        }
-
-        Logger.i("Starting logger scanner");
-        LogScanner.getInstance().start();
-
-        if (isMainProcess()) {
-            CrashHandler.getInstance().install(this);
-        }
 
         redirectOutAndErrStreamToLog();
         // More work is in ui.activities.SplashActivity

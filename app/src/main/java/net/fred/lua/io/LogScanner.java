@@ -2,7 +2,6 @@ package net.fred.lua.io;
 
 import androidx.annotation.NonNull;
 
-import net.fred.lua.common.CrashHandler;
 import net.fred.lua.common.utils.ThrowableUtils;
 
 import java.io.IOException;
@@ -37,14 +36,14 @@ public final class LogScanner {
                     Logger.e("Clean Logcat Buffer failed!");
                 }
             }
-        }).start();
+        }, "Log buffer cleaner.").start();
     }
 
     public void start() {
         new Thread(new DoScan()).start();
     }
 
-    private class DoScan implements Runnable {
+    private static class DoScan implements Runnable {
 
         @Override
         public void run() {
@@ -64,7 +63,7 @@ public final class LogScanner {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
-                CrashHandler.fastHandleException(e);
+                Logger.e("Failed to start log scanner;" + e.getMessage());
             } finally {
                 ThrowableUtils.closeAll(outputStream);
             }

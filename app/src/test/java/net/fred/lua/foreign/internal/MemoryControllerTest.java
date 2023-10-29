@@ -8,16 +8,10 @@ import net.fred.lua.foreign.NativeMethodException;
 import org.junit.Test;
 
 public class MemoryControllerTest {
-    MemoryController.PointerHolder EMPTY = new MemoryController.PointerHolder() {
-        @Override
-        public void onFree() throws NativeMethodException {
-        }
-    };
-
     @Test
     public void testAddChild() throws NativeMethodException {
-        MemoryController base = new MemoryController(EMPTY);
-        MemoryController child = new MemoryController(EMPTY);
+        MemoryController base = new MemoryController();
+        MemoryController child = new MemoryController();
 
         base.addChild(child);
         assertTrue(base.hasChild());
@@ -32,8 +26,8 @@ public class MemoryControllerTest {
 
     @Test
     public void testChildFree() throws NativeMethodException {
-        MemoryController base = new MemoryController(EMPTY);
-        MemoryController child = new MemoryController(EMPTY);
+        MemoryController base = new MemoryController();
+        MemoryController child = new MemoryController();
         base.addChild(child);
         base.close();
 
@@ -45,8 +39,8 @@ public class MemoryControllerTest {
 
     @Test
     public void testChildFree2() throws NativeMethodException {
-        MemoryController base = new MemoryController(EMPTY);
-        MemoryController child = new MemoryController(EMPTY);
+        MemoryController base = new MemoryController();
+        MemoryController child = new MemoryController();
         base.addChild(child);
 
         child.close();
