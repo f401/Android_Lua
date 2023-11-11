@@ -16,7 +16,7 @@ import net.fred.lua.common.CrashHandler;
 import net.fred.lua.common.activity.BaseActivity;
 import net.fred.lua.foreign.Breakpad;
 import net.fred.lua.io.CStandardOutputInput;
-import net.fred.lua.io.CacheDirectoryManager;
+import net.fred.lua.io.LogFileManager;
 import net.fred.lua.io.Logger;
 import net.fred.lua.lua.Lua54LibraryProxy;
 import net.fred.lua.lua.Lua5_4;
@@ -100,10 +100,10 @@ public class MainActivity extends BaseActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.activity_main_menu_clean_cache) {
             Toast.makeText(this, getString(R.string.cache_directory_size,
-                    CacheDirectoryManager.getInstance().sizeOfDirectoryString()
+                    LogFileManager.getInstance().sizeOfDirectoryString()
             ), Toast.LENGTH_SHORT).show();
             Logger.i("Removing cache directory.");
-            CacheDirectoryManager.getInstance().delete();
+            LogFileManager.getInstance().delete();
             return true;
         }
         return super.onOptionsItemSelected(item);

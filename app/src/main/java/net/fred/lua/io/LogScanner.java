@@ -49,7 +49,7 @@ public final class LogScanner {
         public void run() {
             PrintWriter outputStream = null;
             try {
-                outputStream = new PrintWriter(CacheDirectoryManager.getInstance().
+                outputStream = new PrintWriter(LogFileManager.getInstance().
                         getLogScannerFile());
                 while (!Thread.currentThread().isInterrupted()) {
                     Process process = new ProcessBuilder("logcat").redirectErrorStream(true).start();

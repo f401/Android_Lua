@@ -4,7 +4,9 @@
 
 #include <jni.h>
 #include <client/linux/handler/exception_handler.h>
+#include <sys/prctl.h>
 #include "utils.h"
+#include "client/linux/minidump_writer/linux_ptrace_dumper.h"
 #include <android/log.h>
 #include <unistd.h>
 
@@ -31,6 +33,12 @@ JNIEXPORT void JNICALL
 Java_net_fred_lua_foreign_Breakpad_init(JNIEnv *env, jclass clazz, jstring crash_save_path) {
     env->GetJavaVM(&g_vm);
     const char *save_path = env->GetStringUTFChars(crash_save_path, JNI_FALSE);
+
+    sigset_t unblocked;
+    sigprocmask(SIG_UNBLOCK, nullptr, &unblocked);
+    sigaddset(&unblocked, SIGSEGV);
+    sigprocmask(SIG_UNBLOCK, &unblocked, nullptr);
+
     init(save_path);
     env->ReleaseStringUTFChars(crash_save_path, save_path);
 }

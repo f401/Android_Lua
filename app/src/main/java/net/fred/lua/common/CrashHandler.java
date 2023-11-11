@@ -16,7 +16,7 @@ import net.fred.lua.R;
 import net.fred.lua.common.activity.CrashActivity;
 import net.fred.lua.common.utils.DateUtils;
 import net.fred.lua.common.utils.FileUtils;
-import net.fred.lua.io.CacheDirectoryManager;
+import net.fred.lua.io.LogFileManager;
 import net.fred.lua.io.Logger;
 
 import java.io.File;
@@ -75,7 +75,7 @@ public final class CrashHandler implements Thread.UncaughtExceptionHandler {
         this.ctx = ctx;
         this.defaultExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler(this);
-        crashFile = CacheDirectoryManager.getInstance().getCrashFile();
+        crashFile = LogFileManager.getInstance().getCrashFile();
         showError = true;
         Logger.i("Crash handler installed in package: " + ctx.getPackageName());
     }

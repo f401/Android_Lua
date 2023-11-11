@@ -17,21 +17,21 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.zip.ZipEntry;
 
-public final class CacheDirectoryManager {
+public final class LogFileManager {
     private static final String TAG = "CacheDirectoryManager";
 
-    private static volatile CacheDirectoryManager instance;
-    private final File cacheDirectory;
+    private static volatile LogFileManager instance;
+    private final File mSaveDir;
 
-    private CacheDirectoryManager(Context ctx) {
-        this.cacheDirectory = ctx.getExternalCacheDir();
-        ArgumentsChecker.check(cacheDirectory != null, "Cache Directory file is null!");
+    private LogFileManager(Context ctx) {
+        this.mSaveDir = ctx.getExternalFilesDir("log");
+        ArgumentsChecker.check(mSaveDir != null, "Save Directory file is null!");
         net.fred.lua.common.utils.FileUtils.makeDirs(getNativeCrashDirectory().toString());
     }
 
-    public static CacheDirectoryManager getInstance() {
+    public static LogFileManager getInstance() {
         if (instance == null) {
-            synchronized (CacheDirectoryManager.class) {
+            synchronized (LogFileManager.class) {
                 if (instance == null) {
                     throw new RuntimeException("Not installed");
                 }
@@ -45,9 +45,9 @@ public final class CacheDirectoryManager {
             Log.e(TAG, "Already installed.");
             return;
         }
-        synchronized (CacheDirectoryManager.class) {
+        synchronized (LogFileManager.class) {
             if (instance == null) {
-                instance = new CacheDirectoryManager(ctx);
+                instance = new LogFileManager(ctx);
             } else {
                 Log.e(TAG, "Already installed.");
             }
@@ -55,27 +55,31 @@ public final class CacheDirectoryManager {
     }
 
     public File getLoggerFile() {
-        return new File(cacheDirectory, "latest-logger.log");
+        return new File(mSaveDir, "latest-logger.log");
     }
 
     public File getLogScannerFile() {
-        return new File(cacheDirectory, "latest-scanner.log");
+        return new File(mSaveDir, "latest-scanner.log");
     }
 
     public File getCrashFile() {
-        return new File(cacheDirectory, "latest-crash.log");
+        return new File(mSaveDir, "latest-crash.log");
     }
 
     public File getLogZipDirectory() {
-        return new File(cacheDirectory, "logs");
+        return new File(mSaveDir, "logs");
+    }
+
+    public File getLogErrorZipDirectory() {
+        return new File(mSaveDir, "errors");
     }
 
     public File getNativeCrashDirectory() {
-        return new File(cacheDirectory, "nativeCrash");
+        return new File(mSaveDir, "nativeCrash");
     }
 
     public long sizeOfDirectory() {
-        return FileUtils.sizeOfDirectory(cacheDirectory);
+        return FileUtils.sizeOfDirectory(mSaveDir);
     }
 
     public String sizeOfDirectoryString() {
@@ -83,13 +87,15 @@ public final class CacheDirectoryManager {
     }
 
     public void delete() {
-        net.fred.lua.common.utils.FileUtils.deleteDirectory(cacheDirectory);
+        net.fred.lua.common.utils.FileUtils.deleteDirectory(mSaveDir);
         net.fred.lua.common.utils.FileUtils.makeDirs(getNativeCrashDirectory());
     }
 
     public void compressLatestLogs() {
+        boolean hasError;
         ArrayList<File> compressFile = new ArrayList<>(3);
-        addIfExists(compressFile, getCrashFile());
+
+        hasError = addIfExists(compressFile, getCrashFile());
         addIfExists(compressFile, getLoggerFile());
         addIfExists(compressFile, getLogScannerFile());
 
@@ -101,7 +107,7 @@ public final class CacheDirectoryManager {
                 try {
                     String realDumpPath = FileUtils.readFileToString(latest, "UTF-8");
                     Log.i(TAG, "Latest dump path " + realDumpPath);
-                    addIfExists(compressFile, new File(realDumpPath));
+                    hasError |= addIfExists(compressFile, new File(realDumpPath));
                     FileUtils.forceDelete(latest);
                 } catch (IOException e) {
                     Log.e(TAG, "IOException: " + e.getMessage());
@@ -117,7 +123,7 @@ public final class CacheDirectoryManager {
             ));
         }
 
-        File logZipDirectory = getLogZipDirectory();
+        File logZipDirectory = hasError ? getLogErrorZipDirectory() : getLogZipDirectory();
         net.fred.lua.common.utils.FileUtils.makeDirs(logZipDirectory.getAbsolutePath());
 
         // Now compress them into a zip file
@@ -174,10 +180,12 @@ public final class CacheDirectoryManager {
         return dest;
     }
 
-    private void addIfExists(ArrayList<File> dest, File obj) {
+    private boolean addIfExists(ArrayList<File> dest, File obj) {
         if (obj.exists()) {
             dest.add(obj);
             Log.i(TAG, obj.toString());
+            return true;
         }
+        return false;
     }
 }

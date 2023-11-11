@@ -134,7 +134,7 @@ public final class Logger implements AutoCloseable {
         for (; ; ) {
             if (streamMutex.compareAndSet(0, 1)) {
                 byte[] saved = ((ByteArrayOutputStream) stream).toByteArray();
-                stream = new FileOutputStream(CacheDirectoryManager.getInstance().getLoggerFile());
+                stream = new FileOutputStream(LogFileManager.getInstance().getLoggerFile());
                 stream.write(saved);
 
                 streamMutex.set(0);
