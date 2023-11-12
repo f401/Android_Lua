@@ -7,37 +7,27 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 import net.fred.lua.App;
 import net.fred.lua.R;
+import net.fred.lua.common.PermissionHelper;
 import net.fred.lua.common.TaskExecutor;
 import net.fred.lua.common.activity.BaseActivity;
 import net.fred.lua.foreign.Breakpad;
 import net.fred.lua.io.LogFileManager;
 import net.fred.lua.io.Logger;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
 @SuppressLint("CustomSplashScreen")
 public class SplashActivity extends BaseActivity {
-    public static final int PERMISSION_REQUEST_CODE = 10101;
-    public static final int GOTO_SETTINGS_ACTIVITY = 368;
-
-    private boolean mPermissionRequestFinished = false;
+    private PermissionHelper mPermissionHelper;
 
     private CountDownLatch counter = null;
 
@@ -55,7 +45,6 @@ public class SplashActivity extends BaseActivity {
         tv.setHeight(metrics.heightPixels / 2);
 
         handleRWPermission();
-        mPermissionRequestFinished = true;
 
         TaskExecutor executor = new TaskExecutor.Builder()
                 .addTask(new Runnable() {
@@ -64,6 +53,7 @@ public class SplashActivity extends BaseActivity {
                         if (App.isMainProcess()) {
                             LogFileManager.getInstance().compressLatestLogs();
                             Logger.i("Old logs compress finished!");
+                            countDownTask();
                         }
                     }
                 })
@@ -115,63 +105,32 @@ public class SplashActivity extends BaseActivity {
             getSupportActionBar().hide();
     }
 
-    private boolean hasRWPermission() {
-        int r = ContextCompat.checkSelfPermission(this, READ_EXTERNAL_STORAGE);
-        int w = ContextCompat.checkSelfPermission(this, WRITE_EXTERNAL_STORAGE);
-        return r == PackageManager.PERMISSION_GRANTED && w == PackageManager.PERMISSION_GRANTED;
-    }
-
     private void handleRWPermission() {
-        if (Build.VERSION.SDK_INT >= 23 && !hasRWPermission()) {
-            requestRWPermission();
+        this.mPermissionHelper = PermissionHelper.create(this, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE);
+        if (mPermissionHelper != null) {
+            Logger.i("Trying request permission");
+            mPermissionHelper.tryShowRequestDialog();
         }
-    }
-
-    private void gotoSettingsActivity() {
-        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-        intent.setData(Uri.fromParts("package", getPackageName(), null));
-        startActivityForResult(intent, GOTO_SETTINGS_ACTIVITY);
-    }
-
-    private List<String> getNotAllowedPermissionList(String[] permissions, int[] grantResults) {
-        List<String> notAllowed = new ArrayList<>();
-        if (permissions.length != 0 && grantResults.length != 0) {
-            for (int i = 0; i < grantResults.length; ++i) {
-                if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
-                    notAllowed.add(permissions[i]);
-                }
-            }
-        }
-        return notAllowed;
-    }
-
-    private void requestRWPermission() {
-        ActivityCompat.requestPermissions(this, new String[]{READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        List<String> notAllowed;
-        if (requestCode == PERMISSION_REQUEST_CODE && (notAllowed =
-                getNotAllowedPermissionList(permissions, grantResults))
-                .size() != 0) {
-            List<String> ban = new ArrayList<>();
-            List<String> can = new ArrayList<>();
-            for (String permission : notAllowed) {
-                if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission))
-                    can.add(permission);
-                else
-                    ban.add(permission);
+        if (mPermissionHelper != null &&
+                mPermissionHelper.onRequestPermissionsResult(requestCode, permissions, grantResults)) {
+
+            if (mPermissionHelper.hasCanRequestPermissions()) {
+                // Here we will request twice.
+                mPermissionHelper.tryShowRequestDialog();
             }
-            if (can.size() != 0)
-                ActivityCompat.requestPermissions(this, can.toArray(new String[can.size()]), PERMISSION_REQUEST_CODE);
-            if (ban.size() != 0) {
+
+            if (mPermissionHelper.hasProhibitedPermissions()) {
+                Logger.w("Write or reading permission has been prohibited");
                 AlertDialog alert = new AlertDialog.Builder(this)
                         .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface p1, int p2) {
-                                gotoSettingsActivity();
+                                mPermissionHelper.gotoSettingsActivity();
                                 p1.dismiss();
                             }
                         })
