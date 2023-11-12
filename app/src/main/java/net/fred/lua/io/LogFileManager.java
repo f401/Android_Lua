@@ -3,7 +3,6 @@ package net.fred.lua.io;
 import android.content.Context;
 import android.util.Log;
 
-import net.fred.lua.common.ArgumentsChecker;
 import net.fred.lua.common.utils.DateUtils;
 import net.fred.lua.common.utils.StringUtils;
 import net.fred.lua.common.utils.ThrowableUtils;
@@ -25,7 +24,6 @@ public final class LogFileManager {
 
     private LogFileManager(Context ctx) {
         this.mSaveDir = ctx.getExternalFilesDir("log");
-        ArgumentsChecker.check(mSaveDir != null, "Save Directory file is null!");
         net.fred.lua.common.utils.FileUtils.makeDirs(getNativeCrashDirectory().toString());
     }
 

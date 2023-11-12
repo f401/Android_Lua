@@ -19,6 +19,7 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import net.fred.lua.App;
 import net.fred.lua.R;
 import net.fred.lua.common.TaskExecutor;
 import net.fred.lua.common.activity.BaseActivity;
@@ -57,7 +58,16 @@ public class SplashActivity extends BaseActivity {
         mPermissionRequestFinished = true;
 
         TaskExecutor executor = new TaskExecutor.Builder()
-                .addTask(new Thread(new Runnable() {
+                .addTask(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (App.isMainProcess()) {
+                            LogFileManager.getInstance().compressLatestLogs();
+                            Logger.i("Old logs compress finished!");
+                        }
+                    }
+                })
+                .addTask(new Runnable() {
                     @Override
                     public void run() {
                         runOnUiThread(new Runnable() {
@@ -69,7 +79,7 @@ public class SplashActivity extends BaseActivity {
                             }
                         });
                     }
-                }, "Permission Request")).build();
+                }).build();
         counter = new CountDownLatch(executor.getTotalTaskCount());
         // Must execute after initiation
         final ExecutorService service = executor.executeTasks();

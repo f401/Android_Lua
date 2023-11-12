@@ -56,6 +56,7 @@ dependencies {
     // These are latest support for java 6.
     implementation 'commons-io:commons-io:2.5'
     implementation 'org.apache.commons:commons-compress:1.12'
+    implementation 'com.google.guava:guava:30.0-android'
 
     testImplementation 'junit:junit:4.13.2' // junit is fine
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'

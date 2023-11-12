@@ -3,9 +3,10 @@ package net.fred.lua.foreign.core;
 import androidx.annotation.NonNull;
 import androidx.collection.LruCache;
 
-import net.fred.lua.common.ArgumentsChecker;
+import com.google.common.base.Preconditions;
+
 import net.fred.lua.common.CrashHandler;
-import net.fred.lua.common.utils.ThrowableUtils;
+import net.fred.lua.common.utils.FileUtils;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.internal.BasicMemoryController;
@@ -21,19 +22,17 @@ public final class DynamicLoadingLibrary extends BasicMemoryController {
         this.cache = new PointerLruCache();
     }
 
-    public Pointer lookupSymbol(String symbol) throws NativeMethodException {
-        ArgumentsChecker.checkStringNotNullOrEmpty(symbol, "Invoker (" + ThrowableUtils.getCallerString() +
-                "), passes null symbol.");
-        return cache.get(symbol);
-    }
-
     public static DynamicLoadingLibrary open(String path) throws NativeMethodException {
-        ArgumentsChecker.checkFileExists(path
-                , "Invoker (" + ThrowableUtils.getCallerString() + "), passes null symbol.");
+        Preconditions.checkState(FileUtils.exists(path), "File %s doesn't exist.", path);
 
         Pointer handle = dlopen(path, ForeignValues.RTLD_LAZY);
         Logger.i("Loaded library " + path + ".At 0x" + Long.toHexString(handle.get()));
         return new DynamicLoadingLibrary(handle);
+    }
+
+    public Pointer lookupSymbol(String symbol) throws NativeMethodException {
+        Preconditions.checkNotNull(symbol, "Null symbol.");
+        return cache.get(symbol);
     }
 
     public static native Pointer dlopen(String path, int flags) throws NativeMethodException;

@@ -18,6 +18,9 @@ public class ClipboardUtils {
         return (ClipboardManager) ctx.getSystemService(Context.CLIPBOARD_SERVICE);
     }
 
+    /**
+     * Copy `text` to the clipboard.
+     */
     public static void copy(@NonNull Context ctx, @NonNull String text) {
         ClipboardManager manager = getClipBoardManager(ctx);
         manager.setPrimaryClip(ClipData.newPlainText(ctx.getPackageName(), text));

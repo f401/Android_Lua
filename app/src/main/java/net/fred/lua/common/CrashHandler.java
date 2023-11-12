@@ -16,18 +16,17 @@ import net.fred.lua.R;
 import net.fred.lua.common.activity.CrashActivity;
 import net.fred.lua.common.utils.DateUtils;
 import net.fred.lua.common.utils.FileUtils;
+import net.fred.lua.common.utils.ThrowableUtils;
 import net.fred.lua.io.LogFileManager;
 import net.fred.lua.io.Logger;
 
 import java.io.File;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 
 public final class CrashHandler implements Thread.UncaughtExceptionHandler {
     public static final String EXTRA_ERROR_CONTENT = "ErrorContent";
     private static CrashHandler instance;
     public File crashFile;
-    private Context ctx;
+    private volatile Context ctx;
     private Thread.UncaughtExceptionHandler defaultExceptionHandler;
     private boolean showError;
 
@@ -72,12 +71,18 @@ public final class CrashHandler implements Thread.UncaughtExceptionHandler {
     }
 
     public void install(@NonNull Context ctx) {
-        this.ctx = ctx;
-        this.defaultExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
-        Thread.setDefaultUncaughtExceptionHandler(this);
-        crashFile = LogFileManager.getInstance().getCrashFile();
-        showError = true;
-        Logger.i("Crash handler installed in package: " + ctx.getPackageName());
+        if (this.ctx == null) {
+            synchronized (this) {
+                if (this.ctx == null) {
+                    this.ctx = ctx;
+                    this.defaultExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
+                    Thread.setDefaultUncaughtExceptionHandler(this);
+                    crashFile = LogFileManager.getInstance().getCrashFile();
+                    showError = true;
+                    Logger.i("Crash handler installed in package: " + ctx.getPackageName());
+                }
+            }
+        }
     }
 
     private void startCrashActivity(String content) {
@@ -88,15 +93,6 @@ public final class CrashHandler implements Thread.UncaughtExceptionHandler {
                 Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.putExtra(EXTRA_ERROR_CONTENT, content);
         ctx.startActivity(intent);
-    }
-
-    @NonNull
-    private String getThrowableMessages(@NonNull Throwable ta) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        ta.printStackTrace(pw);
-        pw.close();
-        return sw.toString();
     }
 
     /**
@@ -130,7 +126,7 @@ public final class CrashHandler implements Thread.UncaughtExceptionHandler {
         sb.append("App VersionCode    : ").append(versionCode).append("\n");
         sb.append("Crash Thread       : ").append(p1.getName()).append("\n");
         sb.append("************* Crash Head ****************\n\n");
-        sb.append(getThrowableMessages(p2));
+        sb.append(ThrowableUtils.getThrowableMessage(p2));
 
         FileUtils.writeFile(crashFile, sb.toString(), true);
         return sb;
@@ -139,7 +135,7 @@ public final class CrashHandler implements Thread.UncaughtExceptionHandler {
     @Override
     public void uncaughtException(@NonNull Thread p1, @NonNull Throwable p2) {
         try {
-            Logger.e("------------------Making Crash---------------");
+            Logger.e("------------------Making Crash----------------");
             StringBuilder sb = writeInfoToSdCard(p1, p2);
             if (showError && ctx != null) {
                 Logger.i("Starting a new activity");
@@ -147,10 +143,16 @@ public final class CrashHandler implements Thread.UncaughtExceptionHandler {
                 showError = false;
             }
             Logger.i("Killing self");
+            // Kill crashed process.
             App.forceKillSelf();
         } catch (Throwable e) {
-            if (this.defaultExceptionHandler != null)
+            Logger.e("CrashHandler cannot deal with exception, spreading to default handler.");
+            if (this.defaultExceptionHandler != null) {
                 this.defaultExceptionHandler.uncaughtException(p1, p2);
+            } else {
+                Logger.e("Cannot find default exception handler, exiting...");
+                App.forceKillSelf();
+            }
         }
     }
 }

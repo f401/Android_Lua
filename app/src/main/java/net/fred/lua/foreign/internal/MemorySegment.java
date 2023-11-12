@@ -2,7 +2,8 @@ package net.fred.lua.foreign.internal;
 
 import androidx.annotation.NonNull;
 
-import net.fred.lua.common.ArgumentsChecker;
+import com.google.common.base.Preconditions;
+
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.types.Type;
@@ -42,7 +43,7 @@ public class MemorySegment extends BasicMemoryController {
      */
     @NonNull
     public static Pointer allocate(long size) throws NativeMethodException {
-        ArgumentsChecker.checkSize((int) size);
+        Preconditions.checkPositionIndex((int) size, Integer.MAX_VALUE);
         return alloc(size);
     }
 

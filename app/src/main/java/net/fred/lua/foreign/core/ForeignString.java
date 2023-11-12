@@ -9,6 +9,7 @@ import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.internal.ForeignValues;
 import net.fred.lua.foreign.internal.MemoryAccessor;
+import net.fred.lua.foreign.internal.MemoryController;
 import net.fred.lua.foreign.internal.MemorySegment;
 import net.fred.lua.foreign.types.Type;
 import net.fred.lua.io.Logger;
@@ -25,15 +26,27 @@ public final class ForeignString extends MemorySegment {
     }
 
     /**
-     * Constructing a native string (@{code char *}) using Java {@code String}.
+     * Constructing a native string using Java {@code String}.
      *
-     * @param str The {@code String} you want to construct
+     * @see ForeignString#from(MemoryController, String)
+     */
+    public static ForeignString from(final @Nullable String str) throws NativeMethodException {
+        return from(null, str);
+    }
+
+    /**
+     * Constructing a native string using Java {@code String}.
+     * Then set the constructed string to the {@code parent}'s son.
+     *
+     * @param parent The parent that needs to be set can be empty.
+     * @param str    The {@code String} you want to construct.
      * @return A native string object.
      * @throws NativeMethodException    When allocating space for it fails.
      * @throws IllegalArgumentException Attempting to construct a string with a length of 0.
      */
     @NonNull
-    public static ForeignString from(final @Nullable String str) throws NativeMethodException {
+    public static ForeignString from(@Nullable MemoryController parent, final @Nullable String str)
+            throws NativeMethodException {
         long length;
         if (StringUtils.isEmpty(str) || (length = str.length()) == 0) {
             final String err = ThrowableUtils.getCallerString() + " passes null when creating a string.";
@@ -44,14 +57,17 @@ public final class ForeignString extends MemorySegment {
         MemoryAccessor.putStringUnchecked(ptr, str);
 
         final ForeignString result = new ForeignString(ptr, str);
+        if (parent != null) {
+            parent.addChild(result);
+        }
         return result;
     }
 
     /**
-     * Obtain the length of the @{code String}.
+     * Obtain the length of the {@code String}.
      *
-     * @return The length of the @{code String}.
-     * @see MemorySegment#size().
+     * @return The length of the {@code String}.
+     * @see MemorySegment#size()
      */
     public long length() {
         return size();

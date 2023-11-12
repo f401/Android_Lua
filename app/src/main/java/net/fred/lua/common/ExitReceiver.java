@@ -5,17 +5,22 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import java.lang.ref.WeakReference;
+
 public final class ExitReceiver extends BroadcastReceiver {
 
-    private final Activity activity;
+    private final WeakReference<Activity> activity;
 
     public ExitReceiver(Activity activity) {
-        this.activity = activity;
+        this.activity = new WeakReference<>(activity);
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        this.activity.finish();
+        Activity target = activity.get();
+        if (target != null) {
+            target.finish();
+        }
     }
 
 }

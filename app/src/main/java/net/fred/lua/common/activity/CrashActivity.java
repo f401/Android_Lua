@@ -1,7 +1,6 @@
 package net.fred.lua.common.activity;
 
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -50,16 +49,9 @@ public final class CrashActivity extends AppCompatActivity {
         return true;
     }
 
-    /*@Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        restart();
-    }*/
-
     private void restart() {
         Logger.i("Restarting process");
-        PackageManager pm = getPackageManager();
-        Intent intent = pm.getLaunchIntentForPackage(getPackageName());
+        Intent intent = getPackageManager().getLaunchIntentForPackage(getPackageName());
         if (intent != null) {
             intent.addFlags(
                     Intent.FLAG_ACTIVITY_NEW_TASK |
@@ -70,6 +62,7 @@ public final class CrashActivity extends AppCompatActivity {
             startActivity(intent);
         }
         this.finish();
+        // Exit crash notice process. Move to main application.
         App.forceKillSelf();
     }
 
@@ -82,8 +75,8 @@ public final class CrashActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        ScrollView sv = new ScrollView(this);
-        sv.setFillViewport(true);
+        ScrollView root = new ScrollView(this);
+        root.setFillViewport(true);
         HorizontalScrollView hsv = new HorizontalScrollView(this);
 
         TextView tv = new TextView(this);
@@ -93,8 +86,8 @@ public final class CrashActivity extends AppCompatActivity {
         tv.setPadding(padding, padding, padding, padding);
 
         hsv.addView(tv);
-        sv.addView(hsv, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-        setContentView(sv);
+        root.addView(hsv, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+        setContentView(root);
     }
 
 }

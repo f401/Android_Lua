@@ -88,7 +88,6 @@ public class App extends Application {
 
         if (App.isMainProcess()) {
             CrashHandler.getInstance().install(this);
-            LogFileManager.getInstance().compressLatestLogs();
         }
 
         Logger.i("Starting logger scanner");

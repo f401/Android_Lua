@@ -16,10 +16,6 @@ public final class CStandardOutputInput {
 
     public native void redirectStandardOutTo(String path);
 
-    public native void redirectStandardErrTo(String path);
-
-    //this one should be no block by fcntl.
-    public native void redirectStandardInTo(String path);
 
     static {
         System.loadLibrary("bridge");

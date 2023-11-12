@@ -3,7 +3,8 @@ package net.fred.lua.foreign.core;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import net.fred.lua.common.ArgumentsChecker;
+import com.google.common.base.Preconditions;
+
 import net.fred.lua.common.utils.StringUtils;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
@@ -35,8 +36,7 @@ public class Array<T> extends MemorySegment {
         long totalSize = length * type.getSize(null);
         Pointer ptr = MemorySegment.allocate(totalSize);
         Logger.i(StringUtils.templateOf("Create {} size of Segment at {}.", totalSize, ptr));
-        final Array<T> array = new Array<>(ptr, length, type);
-        return array;
+        return new Array<>(ptr, length, type);
     }
 
     /**
@@ -100,7 +100,7 @@ public class Array<T> extends MemorySegment {
 
         @Override
         public Array<T> read(MemoryAccessor accessor, @NonNull Pointer dest) throws NativeMethodException {
-            ArgumentsChecker.checkNotNull(type, "Cannot read when type is null.");
+            Preconditions.checkNotNull(type, "Cannot read when type is null.");
             return new Array<>(dest, size, type);
         }
 

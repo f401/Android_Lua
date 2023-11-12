@@ -3,7 +3,8 @@ package net.fred.lua.foreign.internal;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import net.fred.lua.common.ArgumentsChecker;
+import com.google.common.base.Preconditions;
+
 import net.fred.lua.common.functional.Consumer;
 import net.fred.lua.common.utils.ThrowableUtils;
 import net.fred.lua.foreign.NativeMethodException;
@@ -52,12 +53,15 @@ public class MemoryController implements Closeable {
         return children.get(idx);
     }
 
+    /**
+     * Returns whether the current object has children.
+     */
     public boolean hasChild() {
         return children != null && children.size() != 0;
     }
 
     public void addChild(@Nullable AutoCloseable segment) {
-        ArgumentsChecker.check(!this.closed.get(), "Father has been released.");
+        Preconditions.checkState(!this.closed.get(), "Father has been released.");
         if (segment != this && segment != null) {
             synchronized (this) {
                 if (children == null) {
@@ -66,7 +70,7 @@ public class MemoryController implements Closeable {
 
                 if (segment instanceof MemoryController) {
                     MemoryController child = (MemoryController) segment;
-                    ArgumentsChecker.check(!checkIsParent(child), "The required registered son is the father of the current object.");
+                    Preconditions.checkState(!checkIsParent(child), "The required registered son is the father of the current object.");
                     child.attachParent(this);
                     children.add(segment);
                 }
@@ -75,9 +79,9 @@ public class MemoryController implements Closeable {
     }
 
     public final void attachParent(@NonNull MemoryController parent) {
-        ArgumentsChecker.check(this.parent == null,
+        Preconditions.checkState(this.parent == null,
                 "The current object already has a father. If you want to replace it, please call 'detachParent' first`.");
-        ArgumentsChecker.check(this != parent,
+        Preconditions.checkState(this != parent,
                 "Cannot set oneself as Parent.");
         synchronized (this) {
             this.parent = parent;
@@ -125,6 +129,11 @@ public class MemoryController implements Closeable {
         }
     }
 
+    /**
+     * Called when releasing the current object (including garbage collector collecting the current object).
+     * <p>
+     * Rewriting this method normally is to free up resources.
+     */
     protected void onFree() throws NativeMethodException {
     }
 

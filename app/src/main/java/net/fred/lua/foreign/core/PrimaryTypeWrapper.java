@@ -15,7 +15,8 @@ import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_VOID;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import net.fred.lua.common.ArgumentsChecker;
+import com.google.common.base.Preconditions;
+
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.internal.MemoryAccessor;
@@ -25,8 +26,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Packaging for basic types.
- * <p>
- * Note: Free is only required after using @{link PointerType#writeAsPointer}.
  *
  * @param <T> Basic types of packaging required.
  */
@@ -264,7 +263,7 @@ public final class PrimaryTypeWrapper<T> implements Type<T> {
     }
 
     public PrimaryTypeWrapper<T> setSigned(boolean signed) {
-        ArgumentsChecker.checkState(mutable, "This is immutable.");
+        Preconditions.checkState(mutable, "This is immutable.");
         this.signed = signed;
         return this;
     }

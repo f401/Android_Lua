@@ -2,7 +2,8 @@ package net.fred.lua.foreign.ffi;
 
 import androidx.annotation.Nullable;
 
-import net.fred.lua.common.ArgumentsChecker;
+import com.google.common.base.Preconditions;
+
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.internal.MemoryAccessor;
@@ -33,8 +34,8 @@ public final class FunctionCaller extends MemoryController {
      * Create a Function Caller.
      *
      * @param address Address of the function to be called.
-     * @param rt      @{link FunctionDescriber#of}.
-     * @param pt      @{link FunctionDescriber#of}.
+     * @param rt      {@link FunctionDescriber#of}.
+     * @param pt      {@link FunctionDescriber#of}.
      * @return a Function Caller.
      */
     public static FunctionCaller of(Pointer address, Type<?> rt, @Nullable Type<?>... pt) {
@@ -69,7 +70,7 @@ public final class FunctionCaller extends MemoryController {
         }
         //ffi need to pass in a pointer to the parameter
         if (typedParams != null) {
-            ArgumentsChecker.check(typedParams.length == params.length, "The length of the passed in parameter does not match the descriptor");
+            Preconditions.checkState(typedParams.length == params.length, "The length of the passed in parameter does not match the descriptor");
         }
         Pointer ffi = null;
         if (useCache) {

@@ -30,8 +30,9 @@ public final class FunctionDescriber extends MemoryController {
 
     /**
      * Create a new function describer.
-     * @param returnType The return type of the function in the native layer. Null is void.
-     * @param params The parameter type of the function in the native layer. Nullable.
+     *
+     * @param returnType The return type of the function in the native layer. Null for void.
+     * @param params     The parameter type of the function in the native layer. Nullable.
      * @return function describer.
      */
     public static FunctionDescriber of(Type<?> returnType, @Nullable Type<?>... params) {
@@ -47,7 +48,7 @@ public final class FunctionDescriber extends MemoryController {
     }
 
     /**
-     * The method of truly generating @{code ffi_cif}. At libffi.cpp.
+     * The method of truly generating {@code ffi_cif}. At libffi.cpp.
      *
      * @param cif        Pointer to the generated result storage.
      * @param returnType Return Type
@@ -58,7 +59,7 @@ public final class FunctionDescriber extends MemoryController {
     public native int prep_cif(Pointer cif, @NonNull Type<?> returnType, Type<?>[] params) throws NativeMethodException;
 
     /**
-     * Called from native. @{link #prep_cif} (libffi.cpp)
+     * Called from native. {@link #prep_cif} (libffi.cpp)
      */
     @SuppressWarnings("unused")
     private long requestMemory(long size) throws NativeMethodException {
@@ -68,10 +69,10 @@ public final class FunctionDescriber extends MemoryController {
     }
 
     /**
-     * Running the native layer @{code ffi_prep_cif}.
-     * To prepare for the first parameter of the call. (@{code ffi_call})
+     * Running the native layer {@code ffi_prep_cif}.
+     * To prepare for the first parameter of the call. ({@code ffi_call})
      *
-     * @return Point to @{code ffi_cif}
+     * @return Point to {@code ffi_cif}
      * @throws NativeMethodException etc...
      */
     public MemorySegment prepareCIF() throws NativeMethodException {

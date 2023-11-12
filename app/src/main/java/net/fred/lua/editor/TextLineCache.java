@@ -1,6 +1,7 @@
 package net.fred.lua.editor;
 
-import net.fred.lua.common.ArgumentsChecker;
+import com.google.common.base.Preconditions;
+
 import net.fred.lua.common.Pair;
 
 import java.util.Iterator;
@@ -17,7 +18,7 @@ public class TextLineCache {
     private final int maxCount;
 
     public TextLineCache(int maxCount) {
-        ArgumentsChecker.checkSize(maxCount);
+        Preconditions.checkPositionIndex(maxCount, Integer.MAX_VALUE);
         this.maxCount = maxCount;
         this.map = new LinkedHashMap<>(maxCount, 0.75f, true);
         // The third parameter is very important.
@@ -32,7 +33,7 @@ public class TextLineCache {
      * @return The first is the nearest number of rows, and the second is the corresponding nearest offset.
      */
     public Pair<Integer, Integer> getNearestLine(int line) {
-        ArgumentsChecker.checkSize(line);
+        Preconditions.checkPositionIndex(line, Integer.MAX_VALUE);
         int nearestDistance = Integer.MAX_VALUE;
         int nearestMatch = 0;
         Set<Integer> keySet = map.keySet();
@@ -47,7 +48,7 @@ public class TextLineCache {
     }
 
     public Pair<Integer, Integer> getNearestLineByOffset(int offset) {
-        ArgumentsChecker.checkSize(offset);
+        Preconditions.checkPositionIndex(offset, Integer.MAX_VALUE);
         int nearestMatch = 0;
         int nearestDistance = Integer.MAX_VALUE;
         for (Map.Entry<Integer, Integer> curr : map.entrySet()) {
@@ -61,8 +62,6 @@ public class TextLineCache {
     }
 
     public void put(int line, int off) {
-        ArgumentsChecker.checkSize(line);
-        ArgumentsChecker.checkSize(off);
         map.put(line, off);
         trimToSize();
     }

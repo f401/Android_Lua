@@ -3,7 +3,8 @@ package net.fred.lua.editor;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import net.fred.lua.common.ArgumentsChecker;
+import com.google.common.base.Preconditions;
+
 import net.fred.lua.common.Pair;
 import net.fred.lua.common.utils.ThrowableUtils;
 import net.fred.lua.editor.lang.Language;
@@ -41,7 +42,7 @@ public class TextLine implements Text {
             Logger.e("Source is null." + ThrowableUtils.getCallerString());
             return;
         }
-        ArgumentsChecker.checkSize(off);
+        Preconditions.checkPositionIndex(off, contents.length, "Offset is bigger then content length.");
 
         onBeginInsert(src, off);
         synchronized (this) {
@@ -60,8 +61,8 @@ public class TextLine implements Text {
 
     @Override
     public void replace(int from, int to, @Nullable char[] replacement) {
-        ArgumentsChecker.checkSize(from);
-        ArgumentsChecker.checkSize(to);
+        Preconditions.checkPositionIndex(from, contentLength);
+        Preconditions.checkPositionIndex(to, contentLength);
 
         if (replacement == null) {
             synchronized (this) {
@@ -119,7 +120,7 @@ public class TextLine implements Text {
     }
 
     public int getRowToOffBelong(int off) {
-        ArgumentsChecker.checkSize(off);
+        Preconditions.checkPositionIndex(off, contentLength);
         Pair<Integer, Integer> cachedLine = lineCache.getNearestLineByOffset(off);
         if (cachedLine.second == off) {
             return cachedLine.first;
