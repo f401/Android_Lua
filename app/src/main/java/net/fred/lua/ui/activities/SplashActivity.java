@@ -12,6 +12,7 @@ import android.util.DisplayMetrics;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import net.fred.lua.App;
 import net.fred.lua.R;
@@ -44,7 +45,7 @@ public class SplashActivity extends BaseActivity {
         tv.setWidth(metrics.widthPixels / 2);
         tv.setHeight(metrics.heightPixels / 2);
 
-        handleRWPermission();
+
 
         TaskExecutor executor = new TaskExecutor.Builder()
                 .addTask(new Runnable() {
@@ -63,11 +64,17 @@ public class SplashActivity extends BaseActivity {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                Breakpad.init(LogFileManager.getInstance().getNativeCrashDirectory().toString());
-                                Logger.i("Breakpad already initialization.");
-                                countDownTask();
+                                handleRWPermission();
                             }
                         });
+                    }
+                })
+                .addTask(new Runnable() {
+                    @Override
+                    public void run() {
+                        Breakpad.init(LogFileManager.getInstance().getNativeCrashDirectory().toString());
+                        Logger.i("Breakpad already initialization.");
+                        countDownTask();
                     }
                 }).build();
         counter = new CountDownLatch(executor.getTotalTaskCount());
@@ -110,6 +117,8 @@ public class SplashActivity extends BaseActivity {
         if (mPermissionHelper != null) {
             Logger.i("Trying request permission");
             mPermissionHelper.tryShowRequestDialog();
+        } else {
+            countDownTask();
         }
     }
 
@@ -122,6 +131,11 @@ public class SplashActivity extends BaseActivity {
             if (mPermissionHelper.hasCanRequestPermissions()) {
                 // Here we will request twice.
                 mPermissionHelper.tryShowRequestDialog();
+            } else if (!mPermissionHelper.hasProhibitedPermissions()) {
+                // Here all permissions are granted.
+                // We can start
+                countDownTask();
+                return;
             }
 
             if (mPermissionHelper.hasProhibitedPermissions()) {
@@ -140,10 +154,19 @@ public class SplashActivity extends BaseActivity {
                             @Override
                             public void onClick(DialogInterface p1, int p2) {
                                 p1.dismiss();
+                                countDownTask();
                             }
                         }).create();
                 alert.show();
             }
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PermissionHelper.CODE_GOTO_SETTINGS) {
+            countDownTask();
         }
     }
 }

@@ -25,7 +25,8 @@ public class PermissionHelper {
         this.canRequest = new ArrayList<>();
         this.prohibited = new ArrayList<>();
 
-        setProhibitedAndRequestList(notAllowed);
+        // 我们无法判断是否为第一次申请
+        canRequest.addAll(notAllowed);
     }
 
     public static boolean hasPermission(Context context, String permission) {
@@ -88,7 +89,9 @@ public class PermissionHelper {
     }
 
     public void tryShowRequestDialog() {
-        ActivityCompat.requestPermissions(ctx, canRequest.toArray(new String[canRequest.size()]), CODE_PERMISSION_REQUEST);
+        if (hasCanRequestPermissions()) {
+            ActivityCompat.requestPermissions(ctx, canRequest.toArray(new String[canRequest.size()]), CODE_PERMISSION_REQUEST);
+        }
     }
 
     public boolean hasCanRequestPermissions() {
