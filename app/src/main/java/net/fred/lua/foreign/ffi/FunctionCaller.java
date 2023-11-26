@@ -74,7 +74,7 @@ public final class FunctionCaller extends MemoryController {
         }
         Pointer ffi = null;
         if (useCache) {
-            ffi = describer.prepareCIF().getPointer();
+            ffi = describer.prepareCIF().getBasePointer();
         }
         return ffi_call(MemoryAccessor.UNCHECKED, describer, ffi, funcAddress,
                 typedParams, params, describer.getReturnType());

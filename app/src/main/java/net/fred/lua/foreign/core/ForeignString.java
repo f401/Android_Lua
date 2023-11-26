@@ -98,7 +98,7 @@ public final class ForeignString extends MemorySegment {
 
         @Override
         public void write(MemoryAccessor accessor, @NonNull Pointer dest, @NonNull Object data) {
-            MemoryAccessor.putPointerUnchecked(dest, ((ForeignString) data).getPointer());
+            MemoryAccessor.putPointerUnchecked(dest, ((ForeignString) data).getBasePointer());
         }
     }
 }

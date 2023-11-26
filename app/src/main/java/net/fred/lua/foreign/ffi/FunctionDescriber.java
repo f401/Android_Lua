@@ -65,7 +65,7 @@ public final class FunctionDescriber extends MemoryController {
     private long requestMemory(long size) throws NativeMethodException {
         MemorySegment segment = MemorySegment.create(size);
         addChild(segment);
-        return segment.getPointer().get();
+        return segment.getBasePointer().get();
     }
 
     /**
@@ -82,7 +82,7 @@ public final class FunctionDescriber extends MemoryController {
         }
         MemorySegment cif = MemorySegment.create(ForeignValues.SIZE_OF_FFI_CIF);
         addChild(cif);
-        int result = prep_cif(cif.getPointer(), returnType, params);
+        int result = prep_cif(cif.getBasePointer(), returnType, params);
         if (result != ForeignValues.FFI_STATUS_OK) {
             throw new NativeMethodException("Result: " + result);
         }

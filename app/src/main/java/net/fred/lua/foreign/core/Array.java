@@ -57,7 +57,7 @@ public class Array<T> extends MemorySegment {
     }
 
     private Pointer evalDataOff(int idx) {
-        return getPointer().plus((long) idx * mType.getSize(null));
+        return getBasePointer().plus((long) idx * mType.getSize(null));
     }
 
     public int evalTotalSize() {
@@ -106,7 +106,7 @@ public class Array<T> extends MemorySegment {
 
         @Override
         public void write(MemoryAccessor accessor, @NonNull Pointer dest, @NonNull Object data) throws NativeMethodException {
-            MemoryAccessor.putPointerUnchecked(dest, ((Array<?>) data).getPointer());
+            MemoryAccessor.putPointerUnchecked(dest, ((Array<?>) data).getBasePointer());
         }
     }
 }

@@ -1,25 +1,42 @@
 package net.fred.lua.foreign.core;
 
 import androidx.annotation.NonNull;
-import androidx.collection.LruCache;
 
 import com.google.common.base.Preconditions;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 
-import net.fred.lua.common.CrashHandler;
 import net.fred.lua.common.utils.FileUtils;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
-import net.fred.lua.foreign.internal.BasicMemoryController;
 import net.fred.lua.foreign.internal.ForeignValues;
+import net.fred.lua.foreign.internal.MemoryController;
 import net.fred.lua.io.Logger;
 
-public final class DynamicLoadingLibrary extends BasicMemoryController {
+import java.util.concurrent.TimeUnit;
 
-    private final PointerLruCache cache;
+public final class DynamicLoadingLibrary extends MemoryController {
+
+    /**
+     * Symbol Cache
+     */
+    private final LoadingCache<String, Pointer> cache;
+    private final Pointer libPointer;
 
     private DynamicLoadingLibrary(Pointer ptr) {
-        super(ptr);
-        this.cache = new PointerLruCache();
+        this.libPointer = ptr;
+        cache = CacheBuilder.newBuilder()
+                .expireAfterAccess(30, TimeUnit.SECONDS)
+                .maximumSize(20)
+                .concurrencyLevel(5)
+                .build(new CacheLoader<String, Pointer>() {
+                    @Override
+                    public Pointer load(@NonNull String key) throws Exception {
+                        Logger.i("Loading symbol " + key);
+                        return dlsym(libPointer, key);
+                    }
+                });
     }
 
     public static DynamicLoadingLibrary open(String path) throws NativeMethodException {
@@ -30,9 +47,16 @@ public final class DynamicLoadingLibrary extends BasicMemoryController {
         return new DynamicLoadingLibrary(handle);
     }
 
+    /**
+     * Search Symbol in library
+     *
+     * @param symbol the symbol you want to search
+     * @return The symbol address.
+     * @throws NativeMethodException Symbol not found
+     */
     public Pointer lookupSymbol(String symbol) throws NativeMethodException {
         Preconditions.checkNotNull(symbol, "Null symbol.");
-        return cache.get(symbol);
+        return cache.getIfPresent(symbol);
     }
 
     public static native Pointer dlopen(String path, int flags) throws NativeMethodException;
@@ -43,27 +67,8 @@ public final class DynamicLoadingLibrary extends BasicMemoryController {
 
     @Override
     public void onFree() {
-        Logger.i("Release dll at " + pointer);
-        dlclose(pointer);
-    }
-
-    private class PointerLruCache extends LruCache<String, Pointer> {
-        public PointerLruCache() {
-            super(50);
-        }
-
-        @Override
-        protected Pointer create(@NonNull String key) {
-            try {
-                Pointer ptr = dlsym(getPointer(), key);
-                Logger.i("Loaded symbol " + key + ".At " + ptr);
-                return ptr;
-            } catch (NativeMethodException e) {
-                Logger.e(e.getMessage());
-                CrashHandler.fastHandleException(e);
-                return null;
-            }
-        }
+        Logger.i("Release dll at " + libPointer);
+        dlclose(libPointer);
     }
 
     static {
