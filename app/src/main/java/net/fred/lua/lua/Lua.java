@@ -4,12 +4,18 @@ import androidx.annotation.Nullable;
 
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
-import net.fred.lua.foreign.internal.BasicMemoryController;
+import net.fred.lua.foreign.internal.MemoryController;
 
-public abstract class Lua extends BasicMemoryController {
+public abstract class Lua extends MemoryController {
+
+    private final Pointer luaLib;
 
     protected Lua(@Nullable Pointer holder) {
-        super(holder);
+        luaLib = holder;
+    }
+
+    public Pointer getPointer() {
+        return luaLib;
     }
 
     public abstract void openlibs() throws NativeMethodException;

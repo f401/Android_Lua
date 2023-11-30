@@ -56,7 +56,7 @@ public final class DynamicLoadingLibrary extends MemoryController {
      */
     public Pointer lookupSymbol(String symbol) throws NativeMethodException {
         Preconditions.checkNotNull(symbol, "Null symbol.");
-        return cache.getIfPresent(symbol);
+        return cache.getUnchecked(symbol);
     }
 
     public static native Pointer dlopen(String path, int flags) throws NativeMethodException;
