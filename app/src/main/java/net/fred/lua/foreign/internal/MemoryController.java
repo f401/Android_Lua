@@ -5,14 +5,12 @@ import androidx.annotation.Nullable;
 
 import com.google.common.base.Preconditions;
 
-import net.fred.lua.common.functional.Consumer;
-import net.fred.lua.common.utils.ThrowableUtils;
 import net.fred.lua.foreign.NativeMethodException;
+import net.fred.lua.foreign.child.IChildPolicy;
+import net.fred.lua.foreign.child.SimpleChildHolder;
 import net.fred.lua.io.Logger;
 
 import java.io.Closeable;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MemoryController implements Closeable {
@@ -22,12 +20,13 @@ public class MemoryController implements Closeable {
     /**
      * Contains objects that need to be released together when this object is released.
      */
-    private List<AutoCloseable> children;
+    private final IChildPolicy childPolicy;
     @Nullable
     private MemoryController parent;
 
     public MemoryController() {
         this.closed = new AtomicBoolean(false);
+        this.childPolicy = new SimpleChildHolder(this);
     }
 
     /*** Release this object. After releasing it, you cannot touch it at all. */
@@ -50,32 +49,18 @@ public class MemoryController implements Closeable {
     }
 
     public final AutoCloseable childAt(int idx) {
-        return children.get(idx);
+        return childPolicy.childAt(idx);
     }
 
     /**
      * Returns whether the current object has children.
      */
     public boolean hasChild() {
-        return children != null && children.size() != 0;
+        return childPolicy.hasChild();
     }
 
     public void addChild(@Nullable AutoCloseable segment) {
-        Preconditions.checkState(!this.closed.get(), "Father has been released.");
-        if (segment != this && segment != null) {
-            synchronized (this) {
-                if (children == null) {
-                    children = new ArrayList<>(2);
-                }
-
-                if (segment instanceof MemoryController) {
-                    MemoryController child = (MemoryController) segment;
-                    Preconditions.checkState(!checkIsParent(child), "The required registered son is the father of the current object.");
-                    child.attachParent(this);
-                    children.add(segment);
-                }
-            }
-        }
+        childPolicy.addChild(segment);
     }
 
     public final void attachParent(@NonNull MemoryController parent) {
@@ -98,35 +83,18 @@ public class MemoryController implements Closeable {
 
 
     /**
-     * Remove @{code child} from the current object.
-     * If successful, the @{code detachParent} of @{code child} will be automatically called.
+     * Remove {@code child} from the current object.
+     * If successful, the {@code detachParent} of @{code child} will be automatically called.
      *
      * @param child The object you want to delete.
+     * @see IChildPolicy#removeChild(AutoCloseable)
      */
-    public synchronized final void removeChild(@NonNull MemoryController child) {
-        if (children.remove(child)) {
-            child.detachParent();
-        }
+    public final void removeChild(@NonNull MemoryController child) {
+        childPolicy.removeChild(child);
     }
 
     public final void freeChildren() {
-        if (children != null && children.size() != 0) {
-            // During the deletion process, the subclass will call the remove method.
-            // This can cause data modification during traversal, resulting in exceptions being thrown.
-            synchronized (this) {
-                List<AutoCloseable> dest = new ArrayList<>(children.size() + 1);
-                dest.addAll(children);
-                ThrowableUtils.closeAll(dest, new Consumer<AutoCloseable>() {
-                    @Override
-                    public void accept(AutoCloseable param) {
-                        if (param instanceof MemoryController) {
-                            ((MemoryController) param).detachParent();
-                        }
-                    }
-                });
-                children = null;
-            }
-        }
+       childPolicy.closeAllChild();
     }
 
     /**
