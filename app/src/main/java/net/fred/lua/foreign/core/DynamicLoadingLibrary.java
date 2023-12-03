@@ -18,6 +18,16 @@ import java.util.concurrent.TimeUnit;
 
 public final class DynamicLoadingLibrary extends MemoryController {
 
+    private static final LoadingCache<String, DynamicLoadingLibrary> openCache = CacheBuilder.newBuilder()
+            .softValues()
+            .build(new CacheLoader<String, DynamicLoadingLibrary>() {
+                @Override
+                public DynamicLoadingLibrary load(@NonNull String key) throws Exception {
+                    Pointer handle = dlopen(key, ForeignValues.RTLD_LAZY);
+                    Logger.i("Loaded library " + key + ".At 0x" + Long.toHexString(handle.get()));
+                    return new DynamicLoadingLibrary(handle);
+                }
+            });
     /**
      * Symbol Cache
      */
@@ -41,10 +51,7 @@ public final class DynamicLoadingLibrary extends MemoryController {
 
     public static DynamicLoadingLibrary open(String path) throws NativeMethodException {
         Preconditions.checkState(FileUtils.exists(path), "File %s doesn't exist.", path);
-
-        Pointer handle = dlopen(path, ForeignValues.RTLD_LAZY);
-        Logger.i("Loaded library " + path + ".At 0x" + Long.toHexString(handle.get()));
-        return new DynamicLoadingLibrary(handle);
+        return openCache.getUnchecked(path);
     }
 
     /**
@@ -69,6 +76,13 @@ public final class DynamicLoadingLibrary extends MemoryController {
     public void onFree() {
         Logger.i("Release dll at " + libPointer);
         dlclose(libPointer);
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        if (!isClosed()) {
+            close();
+        }
     }
 
     static {

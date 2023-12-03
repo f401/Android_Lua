@@ -20,7 +20,7 @@ public class MemoryController implements Closeable {
     /**
      * Contains objects that need to be released together when this object is released.
      */
-    private final IChildPolicy childPolicy;
+    private IChildPolicy childPolicy;
     @Nullable
     private MemoryController parent;
 
@@ -103,6 +103,14 @@ public class MemoryController implements Closeable {
      * Rewriting this method normally is to free up resources.
      */
     protected void onFree() throws NativeMethodException {
+    }
+
+    public IChildPolicy getChildPolicy() {
+        return childPolicy;
+    }
+
+    public void setChildPolicy(IChildPolicy policy) {
+        this.childPolicy = policy;
     }
 
     @Override

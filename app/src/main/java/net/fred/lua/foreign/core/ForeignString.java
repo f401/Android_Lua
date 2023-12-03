@@ -14,13 +14,13 @@ import net.fred.lua.foreign.internal.MemorySegment;
 import net.fred.lua.foreign.types.Type;
 import net.fred.lua.io.Logger;
 
-public final class ForeignString extends MemorySegment {
+public class ForeignString extends MemorySegment {
 
     private final String refer;
 
     public static final int DEFAULT_SIZE = 256;
 
-    private ForeignString(Pointer src, String refer) {
+    ForeignString(Pointer src, String refer) {
         super(src, refer.length());
         this.refer = refer;
     }
@@ -53,6 +53,7 @@ public final class ForeignString extends MemorySegment {
             Logger.w(err);
             throw new IllegalArgumentException(err);
         }
+
         final Pointer ptr = MemorySegment.allocate(length + 1);
         MemoryAccessor.putStringUnchecked(ptr, str);
 
@@ -71,6 +72,10 @@ public final class ForeignString extends MemorySegment {
      */
     public long length() {
         return size();
+    }
+
+    public String getRefer() {
+        return this.refer;
     }
 
     public static ForeignStringType ofType() {

@@ -6,14 +6,18 @@ import net.fred.lua.PathConstants;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.core.ForeignString;
+import net.fred.lua.foreign.core.StringPool;
 import net.fred.lua.foreign.proxy.LibraryProxy;
 
 public class Lua54LibraryProxy extends Lua {
     static LuaLib lib = LibraryProxy.create(PathConstants.NATIVE_LIBRARY_DIR + "liblua.so"
             , LuaLib.class);
+    private final StringPool stringPool;
 
     protected Lua54LibraryProxy(@Nullable Pointer pointer) {
         super(pointer);
+        this.stringPool = new StringPool();
+        addChild(stringPool);
     }
 
     @Override
@@ -37,7 +41,7 @@ public class Lua54LibraryProxy extends Lua {
 
     @Override
     public void dofile(String file) throws NativeMethodException {
-        lib.J_luaL_dofile(getPointer(), ForeignString.from(file));
+        lib.J_luaL_dofile(getPointer(), stringPool.get(file));
     }
 
     public interface LuaLib {
