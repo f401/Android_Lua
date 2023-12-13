@@ -88,6 +88,7 @@ public class SplashActivity extends BaseActivity {
                     try {
                         counter.await();
                         Intent realMain = new Intent(SplashActivity.this, MainActivity.class);
+						Logger.i("Launching MainActivity");
                         startActivity(realMain);
                         finish();
                         service.shutdownNow();

@@ -6,7 +6,7 @@ import net.fred.lua.common.utils.ThrowableUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
+import java.io.PrintStream;
 
 /**
  * 该类用来扫描 Log 类输出的日志并存储到文件中
@@ -47,9 +47,9 @@ public final class LogScanner {
 
         @Override
         public void run() {
-            PrintWriter outputStream = null;
+            PrintStream outputStream = null;
             try {
-                outputStream = new PrintWriter(LogFileManager.getInstance().
+                outputStream = new PrintStream(LogFileManager.getInstance().
                         getLogScannerFile());
                 while (!Thread.currentThread().isInterrupted()) {
                     Process process = new ProcessBuilder("logcat").redirectErrorStream(true).start();

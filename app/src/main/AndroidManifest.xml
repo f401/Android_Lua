@@ -16,8 +16,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        tools:remove="android:appComponentFactory"
-        tools:targetApi="p">
+        tools:remove="android:appComponentFactory">
         <activity android:name=".ui.activities.MainActivity" />
         <activity
             android:name=".ui.activities.SplashActivity"

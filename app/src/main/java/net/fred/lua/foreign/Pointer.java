@@ -12,10 +12,6 @@ public class Pointer {
     private long address;
 
     public Pointer(long address) {
-        if (address < 0) {
-            Logger.w(
-                    "Trying to create a pointer with an address less than 0. (" + address + ")");
-        }
         this.address = address;
     }
 
@@ -85,11 +81,9 @@ public class Pointer {
 
         // 这时两者都大于0或小于0(都有符号位或没有)，可以正常比较
         if ((this.address > 0 && other.address > 0) ||
-                (this.address < 0 && other.address < 0)) {
+			(this.address < 0 && other.address < 0)) {
             return this.address > other.address;
-        } else
-        // if ((first.address < 0 && second.address > 0) || (first.address > 0 && second.address < 0))
-        {
+        } else {
             return this.address < 0;
         }
 
