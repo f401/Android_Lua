@@ -66,8 +66,8 @@ public class MemorySegment extends MemoryController {
     }
 
     @Override
-    public void onFree() throws NativeMethodException {
-        super.onFree();
+    public void onFree(boolean finalized) throws NativeMethodException {
+        super.onFree(finalized);
         free(getBasePointer());
     }
 

@@ -35,7 +35,8 @@ public class Lua5_4 extends Lua {
     }
 
     @Override
-    public void onFree() throws NativeMethodException {
+    public void onFree(boolean finalized) throws NativeMethodException {
+        super.onFree(finalized);
         getOrCreateFromCache("lua_close", new Creator() {
             @Override
             public FunctionCaller create(String symbol) throws NativeMethodException {

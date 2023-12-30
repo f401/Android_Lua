@@ -21,8 +21,8 @@ public class Lua54LibraryProxy extends Lua {
     }
 
     @Override
-    public void onFree() throws NativeMethodException {
-        super.onFree();
+    public void onFree(boolean finalized) throws NativeMethodException {
+        super.onFree(finalized);
         lib.lua_close(getPointer());
     }
 

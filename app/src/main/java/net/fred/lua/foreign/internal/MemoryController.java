@@ -32,8 +32,12 @@ public class MemoryController implements Closeable {
     /*** Release this object. After releasing it, you cannot touch it at all. */
     @Override
     public final void close() throws NativeMethodException {
+        close(false);
+    }
+
+    private void close(boolean finalized) throws NativeMethodException {
         if (this.closed.compareAndSet(false, true)) {
-            onFree();
+            onFree(finalized);
             freeChildren();
             if (parent != null) {
                 parent.removeChild(this);
@@ -102,7 +106,10 @@ public class MemoryController implements Closeable {
      * <p>
      * Rewriting this method normally is to free up resources.
      */
-    protected void onFree() throws NativeMethodException {
+    protected void onFree(boolean finalized) throws NativeMethodException {
+        if (finalized) {
+            Logger.e("Memory hasn't released yet!, Object " + this);
+        }
     }
 
     public IChildPolicy getChildPolicy() {
@@ -117,8 +124,7 @@ public class MemoryController implements Closeable {
     protected void finalize() throws Throwable {
         super.finalize();
         if (!closed.get()) {
-            Logger.e("Memory hasn't released yet!, Object " + this);
-            close();
+            close(true);
         }
     }
 }

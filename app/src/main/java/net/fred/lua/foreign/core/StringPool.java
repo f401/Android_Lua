@@ -56,8 +56,8 @@ public class StringPool extends MemoryController {
     }
 
     @Override
-    protected void onFree() throws NativeMethodException {
-        super.onFree();
+    protected void onFree(boolean finalized) throws NativeMethodException {
+        super.onFree(finalized);
         Logger.i("Releasing String pool contains " + stringCache.size());
         stringCache.cleanUp();
     }
@@ -73,7 +73,7 @@ public class StringPool extends MemoryController {
         }
 
         @Override
-        public void onFree() throws NativeMethodException {
+        public void onFree(boolean finalized) throws NativeMethodException {
             // Do nothing here.
         }
     }
