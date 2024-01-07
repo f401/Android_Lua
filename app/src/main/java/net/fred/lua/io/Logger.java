@@ -16,6 +16,7 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Deprecated
 public final class Logger implements AutoCloseable {
 
     private static Logger logger;
