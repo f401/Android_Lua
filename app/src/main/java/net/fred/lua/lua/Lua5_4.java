@@ -12,7 +12,6 @@ import net.fred.lua.foreign.core.DynamicLoadingLibrary;
 import net.fred.lua.foreign.core.ForeignString;
 import net.fred.lua.foreign.core.PrimaryTypes;
 import net.fred.lua.foreign.ffi.FunctionCaller;
-import net.fred.lua.io.Logger;
 
 public class Lua5_4 extends Lua {
     protected static DynamicLoadingLibrary dll;
@@ -101,7 +100,6 @@ public class Lua5_4 extends Lua {
         @Override
         protected void entryRemoved(boolean evicted, @NonNull String key, @NonNull FunctionCaller oldValue, @Nullable FunctionCaller newValue) {
             try {
-                Logger.i("Removing caller. key: " + key + ": " + oldValue);
                 oldValue.close();
             } catch (NativeMethodException e) {
                 CrashHandler.fastHandleException(e);

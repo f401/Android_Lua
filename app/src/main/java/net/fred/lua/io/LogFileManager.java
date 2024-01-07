@@ -52,10 +52,6 @@ public final class LogFileManager {
         }
     }
 
-    public File getLoggerFile() {
-        return new File(mSaveDir, "latest-logger.log");
-    }
-
     public File getLogScannerFile() {
         return new File(mSaveDir, "latest-scanner.log");
     }
@@ -94,7 +90,6 @@ public final class LogFileManager {
         ArrayList<File> compressFile = new ArrayList<>(3);
 
         hasError = addIfExists(compressFile, getCrashFile());
-        addIfExists(compressFile, getLoggerFile());
         addIfExists(compressFile, getLogScannerFile());
 
         //native crash part
@@ -140,9 +135,6 @@ public final class LogFileManager {
                 // Remove saved file.
                 FileUtils.forceDelete(curr);
             }
-
-            // notice `logger` buffer can write to file.
-            Logger.getInstance().onLogfilePrepared();
         } catch (IOException e) {
             if (zos != null) {
                 try {

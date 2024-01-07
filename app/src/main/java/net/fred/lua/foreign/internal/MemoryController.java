@@ -1,5 +1,7 @@
 package net.fred.lua.foreign.internal;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -8,13 +10,12 @@ import com.google.common.base.Preconditions;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.child.IChildPolicy;
 import net.fred.lua.foreign.child.SimpleChildHolder;
-import net.fred.lua.io.Logger;
 
 import java.io.Closeable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MemoryController implements Closeable {
-
+    private static final String TAG = "MemoryController";
     private final AtomicBoolean closed;
 
     /**
@@ -44,7 +45,7 @@ public class MemoryController implements Closeable {
                 parent = null;
             }
         } else {
-            Logger.e("Pointer freed twice");
+            Log.e(TAG, "Pointer freed twice");
         }
     }
 
@@ -108,7 +109,7 @@ public class MemoryController implements Closeable {
      */
     protected void onFree(boolean finalized) throws NativeMethodException {
         if (finalized) {
-            Logger.e("Memory hasn't released yet!, Object " + this);
+            Log.e(TAG, "Memory hasn't released yet!, Object " + this);
         }
     }
 

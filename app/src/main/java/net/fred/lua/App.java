@@ -5,6 +5,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -13,13 +14,11 @@ import androidx.multidex.MultiDex;
 import net.fred.lua.common.CrashHandler;
 import net.fred.lua.io.LogFileManager;
 import net.fred.lua.io.LogScanner;
-import net.fred.lua.io.Logger;
 
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.util.List;
 
 public class App extends Application {
+    private static final String TAG = "APP";
 
     public static final String EXIT_ACTION = "net.lua.exit.all";
     private static App instance;
@@ -47,28 +46,6 @@ public class App extends Application {
         System.exit(0);
     }
 
-    private static void redirectOutAndErrStreamToLog() {
-        class Injector extends PrintStream {
-            public Injector(final String name) {
-                super(new OutputStream() {
-                    boolean printHeader = true;
-
-                    @Override
-                    public void write(int b) {
-                        if (printHeader) {
-                            Logger.write("[" + name + "]");
-                            printHeader = false;
-                        } else if (b == '\n') {
-                            printHeader = true;
-                        }
-                        Logger.write(b);
-                    }
-                });
-            }
-        }
-        System.setErr(new Injector("STDERR"));
-        System.setOut(new Injector("STDOUT"));
-    }
 
     @Override
     protected void attachBaseContext(Context base) {
@@ -84,16 +61,13 @@ public class App extends Application {
 
         PathConstants.init(this);
         LogFileManager.install(this);
-        Logger.i("Cache directory manager already installed.");
+        Log.i(TAG, "Cache directory manager already installed.");
 
         if (App.isMainProcess()) {
             CrashHandler.getInstance().install(this);
+            Log.i(TAG, "Starting logger scanner");
+            LogScanner.getInstance().start();
         }
-
-        Logger.i("Starting logger scanner");
-        LogScanner.getInstance().start();
-
-        redirectOutAndErrStreamToLog();
         // More work is in ui.activities.SplashActivity
     }
 

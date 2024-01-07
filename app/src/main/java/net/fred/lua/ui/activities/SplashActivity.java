@@ -9,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -21,13 +22,13 @@ import net.fred.lua.common.TaskExecutor;
 import net.fred.lua.common.activity.BaseActivity;
 import net.fred.lua.foreign.Breakpad;
 import net.fred.lua.io.LogFileManager;
-import net.fred.lua.io.Logger;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
 @SuppressLint("CustomSplashScreen")
 public class SplashActivity extends BaseActivity {
+    private static final String TAG = "SplashActivity";
     private PermissionHelper mPermissionHelper;
 
     private CountDownLatch counter = null;
@@ -53,7 +54,7 @@ public class SplashActivity extends BaseActivity {
                     public void run() {
                         if (App.isMainProcess()) {
                             LogFileManager.getInstance().compressLatestLogs();
-                            Logger.i("Old logs compress finished!");
+                            Log.i(TAG, "Old logs compress finished!");
                             countDownTask();
                         }
                     }
@@ -73,7 +74,7 @@ public class SplashActivity extends BaseActivity {
                     @Override
                     public void run() {
                         Breakpad.init(LogFileManager.getInstance().getNativeCrashDirectory().toString());
-                        Logger.i("Breakpad already initialization.");
+                        Log.i(TAG, "Breakpad already initialization.");
                         countDownTask();
                     }
                 }).build();
@@ -88,7 +89,7 @@ public class SplashActivity extends BaseActivity {
                     try {
                         counter.await();
                         Intent realMain = new Intent(SplashActivity.this, MainActivity.class);
-						Logger.i("Launching MainActivity");
+                        Log.i(TAG, "Launching MainActivity");
                         startActivity(realMain);
                         finish();
                         service.shutdownNow();
@@ -116,7 +117,7 @@ public class SplashActivity extends BaseActivity {
     private void handleRWPermission() {
         this.mPermissionHelper = PermissionHelper.create(this, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE);
         if (mPermissionHelper != null) {
-            Logger.i("Trying request permission");
+            Log.i(TAG, "Trying request permission");
             mPermissionHelper.tryShowRequestDialog();
         } else {
             countDownTask();
@@ -140,7 +141,7 @@ public class SplashActivity extends BaseActivity {
             }
 
             if (mPermissionHelper.hasProhibitedPermissions()) {
-                Logger.w("Write or reading permission has been prohibited");
+                Log.w(TAG, "Write or reading permission has been prohibited");
                 AlertDialog alert = new AlertDialog.Builder(this)
                         .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                             @Override

@@ -11,10 +11,6 @@
 extern "C" {
 #endif
 
-void logger_info(JNIEnv *, const char *msg);
-
-void logger_error(JNIEnv *, const char *msg);
-
 void throwNativeException(JNIEnv *, const char *msg);
 
 jobject pointer_create(JNIEnv *, void *);

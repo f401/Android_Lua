@@ -1,5 +1,7 @@
 package net.fred.lua.foreign.core;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -14,10 +16,9 @@ import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.child.IChildPolicy;
 import net.fred.lua.foreign.child.RejectAllHolder;
 import net.fred.lua.foreign.internal.MemoryController;
-import net.fred.lua.io.Logger;
 
 public class StringPool extends MemoryController {
-
+    private static final String TAG = "StringPool";
     public static final StringPool GLOBAL = new StringPool(new RejectAllHolder());
     private final LoadingCache<String, StringReference> stringCache;
 
@@ -58,7 +59,7 @@ public class StringPool extends MemoryController {
     @Override
     protected void onFree(boolean finalized) throws NativeMethodException {
         super.onFree(finalized);
-        Logger.i("Releasing String pool contains " + stringCache.size());
+        Log.i(TAG, "Releasing String pool contains " + stringCache.size());
         stringCache.cleanUp();
     }
 

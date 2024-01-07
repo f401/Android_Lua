@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -17,10 +18,10 @@ import androidx.annotation.Nullable;
 
 import net.fred.lua.R;
 import net.fred.lua.common.utils.MathUtils;
-import net.fred.lua.io.Logger;
 
 // Based on https://github.com/TIIEHenry/CodeEditor/blob/master/CodeEditor/src/main/java/tiiehenry/code/view/TouchNavigationMethod.java
 public class FreeScrollView extends View {
+    private static final String TAG = "FreeScrollView";
     public static final int SCROLLBAR_EXTEND_SIZE = MathUtils.dp2px(20);
     public static int SCROLLBAR_DEFAULT_SIZE;
     public static final int BOUNDARY_PROMPT_MAX_TOP = 100;
@@ -216,7 +217,7 @@ public class FreeScrollView extends View {
 
         if (MeasureSpec.UNSPECIFIED == mode) {
             size = Integer.MAX_VALUE;
-            Logger.w("MeasureSpec cannot be UNSPECIFIED. Setting dimensions to max.");
+            Log.w(TAG, "MeasureSpec cannot be UNSPECIFIED. Setting dimensions to max.");
         }
 
         return size;
@@ -285,7 +286,6 @@ public class FreeScrollView extends View {
         }
 
         if ((mDrawBoundaryPrompt & RIGHT_BOUNDARY_PROMPT) > 0) {
-            Logger.i("RIGHT");
             canvas.drawArc(getScrollX() + getContentWidth() - BOUNDARY_PROMPT_MAX_TOP,
                     getScrollY(),
                     getScrollX() + getWidth() + BOUNDARY_PROMPT_MAX_TOP,

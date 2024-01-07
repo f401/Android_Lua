@@ -1,5 +1,7 @@
 package net.fred.lua.foreign.core;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.google.common.base.Preconditions;
@@ -12,19 +14,18 @@ import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.internal.ForeignValues;
 import net.fred.lua.foreign.internal.MemoryController;
-import net.fred.lua.io.Logger;
 
 import java.util.concurrent.TimeUnit;
 
 public final class DynamicLoadingLibrary extends MemoryController {
-
+    private static final String TAG = "DLL";
     private static final LoadingCache<String, DynamicLoadingLibrary> openCache = CacheBuilder.newBuilder()
             .softValues()
             .build(new CacheLoader<String, DynamicLoadingLibrary>() {
                 @Override
                 public DynamicLoadingLibrary load(@NonNull String key) throws Exception {
                     Pointer handle = dlopen(key, ForeignValues.RTLD_LAZY);
-                    Logger.i("Loaded library " + key + ".At 0x" + Long.toHexString(handle.get()));
+                    Log.i(TAG, "Loaded library " + key + ".At 0x" + Long.toHexString(handle.get()));
                     return new DynamicLoadingLibrary(handle);
                 }
             });
@@ -43,7 +44,7 @@ public final class DynamicLoadingLibrary extends MemoryController {
                 .build(new CacheLoader<String, Pointer>() {
                     @Override
                     public Pointer load(@NonNull String key) throws Exception {
-                        Logger.i("Loading symbol " + key);
+                        Log.d(TAG, "Loading symbol " + key);
                         return dlsym(libPointer, key);
                     }
                 });
@@ -74,7 +75,7 @@ public final class DynamicLoadingLibrary extends MemoryController {
 
     @Override
     public void onFree(boolean finalized) {
-        Logger.i("Release dll at " + libPointer);
+        Log.i(TAG, "Release dll at " + libPointer);
         dlclose(libPointer);
     }
 

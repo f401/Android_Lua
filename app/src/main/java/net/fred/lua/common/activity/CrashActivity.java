@@ -2,6 +2,7 @@ package net.fred.lua.common.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup.LayoutParams;
@@ -17,9 +18,9 @@ import net.fred.lua.R;
 import net.fred.lua.common.CrashHandler;
 import net.fred.lua.common.utils.ClipboardUtils;
 import net.fred.lua.common.utils.MathUtils;
-import net.fred.lua.io.Logger;
 
 public final class CrashActivity extends AppCompatActivity {
+    private static final String TAG = "CrashActivity";
     private String content;
 
     @Override
@@ -50,7 +51,7 @@ public final class CrashActivity extends AppCompatActivity {
     }
 
     private void restart() {
-        Logger.i("Restarting process");
+        Log.i(TAG, "Restarting process");
         Intent intent = getPackageManager().getLaunchIntentForPackage(getPackageName());
         if (intent != null) {
             intent.addFlags(

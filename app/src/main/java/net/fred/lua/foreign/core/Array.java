@@ -1,5 +1,7 @@
 package net.fred.lua.foreign.core;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -13,7 +15,6 @@ import net.fred.lua.foreign.internal.ForeignValues;
 import net.fred.lua.foreign.internal.MemoryAccessor;
 import net.fred.lua.foreign.internal.MemorySegment;
 import net.fred.lua.foreign.types.Type;
-import net.fred.lua.io.Logger;
 
 /**
  * Array of native layers.
@@ -21,7 +22,7 @@ import net.fred.lua.io.Logger;
  * @param <T> This type must be sized.
  */
 public class Array<T> extends MemorySegment {
-
+    private static final String TAG = "Array";
     private final Type<T> mType;
     private final CheckedMemoryAccessor checkedMemoryAccessor;
 
@@ -35,7 +36,7 @@ public class Array<T> extends MemorySegment {
         // Must be sized
         long totalSize = length * type.getSize(null);
         Pointer ptr = MemorySegment.allocate(totalSize);
-        Logger.i(StringUtils.templateOf("Create {} size of Segment at {}.", totalSize, ptr));
+        Log.d(TAG, StringUtils.templateOf("Create {} size of Segment at {}.", totalSize, ptr));
         return new Array<>(ptr, length, type);
     }
 
@@ -67,7 +68,7 @@ public class Array<T> extends MemorySegment {
     public void write(int idx, T data) throws NativeMethodException {
         Pointer off = evalDataOff(idx);
         mType.write(checkedMemoryAccessor, off, data);
-        Logger.i(StringUtils.templateOf("Write {}, at {}.", data, off));
+        Log.d(TAG, StringUtils.templateOf("Write {}, at {}.", data, off));
     }
 
     public T get(int idx) {

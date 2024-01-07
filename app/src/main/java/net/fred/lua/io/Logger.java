@@ -10,7 +10,6 @@ import net.fred.lua.common.utils.StringUtils;
 import net.fred.lua.common.utils.ThrowableUtils;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -24,7 +23,7 @@ public final class Logger implements AutoCloseable {
      * 0 for free, 1 for using.
      */
     private final AtomicInteger streamMutex;
-    private OutputStream stream;
+    private final OutputStream stream;
 
     private Logger() {
         stream = new ByteArrayOutputStream();
@@ -125,23 +124,6 @@ public final class Logger implements AutoCloseable {
     public void close() throws IOException {
         if (stream != null)
             stream.close();
-    }
-
-    /**
-     * Called from @{link CacheDirectoryManager#compressLatestLogs}
-     * This function transfers the data from ByteArrayOutputStream to the log file and changes the stream to FileOutputStream.
-     */
-    void onLogfilePrepared() throws IOException {
-        for (; ; ) {
-            if (streamMutex.compareAndSet(0, 1)) {
-                byte[] saved = ((ByteArrayOutputStream) stream).toByteArray();
-                stream = new FileOutputStream(LogFileManager.getInstance().getLoggerFile());
-                stream.write(saved);
-
-                streamMutex.set(0);
-                break;
-            }
-        }
     }
 
 }

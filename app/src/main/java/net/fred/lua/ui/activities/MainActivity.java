@@ -2,6 +2,7 @@ package net.fred.lua.ui.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,13 +18,13 @@ import net.fred.lua.common.activity.BaseActivity;
 import net.fred.lua.foreign.Breakpad;
 import net.fred.lua.io.CStandardOutputInput;
 import net.fred.lua.io.LogFileManager;
-import net.fred.lua.io.Logger;
 import net.fred.lua.lua.Lua54LibraryProxy;
 import net.fred.lua.lua.Lua5_4;
 
 import java.io.IOException;
 
 public class MainActivity extends BaseActivity {
+    private static final String TAG = "MainActivity";
     private Button btn, throwException, runCif;
     private EditText editText;
 
@@ -56,7 +57,7 @@ public class MainActivity extends BaseActivity {
         throwException.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View p1) {
-                Logger.e("Making exception");
+                Log.e(TAG, "Making exception");
                 //throw new RuntimeException();
                 Breakpad.SEND_SIGNAL_SEGV();
             }
@@ -66,7 +67,7 @@ public class MainActivity extends BaseActivity {
         runCif.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Logger.i("Running cif");
+                Log.i(TAG, "Running cif");
                 try {
                     Lua5_4 lua54 = new Lua5_4();
                     CStandardOutputInput.getInstance().redirectStandardOutTo(
@@ -102,7 +103,7 @@ public class MainActivity extends BaseActivity {
             Toast.makeText(this, getString(R.string.cache_directory_size,
                     LogFileManager.getInstance().sizeOfDirectoryString()
             ), Toast.LENGTH_SHORT).show();
-            Logger.i("Removing cache directory.");
+            Log.i(TAG, "Removing cache directory.");
             LogFileManager.getInstance().delete();
             return true;
         }

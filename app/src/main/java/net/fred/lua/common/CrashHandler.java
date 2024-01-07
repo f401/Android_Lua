@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,13 +19,14 @@ import net.fred.lua.common.utils.DateUtils;
 import net.fred.lua.common.utils.FileUtils;
 import net.fred.lua.common.utils.ThrowableUtils;
 import net.fred.lua.io.LogFileManager;
-import net.fred.lua.io.Logger;
 
 import java.io.File;
 
 public final class CrashHandler implements Thread.UncaughtExceptionHandler {
+    private static final String TAG = "CrashHandler";
     public static final String EXTRA_ERROR_CONTENT = "ErrorContent";
     private static CrashHandler instance;
+
     public File crashFile;
     private volatile Context ctx;
     private Thread.UncaughtExceptionHandler defaultExceptionHandler;
@@ -79,14 +81,14 @@ public final class CrashHandler implements Thread.UncaughtExceptionHandler {
                     Thread.setDefaultUncaughtExceptionHandler(this);
                     crashFile = LogFileManager.getInstance().getCrashFile();
                     showError = true;
-                    Logger.i("Crash handler installed in package: " + ctx.getPackageName());
+                    Log.i(TAG, "Crash handler installed in package: " + ctx.getPackageName());
                 }
             }
         }
     }
 
     private void startCrashActivity(String content) {
-        Logger.i("Launching crash activity");
+        Log.i(TAG, "Launching crash activity");
         Intent intent = new Intent(this.ctx, CrashActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                 | Intent.FLAG_ACTIVITY_CLEAR_TOP |
@@ -100,7 +102,7 @@ public final class CrashHandler implements Thread.UncaughtExceptionHandler {
      */
     @NonNull
     private StringBuilder writeInfoToSdCard(Thread p1, Throwable p2) {
-        Logger.i("Obtain Messages");
+        Log.i(TAG, "Obtain Messages");
         StringBuilder sb = new StringBuilder();
         String versionName = "Unknown";
         long versionCode = 0;
@@ -135,22 +137,22 @@ public final class CrashHandler implements Thread.UncaughtExceptionHandler {
     @Override
     public void uncaughtException(@NonNull Thread p1, @NonNull Throwable p2) {
         try {
-            Logger.e("------------------Making Crash----------------");
+            Log.e(TAG, "------------------Making Crash----------------");
             StringBuilder sb = writeInfoToSdCard(p1, p2);
             if (showError && ctx != null) {
-                Logger.i("Starting a new activity");
+                Log.i(TAG, "Starting a new activity");
                 startCrashActivity(sb.toString());
                 showError = false;
             }
-            Logger.i("Killing self");
+            Log.i(TAG, "Killing self");
             // Kill crashed process.
             App.forceKillSelf();
         } catch (Throwable e) {
-            Logger.e("CrashHandler cannot deal with exception, spreading to default handler.");
+            Log.e(TAG, "CrashHandler cannot deal with exception, spreading to default handler.");
             if (this.defaultExceptionHandler != null) {
                 this.defaultExceptionHandler.uncaughtException(p1, p2);
             } else {
-                Logger.e("Cannot find default exception handler, exiting...");
+                Log.e(TAG, "Cannot find default exception handler, exiting...");
                 App.forceKillSelf();
             }
         }

@@ -1,5 +1,7 @@
 package net.fred.lua.io;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import net.fred.lua.common.utils.ThrowableUtils;
@@ -12,7 +14,7 @@ import java.io.PrintStream;
  * 该类用来扫描 Log 类输出的日志并存储到文件中
  */
 public final class LogScanner {
-
+    private static final String TAG = "LogScanner";
     private static LogScanner instance;
 
     private LogScanner() {
@@ -32,8 +34,9 @@ public final class LogScanner {
             public void run() {
                 try {
                     new ProcessBuilder("logcat", "-c").start().waitFor();
+                    Log.i(TAG, "Clean logcat finished");
                 } catch (InterruptedException | IOException ignored) {
-                    Logger.e("Clean Logcat Buffer failed!");
+                    Log.e(TAG, "Clean Logcat Buffer failed!");
                 }
             }
         }, "Log buffer cleaner.").start();
@@ -63,7 +66,7 @@ public final class LogScanner {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
-                Logger.e("Failed to start log scanner;" + e.getMessage());
+                Log.e(TAG, "Failed to start log scanner;" + e.getMessage());
             } finally {
                 ThrowableUtils.closeAll(outputStream);
             }

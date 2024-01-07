@@ -1,5 +1,7 @@
 package net.fred.lua.foreign.core;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -12,10 +14,9 @@ import net.fred.lua.foreign.internal.MemoryAccessor;
 import net.fred.lua.foreign.internal.MemoryController;
 import net.fred.lua.foreign.internal.MemorySegment;
 import net.fred.lua.foreign.types.Type;
-import net.fred.lua.io.Logger;
 
 public class ForeignString extends MemorySegment {
-
+    private static final String TAG = "ForeignString";
     private final String refer;
 
     public static final int DEFAULT_SIZE = 256;
@@ -50,7 +51,7 @@ public class ForeignString extends MemorySegment {
         long length;
         if (StringUtils.isEmpty(str) || (length = str.length()) == 0) {
             final String err = ThrowableUtils.getCallerString() + " passes null when creating a string.";
-            Logger.w(err);
+            Log.w(TAG, err);
             throw new IllegalArgumentException(err);
         }
 
