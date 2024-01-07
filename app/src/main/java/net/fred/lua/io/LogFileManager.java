@@ -14,6 +14,7 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
 import java.util.zip.ZipEntry;
 
 public final class LogFileManager {
@@ -21,9 +22,11 @@ public final class LogFileManager {
 
     private static volatile LogFileManager instance;
     private final File mSaveDir;
+    private final CountDownLatch compressFinished;
 
     private LogFileManager(Context ctx) {
         this.mSaveDir = ctx.getExternalFilesDir("log");
+        this.compressFinished = new CountDownLatch(1);
         net.fred.lua.common.utils.FileUtils.makeDirs(getNativeCrashDirectory().toString());
     }
 
@@ -108,7 +111,10 @@ public final class LogFileManager {
             }
         }
 
-        if (compressFile.size() == 0) return;
+        if (compressFile.size() == 0) {
+            compressFinished.countDown();
+            return;
+        }
 
         for (int i = 0; i < compressFile.size(); ++i) {
             compressFile.set(i, renameFileAccordingDate(
@@ -147,7 +153,15 @@ public final class LogFileManager {
             }
         } finally {
             ThrowableUtils.closeAll(zos);
+            compressFinished.countDown();
         }
+    }
+
+    /**
+     * Blocking current thread, waiting for compression to complete.
+     */
+    public void waitForCompressionFinish() throws InterruptedException {
+        compressFinished.await();
     }
 
     private File renameFileAccordingDate(File file) {
@@ -155,8 +169,6 @@ public final class LogFileManager {
 
         if (file.getName().contains("crash")) {
             name += "-crash";
-        } else if (file.getName().contains("logger")) {
-            name += "-logger";
         } else if (file.getName().contains("scanner")) {
             name += "-scanner";
         }

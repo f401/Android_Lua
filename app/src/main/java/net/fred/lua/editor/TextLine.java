@@ -6,9 +6,7 @@ import androidx.annotation.Nullable;
 import com.google.common.base.Preconditions;
 
 import net.fred.lua.common.Pair;
-import net.fred.lua.common.utils.ThrowableUtils;
 import net.fred.lua.editor.lang.Language;
-import net.fred.lua.io.Logger;
 
 public class TextLine implements Text {
     public static final int DEFAULT_SIZE = 32;
@@ -39,7 +37,6 @@ public class TextLine implements Text {
     @Override
     public final void insert(char[] src, int off) {
         if (src == null) {
-            Logger.e("Source is null." + ThrowableUtils.getCallerString());
             return;
         }
         Preconditions.checkPositionIndex(off, contents.length, "Offset is bigger then content length.");

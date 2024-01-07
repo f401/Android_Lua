@@ -6,9 +6,10 @@ import androidx.annotation.NonNull;
 
 import net.fred.lua.common.utils.ThrowableUtils;
 
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintStream;
 
 /**
  * 该类用来扫描 Log 类输出的日志并存储到文件中
@@ -50,25 +51,33 @@ public final class LogScanner {
 
         @Override
         public void run() {
-            PrintStream outputStream = null;
+            BufferedOutputStream writer = null;
             try {
-                outputStream = new PrintStream(LogFileManager.getInstance().
-                        getLogScannerFile());
+                // Wait for compression to complete before writing data to the file
+                LogFileManager.getInstance().waitForCompressionFinish();
+                Log.i(TAG, "Log Scanner started");
+                writer = new BufferedOutputStream(new FileOutputStream(
+                        LogFileManager.getInstance().getLogScannerFile()));
                 while (!Thread.currentThread().isInterrupted()) {
                     Process process = new ProcessBuilder("logcat").redirectErrorStream(true).start();
                     InputStream is = process.getInputStream();
                     int len;
                     byte[] buffer = new byte[1024];
                     while (!Thread.currentThread().isInterrupted() && (len = is.read(buffer)) > -1) {
-                        outputStream.print(new String(buffer, 0, len));
-                        outputStream.flush();
+                        if (len != 0) {
+                            writer.write(buffer, 0, len);
+                        }
+                        writer.flush();
                     }
                 }
+                Log.i(TAG, "Log Scanner died.");
             } catch (IOException e) {
                 e.printStackTrace();
                 Log.e(TAG, "Failed to start log scanner;" + e.getMessage());
+            } catch (InterruptedException e) {
+                Log.e(TAG, "Thread interrupted", e);
             } finally {
-                ThrowableUtils.closeAll(outputStream);
+                ThrowableUtils.closeAll(writer);
             }
         }
 

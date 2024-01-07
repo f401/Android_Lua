@@ -57,7 +57,10 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         instance = this;
-        LogScanner.cleanBuffer();
+
+        if (App.isMainProcess()) {
+            LogScanner.cleanBuffer();
+        }
 
         PathConstants.init(this);
         LogFileManager.install(this);
@@ -65,9 +68,8 @@ public class App extends Application {
 
         if (App.isMainProcess()) {
             CrashHandler.getInstance().install(this);
-            Log.i(TAG, "Starting logger scanner");
-            LogScanner.getInstance().start();
         }
+        LogScanner.getInstance().start();
         // More work is in ui.activities.SplashActivity
     }
 
