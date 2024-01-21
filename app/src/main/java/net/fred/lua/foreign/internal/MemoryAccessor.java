@@ -2,6 +2,8 @@ package net.fred.lua.foreign.internal;
 
 import net.fred.lua.foreign.Pointer;
 
+import dalvik.annotation.optimization.CriticalNative;
+
 public class MemoryAccessor {
 
     // Put data without checking.
@@ -40,6 +42,21 @@ public class MemoryAccessor {
         return peekStringUnchecked(dest);
     }
 
+    @CriticalNative
+    private static native void nativePutByte(long address, byte value);
+
+    @CriticalNative
+    private static native void nativePutShort(long address, short value);
+
+    @CriticalNative
+    private static native void nativePutInt(long address, int value);
+
+    @CriticalNative
+    private static native void nativePutChar(long address, char value);
+
+    @CriticalNative
+    private static native void nativePutLong(long address, long value);
+
     public void putByte(Pointer ptr, byte value) {
         putByteUnchecked(ptr, value);
     }
@@ -68,15 +85,25 @@ public class MemoryAccessor {
 
     public static native String peekStringUnchecked(Pointer dest);
 
-    public static native void putByteUnchecked(Pointer ptr, byte value);
+    public static void putByteUnchecked(Pointer ptr, byte value) {
+        nativePutByte(ptr.get(), value);
+    }
 
-    public static native void putCharUnchecked(Pointer ptr, char value);
+    public static void putCharUnchecked(Pointer ptr, char value) {
+        nativePutChar(ptr.get(), value);
+    }
 
-    public static native void putShortUnchecked(Pointer ptr, short value);
+    public static void putShortUnchecked(Pointer ptr, short value) {
+        nativePutShort(ptr.get(), value);
+    }
 
-    public static native void putIntUnchecked(Pointer ptr, int value);
+    public static void putIntUnchecked(Pointer ptr, int value) {
+        nativePutInt(ptr.get(), value);
+    }
 
-    public static native void putLongUnchecked(Pointer ptr, long value);
+    public static void putLongUnchecked(Pointer ptr, long value) {
+        nativePutLong(ptr.get(), value);
+    }
 
     public static native void putPointerUnchecked(Pointer ptr, Pointer value);
 
@@ -127,4 +154,6 @@ public class MemoryAccessor {
     public double peekDouble(Pointer ptr) {
         return peekDoubleUnchecked(ptr);
     }
+
+
 }

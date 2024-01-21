@@ -82,23 +82,18 @@ static jobject LookUpSymbol(JNIEnv *env, jclass clazz, jobject handle, jstring n
 //----------------------------------------------------------value handles-----------------------------------------------//
 
 //Macro is a good thing.
-#define DEF_PUT_FUNCS(TYPE)                                                          \
-static void putJava##TYPE(JNIEnv *env, jclass clazz, jobject ptr, j##TYPE value) {   \
-    GET_POINTER_PARAM(env, dst, ptr, );                                              \
-    memcpy(dst, &value, sizeof(j##TYPE));                                            \
-}                                                                                    \
-static void putJava##TYPE(JNIEnv *env, jclass clazz, jobject ptr, j##TYPE value)
+#define DEF_PUT_FUNCS(TYPE)                                                   \
+DEFINE_CRITICAL_FUNCTION_WITH_NON_CRITICAL(putJava##TYPE, {                   \
+    critial_putJava##TYPE(handle, value);                                     \
+}, static void, jlong handle, TYPE value) {                                   \
+    memcpy((void *) handle, &value, sizeof(TYPE));                            \
+}
 
-DEF_PUT_FUNCS(byte);
-
-DEF_PUT_FUNCS(int);
-
-DEF_PUT_FUNCS(short);
-
-DEF_PUT_FUNCS(char);
-
-DEF_PUT_FUNCS(long);
-
+DEF_PUT_FUNCS(jbyte);
+DEF_PUT_FUNCS(jint);
+DEF_PUT_FUNCS(jshort);
+DEF_PUT_FUNCS(jchar);
+DEF_PUT_FUNCS(jlong);
 
 static void PutString(JNIEnv *env, jclass clazz, jobject handle, jstring string) {
     const char *str = env->GetStringUTFChars(string, JNI_FALSE);
@@ -128,9 +123,7 @@ static j##TYPE peekJava##TYPE(JNIEnv *env, jclass clazz, jobject ptr)
 DEF_PEEK_FUNCS(byte);
 DEF_PEEK_FUNCS(int);
 DEF_PEEK_FUNCS(short);
-
 DEF_PEEK_FUNCS(char);
-
 DEF_PEEK_FUNCS(long);
 
 static jobject peekJavaPointer(JNIEnv *env, jclass clazz, jobject dst) {
@@ -162,11 +155,11 @@ const static JNINativeMethod seg_methods[] = {
 };
 
 const static JNINativeMethod memoryAccessorMethods[] = {
-        {"putByteUnchecked",     "(Lnet/fred/lua/foreign/Pointer;B)V",                 (void *) &putJavabyte},
-        {"putCharUnchecked",     "(Lnet/fred/lua/foreign/Pointer;C)V",                 (void *) &putJavachar},
-        {"putShortUnchecked",    "(Lnet/fred/lua/foreign/Pointer;S)V",                 (void *) &putJavashort},
-        {"putIntUnchecked",      "(Lnet/fred/lua/foreign/Pointer;I)V",                 (void *) &putJavaint},
-        {"putLongUnchecked",     "(Lnet/fred/lua/foreign/Pointer;J)V",                 (void *) &putJavalong},
+        {"nativePutByte",     "(JB)V",                 (void *) &nonCritial_putJavajbyte},
+        {"nativePutChar",     "(JC)V",                 (void *) &nonCritial_putJavajchar},
+        {"nativePutShort",    "(JS)V",                 (void *) &nonCritial_putJavajbyte},
+        {"nativePutInt",      "(JI)V",                 (void *) &nonCritial_putJavajint},
+        {"nativePutLong",     "(JJ)V",                 (void *) &nonCritial_putJavajlong},
         {"putPointerUnchecked",  "(Lnet/fred/lua/foreign/Pointer;Lnet/fred/lua/foreign/Pointer;)V",
                                                                                        (void *) &putJavaPointer},
 

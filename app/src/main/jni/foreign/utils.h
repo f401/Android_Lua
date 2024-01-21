@@ -12,9 +12,7 @@ extern "C" {
 #endif
 
 void throwNativeException(JNIEnv *, const char *msg);
-
 jobject pointer_create(JNIEnv *, void *);
-
 void *pointer_get_from(JNIEnv *, jobject obj);
 
 #define IF_NULL_RETURN(NEEDLE, expr) if (NEEDLE == NULL) return expr
@@ -46,5 +44,10 @@ if (method_##CLASS##_##SIMPLE_NAME == NULL) {                     \
     method_##CLASS##_##SIMPLE_NAME = _EXE_ENV_METHOD(ENV, GetMethodID, class_##CLASS, NAME, DESC); \
 }
 
+#define DEFINE_CRITICAL_FUNCTION_WITH_NON_CRITICAL(FUNC_NAME, DO_IN_NON_CRITICAL, PREFIX,...) \
+PREFIX critial_##FUNC_NAME(__VA_ARGS__);   /** Declare first */                                                                                            \
+PREFIX nonCritial_##FUNC_NAME                                              \
+(JNIEnv *env, jclass clazz, ##__VA_ARGS__) DO_IN_NON_CRITICAL                   \
+PREFIX critial_##FUNC_NAME(__VA_ARGS__)
 
 #endif //LUA_UTILS_H
