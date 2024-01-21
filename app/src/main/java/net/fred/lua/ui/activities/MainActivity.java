@@ -46,7 +46,7 @@ public class MainActivity extends BaseActivity {
                             getExternalCacheDir() + "/lua_out.txt"
                     );
                     proxy.openlibs();
-                    proxy.dofile("/sdcard/l.lua");
+                    proxy.dofile(getExternalFilesDir("") + "/l.lua");
                     proxy.close();
                 } catch (IOException e) {
                     throw new RuntimeException(e);
