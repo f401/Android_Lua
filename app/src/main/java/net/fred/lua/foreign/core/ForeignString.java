@@ -14,6 +14,8 @@ import net.fred.lua.foreign.internal.MemoryAccessor;
 import net.fred.lua.foreign.internal.MemoryController;
 import net.fred.lua.foreign.internal.MemorySegment;
 import net.fred.lua.foreign.types.Type;
+import net.fred.lua.foreign.types.TypeFactory;
+import net.fred.lua.foreign.types.TypeRegistry;
 
 public class ForeignString extends MemorySegment {
     private static final String TAG = "ForeignString";
@@ -83,7 +85,14 @@ public class ForeignString extends MemorySegment {
         return new ForeignStringType();
     }
 
-    public static class ForeignStringType implements Type<ForeignString> {
+    public static class ForeignStringType extends Type<ForeignString> {
+        public static final TypeFactory<ForeignStringType> FACTORY = new TypeFactory<ForeignStringType>() {
+            @Override
+            public ForeignStringType create(int feature) {
+                return new ForeignStringType();
+            }
+        };
+        public static final int TYPE_INDEX = TypeRegistry.increaseAndGetTypeIdx();
 
         @Override
         public int getSize(@Nullable Object obj) {
@@ -105,6 +114,11 @@ public class ForeignString extends MemorySegment {
         @Override
         public void write(MemoryAccessor accessor, @NonNull Pointer dest, @NonNull Object data) {
             MemoryAccessor.putPointerUnchecked(dest, ((ForeignString) data).getBasePointer());
+        }
+
+        @Override
+        public int getTypeIndex() {
+            return TYPE_INDEX;
         }
     }
 }

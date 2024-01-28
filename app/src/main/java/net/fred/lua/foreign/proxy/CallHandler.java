@@ -4,9 +4,9 @@ import android.util.Log;
 
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.core.DynamicLoadingLibrary;
-import net.fred.lua.foreign.core.TypeRegistry;
 import net.fred.lua.foreign.ffi.FunctionCaller;
 import net.fred.lua.foreign.types.Type;
+import net.fred.lua.foreign.types.TypeRegistry;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;

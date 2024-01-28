@@ -15,30 +15,44 @@ import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_VOID;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.internal.MemoryAccessor;
+import net.fred.lua.foreign.types.CommonFeatures;
 import net.fred.lua.foreign.types.Type;
-
-import java.util.concurrent.ConcurrentHashMap;
+import net.fred.lua.foreign.types.TypeFactory;
+import net.fred.lua.foreign.types.TypeRegistry;
 
 /**
  * Packaging for basic types.
  *
  * @param <T> Basic types of packaging required.
  */
-public final class PrimaryTypeWrapper<T> implements Type<T> {
-    private static final ConcurrentHashMap<Class<?>, PrimaryType<?>> map;
+public final class PrimaryTypeWrapper<T> extends Type<T> {
+    private static final ImmutableMap<Class<?>, PrimaryType<?>> map;
 
     static {
-        map = new ConcurrentHashMap<>(6);
-        map.put(byte.class, new PrimaryType<Byte>() {
+        ImmutableMap.Builder<Class<?>, PrimaryType<?>> builder = ImmutableMap.builder();
+        builder.put(byte.class, new PrimaryType<Byte>() {
+            private final TypeFactory<PrimaryTypeWrapper<Byte>> FACTORY = new TypeFactory<PrimaryTypeWrapper<Byte>>() {
+                @Override
+                public PrimaryTypeWrapper<Byte> create(int feature) {
+                    PrimaryTypeWrapper<Byte> type = PrimaryTypeWrapper.of(byte.class);
+                    type.setFeatures(feature);
+                    return type;
+                }
+            };
 
             @Override
             public void write(MemoryAccessor accessor, @NonNull Pointer dest, @NonNull Object obj) {
                 accessor.putByte(dest, (byte) obj);
+            }
+
+            @Override
+            public TypeFactory<PrimaryTypeWrapper<Byte>> getTypeFactory() {
+                return FACTORY;
             }
 
             @Override
@@ -61,11 +75,24 @@ public final class PrimaryTypeWrapper<T> implements Type<T> {
                 return accessor.peekByte(dest);
             }
         });
-        map.put(short.class, new PrimaryType<Short>() {
+        builder.put(short.class, new PrimaryType<Short>() {
+            private final TypeFactory<PrimaryTypeWrapper<Short>> FACTORY = new TypeFactory<PrimaryTypeWrapper<Short>>() {
+                @Override
+                public PrimaryTypeWrapper<Short> create(int feature) {
+                    PrimaryTypeWrapper<Short> type = PrimaryTypeWrapper.of(short.class);
+                    type.setFeatures(feature);
+                    return type;
+                }
+            };
 
             @Override
             public void write(MemoryAccessor accessor, @NonNull Pointer dest, @NonNull Object obj) {
                 accessor.putShort(dest, (short) obj);
+            }
+
+            @Override
+            public TypeFactory<PrimaryTypeWrapper<Short>> getTypeFactory() {
+                return FACTORY;
             }
 
             @Override
@@ -88,10 +115,24 @@ public final class PrimaryTypeWrapper<T> implements Type<T> {
                 return accessor.peekShort(dest);
             }
         });
-        map.put(int.class, new PrimaryType<Integer>() {
+        builder.put(int.class, new PrimaryType<Integer>() {
+            private final TypeFactory<PrimaryTypeWrapper<Integer>> FACTORY = new TypeFactory<PrimaryTypeWrapper<Integer>>() {
+                @Override
+                public PrimaryTypeWrapper<Integer> create(int feature) {
+                    PrimaryTypeWrapper<Integer> type = PrimaryTypeWrapper.of(int.class);
+                    type.setFeatures(feature);
+                    return type;
+                }
+            };
+
             @Override
             public void write(MemoryAccessor accessor, @NonNull Pointer dest, @NonNull Object obj) {
                 accessor.putInt(dest, (int) obj);
+            }
+
+            @Override
+            public TypeFactory<PrimaryTypeWrapper<Integer>> getTypeFactory() {
+                return FACTORY;
             }
 
             @Override
@@ -114,11 +155,24 @@ public final class PrimaryTypeWrapper<T> implements Type<T> {
                 return accessor.peekInt(dest);
             }
         });
-        map.put(long.class, new PrimaryType<Long>() {
+        builder.put(long.class, new PrimaryType<Long>() {
+            private final TypeFactory<PrimaryTypeWrapper<Long>> FACTORY = new TypeFactory<PrimaryTypeWrapper<Long>>() {
+                @Override
+                public PrimaryTypeWrapper<Long> create(int feature) {
+                    PrimaryTypeWrapper<Long> type = PrimaryTypeWrapper.of(long.class);
+                    type.setFeatures(feature);
+                    return type;
+                }
+            };
 
             @Override
             public void write(MemoryAccessor accessor, @NonNull Pointer dest, @NonNull Object obj) {
                 accessor.putLong(dest, (long) obj);
+            }
+
+            @Override
+            public TypeFactory<PrimaryTypeWrapper<Long>> getTypeFactory() {
+                return FACTORY;
             }
 
             @Override
@@ -141,10 +195,15 @@ public final class PrimaryTypeWrapper<T> implements Type<T> {
                 return accessor.peekLong(dest);
             }
         });
-        map.put(void.class, new PrimaryType<Void>() {
+        builder.put(void.class, new PrimaryType<Void>() {
             @Override
             public void write(MemoryAccessor accessor, @NonNull Pointer dest, @NonNull Object obj) {
                 throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public TypeFactory<PrimaryTypeWrapper<Void>> getTypeFactory() {
+                return null;
             }
 
             @Override
@@ -167,10 +226,24 @@ public final class PrimaryTypeWrapper<T> implements Type<T> {
                 return null;
             }
         });
-        map.put(float.class, new PrimaryType<Float>() {
+        builder.put(float.class, new PrimaryType<Float>() {
+            private final TypeFactory<PrimaryTypeWrapper<Float>> FACTORY = new TypeFactory<PrimaryTypeWrapper<Float>>() {
+                @Override
+                public PrimaryTypeWrapper<Float> create(int feature) {
+                    PrimaryTypeWrapper<Float> type = PrimaryTypeWrapper.of(float.class);
+                    type.setFeatures(feature);
+                    return type;
+                }
+            };
+
             @Override
             public void write(MemoryAccessor accessor, @NonNull Pointer dest, @NonNull Object obj) {
                 accessor.putFloat(dest, (Float) obj);
+            }
+
+            @Override
+            public TypeFactory<PrimaryTypeWrapper<Float>> getTypeFactory() {
+                return FACTORY;
             }
 
             @Override
@@ -194,10 +267,24 @@ public final class PrimaryTypeWrapper<T> implements Type<T> {
             }
         });
 
-        map.put(double.class, new PrimaryType<Double>() {
+        builder.put(double.class, new PrimaryType<Double>() {
+            private final TypeFactory<PrimaryTypeWrapper<Double>> FACTORY = new TypeFactory<PrimaryTypeWrapper<Double>>() {
+                @Override
+                public PrimaryTypeWrapper<Double> create(int feature) {
+                    PrimaryTypeWrapper<Double> type = PrimaryTypeWrapper.of(double.class);
+                    type.setFeatures(feature);
+                    return type;
+                }
+            };
+
             @Override
             public void write(MemoryAccessor accessor, @NonNull Pointer dest, @NonNull Object obj) {
                 accessor.putDouble(dest, (double) obj);
+            }
+
+            @Override
+            public TypeFactory<PrimaryTypeWrapper<Double>> getTypeFactory() {
+                return FACTORY;
             }
 
             @Override
@@ -220,21 +307,21 @@ public final class PrimaryTypeWrapper<T> implements Type<T> {
                 return accessor.peekDouble(dest);
             }
         });
+
+        map = builder.build();
     }
 
     private final PrimaryType<T> mapperAs;
-    private boolean signed;
     private final boolean mutable;
 
-    public PrimaryTypeWrapper(boolean signed, boolean mutable, PrimaryType<T> mapperAs) {
+    public PrimaryTypeWrapper(boolean mutable, PrimaryType<T> mapperAs) {
         this.mapperAs = mapperAs;
-        this.signed = signed;
         this.mutable = mutable;
     }
 
     @SuppressWarnings("unchecked")
     public static <T> PrimaryTypeWrapper<T> of(Class<T> clazz, boolean mutable) {
-        return new PrimaryTypeWrapper<>(true, mutable, (PrimaryType<T>) map.get(clazz));
+        return new PrimaryTypeWrapper<>(mutable, (PrimaryType<T>) map.get(clazz));
     }
 
     public static <T> PrimaryTypeWrapper<T> of(Class<T> clazz) {
@@ -249,7 +336,7 @@ public final class PrimaryTypeWrapper<T> implements Type<T> {
     @Nullable
     @Override
     public Pointer getFFIPointer() {
-        return (signed ? mapperAs.getSignedFFIPointer() : mapperAs.getUnsignedFFIPointer());
+        return (isSigned() ? mapperAs.getSignedFFIPointer() : mapperAs.getUnsignedFFIPointer());
     }
 
     @Override
@@ -262,21 +349,40 @@ public final class PrimaryTypeWrapper<T> implements Type<T> {
         mapperAs.write(accessor, dest, data);
     }
 
-    public PrimaryTypeWrapper<T> setSigned(boolean signed) {
-        Preconditions.checkState(mutable, "This is immutable.");
-        this.signed = signed;
-        return this;
+    @Override
+    public int getTypeIndex() {
+        return mapperAs.getTypeIndex();
     }
 
-    public interface PrimaryType<T> {
-        Pointer getSignedFFIPointer();
+    public TypeFactory<PrimaryTypeWrapper<T>> getTypeFactory() {
+        return mapperAs.getTypeFactory();
+    }
 
-        Pointer getUnsignedFFIPointer();
+    private boolean isSigned() {
+        return (getFeatures() & CommonFeatures.UNSIGNED) > 0;
+    }
 
-        int getSize();
+    abstract static class PrimaryType<T> {
+        private final int typeIndex;
 
-        T read(MemoryAccessor accessor, Pointer dest);
+        protected PrimaryType() {
+            typeIndex = TypeRegistry.increaseAndGetTypeIdx();
+        }
 
-        void write(MemoryAccessor accessor, Pointer dest, Object data) throws NativeMethodException;
+        public int getTypeIndex() {
+            return typeIndex;
+        }
+
+        public abstract Pointer getSignedFFIPointer();
+
+        public abstract Pointer getUnsignedFFIPointer();
+
+        public abstract int getSize();
+
+        public abstract T read(MemoryAccessor accessor, Pointer dest);
+
+        public abstract void write(MemoryAccessor accessor, Pointer dest, Object data) throws NativeMethodException;
+
+        public abstract TypeFactory<PrimaryTypeWrapper<T>> getTypeFactory();
     }
 }

@@ -6,6 +6,8 @@ import androidx.annotation.Nullable;
 import net.fred.lua.foreign.internal.ForeignValues;
 import net.fred.lua.foreign.internal.MemoryAccessor;
 import net.fred.lua.foreign.types.Type;
+import net.fred.lua.foreign.types.TypeFactory;
+import net.fred.lua.foreign.types.TypeRegistry;
 
 public class Pointer {
     private long address;
@@ -80,7 +82,7 @@ public class Pointer {
 
         // 这时两者都大于0或小于0(都有符号位或没有)，可以正常比较
         if ((this.address > 0 && other.address > 0) ||
-			(this.address < 0 && other.address < 0)) {
+                (this.address < 0 && other.address < 0)) {
             return this.address > other.address;
         } else {
             return this.address < 0;
@@ -88,7 +90,16 @@ public class Pointer {
 
     }
 
-    public static class PointerType implements Type<Pointer> {
+    public static class PointerType extends Type<Pointer> {
+        public static final TypeFactory<PointerType> FACTORY = new TypeFactory<PointerType>() {
+            @Override
+            public PointerType create(int feature) {
+                return new PointerType();
+            }
+        };
+
+        public static final int TYPE_INDEX = TypeRegistry.increaseAndGetTypeIdx();
+
         @Override
         public int getSize(@Nullable Object obj) {
             return (int) ForeignValues.SIZE_OF_POINTER;
@@ -108,6 +119,11 @@ public class Pointer {
         @Override
         public void write(MemoryAccessor accessor, @NonNull Pointer dest, @NonNull Object data) throws NativeMethodException {
             MemoryAccessor.putPointerUnchecked(dest, (Pointer) data);
+        }
+
+        @Override
+        public int getTypeIndex() {
+            return TYPE_INDEX;
         }
     }
 }
