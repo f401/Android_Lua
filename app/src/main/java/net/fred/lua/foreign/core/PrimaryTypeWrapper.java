@@ -39,9 +39,7 @@ public final class PrimaryTypeWrapper<T> extends Type<T> {
             private final TypeFactory<PrimaryTypeWrapper<Byte>> FACTORY = new TypeFactory<PrimaryTypeWrapper<Byte>>() {
                 @Override
                 public PrimaryTypeWrapper<Byte> create(int feature) {
-                    PrimaryTypeWrapper<Byte> type = PrimaryTypeWrapper.of(byte.class);
-                    type.setFeatures(feature);
-                    return type;
+                    return PrimaryTypeWrapper.of(byte.class, feature);
                 }
             };
 
@@ -79,9 +77,7 @@ public final class PrimaryTypeWrapper<T> extends Type<T> {
             private final TypeFactory<PrimaryTypeWrapper<Short>> FACTORY = new TypeFactory<PrimaryTypeWrapper<Short>>() {
                 @Override
                 public PrimaryTypeWrapper<Short> create(int feature) {
-                    PrimaryTypeWrapper<Short> type = PrimaryTypeWrapper.of(short.class);
-                    type.setFeatures(feature);
-                    return type;
+                    return PrimaryTypeWrapper.of(short.class, feature);
                 }
             };
 
@@ -119,9 +115,7 @@ public final class PrimaryTypeWrapper<T> extends Type<T> {
             private final TypeFactory<PrimaryTypeWrapper<Integer>> FACTORY = new TypeFactory<PrimaryTypeWrapper<Integer>>() {
                 @Override
                 public PrimaryTypeWrapper<Integer> create(int feature) {
-                    PrimaryTypeWrapper<Integer> type = PrimaryTypeWrapper.of(int.class);
-                    type.setFeatures(feature);
-                    return type;
+                    return PrimaryTypeWrapper.of(int.class, feature);
                 }
             };
 
@@ -159,9 +153,7 @@ public final class PrimaryTypeWrapper<T> extends Type<T> {
             private final TypeFactory<PrimaryTypeWrapper<Long>> FACTORY = new TypeFactory<PrimaryTypeWrapper<Long>>() {
                 @Override
                 public PrimaryTypeWrapper<Long> create(int feature) {
-                    PrimaryTypeWrapper<Long> type = PrimaryTypeWrapper.of(long.class);
-                    type.setFeatures(feature);
-                    return type;
+                    return PrimaryTypeWrapper.of(long.class, feature);
                 }
             };
 
@@ -230,9 +222,7 @@ public final class PrimaryTypeWrapper<T> extends Type<T> {
             private final TypeFactory<PrimaryTypeWrapper<Float>> FACTORY = new TypeFactory<PrimaryTypeWrapper<Float>>() {
                 @Override
                 public PrimaryTypeWrapper<Float> create(int feature) {
-                    PrimaryTypeWrapper<Float> type = PrimaryTypeWrapper.of(float.class);
-                    type.setFeatures(feature);
-                    return type;
+                    return PrimaryTypeWrapper.of(float.class, feature);
                 }
             };
 
@@ -271,9 +261,7 @@ public final class PrimaryTypeWrapper<T> extends Type<T> {
             private final TypeFactory<PrimaryTypeWrapper<Double>> FACTORY = new TypeFactory<PrimaryTypeWrapper<Double>>() {
                 @Override
                 public PrimaryTypeWrapper<Double> create(int feature) {
-                    PrimaryTypeWrapper<Double> type = PrimaryTypeWrapper.of(double.class);
-                    type.setFeatures(feature);
-                    return type;
+                    return PrimaryTypeWrapper.of(double.class, feature);
                 }
             };
 
@@ -312,20 +300,19 @@ public final class PrimaryTypeWrapper<T> extends Type<T> {
     }
 
     private final PrimaryType<T> mapperAs;
-    private final boolean mutable;
 
-    public PrimaryTypeWrapper(boolean mutable, PrimaryType<T> mapperAs) {
+    public PrimaryTypeWrapper(PrimaryType<T> mapperAs, int features) {
+        super(features);
         this.mapperAs = mapperAs;
-        this.mutable = mutable;
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> PrimaryTypeWrapper<T> of(Class<T> clazz, boolean mutable) {
-        return new PrimaryTypeWrapper<>(mutable, (PrimaryType<T>) map.get(clazz));
+    public static <T> PrimaryTypeWrapper<T> of(Class<T> clazz, int features) {
+        return new PrimaryTypeWrapper<>((PrimaryType<T>) map.get(clazz), features);
     }
 
     public static <T> PrimaryTypeWrapper<T> of(Class<T> clazz) {
-        return of(clazz, true);
+        return of(clazz, NO_FEATURES);
     }
 
     @Override

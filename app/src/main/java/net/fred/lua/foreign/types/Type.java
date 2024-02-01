@@ -9,8 +9,12 @@ import net.fred.lua.foreign.internal.MemoryAccessor;
 
 // Type is immutable.
 public abstract class Type<T> {
+    public static final int NO_FEATURES = 0;
+    private final int features;
 
-    private int features;
+    protected Type(int features) {
+        this.features = features;
+    }
 
     /**
      * Obtain the size of a single Type.
@@ -18,7 +22,6 @@ public abstract class Type<T> {
      * @param obj When the size is determined, null can be passed in. Otherwise, the object that needs to obtain the size must be passed in.
      * @return The size of this type.
      */
-
     public abstract int getSize(@Nullable Object obj);
 
     @Nullable
@@ -34,7 +37,7 @@ public abstract class Type<T> {
         return features;
     }
 
-    protected final void setFeatures(int features) {
-        this.features = features;
+    public Type<?> withFeatures(int features) {
+        return TypeRegistry.getCachedType(this.features | features);
     }
 }

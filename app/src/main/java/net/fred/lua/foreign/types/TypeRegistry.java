@@ -36,7 +36,7 @@ public class TypeRegistry {
     static {
         cachedTypes = CacheBuilder.newBuilder()
                 .concurrencyLevel(8)
-                .weakValues()
+                .softValues()
                 .build(new CacheLoader<Long, Type<?>>() {
 
                     @Override
@@ -47,10 +47,12 @@ public class TypeRegistry {
                 });
 
         typeMap.put(Pointer.class, Pair.makePair(Pointer.PointerType.TYPE_INDEX, Pointer.PointerType.FACTORY));
+
         PrimaryTypeWrapper<Integer> intType = PrimaryTypeWrapper.of(int.class);
         typeMap.put(int.class, Pair.makePair(intType.getTypeIndex(), intType.getTypeFactory()));
         PrimaryTypeWrapper<Void> voidType = PrimaryTypeWrapper.of(void.class);
         typeMap.put(void.class, Pair.makePair(voidType.getTypeIndex(), voidType.getTypeFactory()));
+
         typeMap.put(ForeignString.class, Pair.makePair(ForeignString.ForeignStringType.TYPE_INDEX, ForeignString.ForeignStringType.FACTORY));
     }
 
@@ -74,6 +76,10 @@ public class TypeRegistry {
             }
         }
         throw new RuntimeException("Can't find factory for " + typeIndex);
+    }
+
+    static Type<?> getCachedType(long key) {
+        return cachedTypes.getUnchecked(key);
     }
 
     public static int increaseAndGetTypeIdx() {

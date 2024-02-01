@@ -100,6 +100,10 @@ public class Pointer {
 
         public static final int TYPE_INDEX = TypeRegistry.increaseAndGetTypeIdx();
 
+        protected PointerType() {
+            super(NO_FEATURES);
+        }
+
         @Override
         public int getSize(@Nullable Object obj) {
             return (int) ForeignValues.SIZE_OF_POINTER;

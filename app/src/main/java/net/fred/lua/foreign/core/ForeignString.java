@@ -94,6 +94,10 @@ public class ForeignString extends MemorySegment {
         };
         public static final int TYPE_INDEX = TypeRegistry.increaseAndGetTypeIdx();
 
+        protected ForeignStringType() {
+            super(NO_FEATURES);
+        }
+
         @Override
         public int getSize(@Nullable Object obj) {
             return (int) ForeignValues.SIZE_OF_POINTER;
