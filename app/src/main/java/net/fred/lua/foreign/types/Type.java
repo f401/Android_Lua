@@ -38,6 +38,6 @@ public abstract class Type<T> {
     }
 
     public Type<?> withFeatures(int features) {
-        return TypeRegistry.getCachedType(this.features | features);
+        return TypeRegistry.getOrLoad(this.features | features);
     }
 }

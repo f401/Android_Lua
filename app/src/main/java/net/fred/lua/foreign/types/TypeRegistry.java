@@ -1,10 +1,11 @@
 package net.fred.lua.foreign.types;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
+import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 
 import net.fred.lua.common.Pair;
 import net.fred.lua.foreign.Pointer;
@@ -31,7 +32,7 @@ public class TypeRegistry {
             new ConcurrentHashMap<>();
 
     //
-    private static final LoadingCache<Long, Type<?>> cachedTypes;
+    private static final Cache<Long, Type<?>> cachedTypes;
 
     static {
         cachedTypes = CacheBuilder.newBuilder()
@@ -41,8 +42,9 @@ public class TypeRegistry {
 
                     @Override
                     public Type<?> load(@NonNull Long key) {
-                        return getFactory((int) (key & TYPE_MASK))
-                                .create((int) (key << 32));
+                        TypeFactory<?> factory = getFactory((int) (key & TYPE_MASK));
+                        return factory != null ?
+                                factory.create((int) (key << 32)) : null;
                     }
                 });
 
@@ -59,16 +61,37 @@ public class TypeRegistry {
     /**
      * Obtain the type corresponding to the class.
      * Note: The obtained type is immutable.
+     * Return NULL for void.
      */
     @SuppressWarnings("unchecked")
     public static <T> Type<T> getType(Class<T> target) {
-        Type<T> result = (Type<T>) cachedTypes.getUnchecked(Long.valueOf(typeMap.get(target).first));
-        if (result == null) {
+        Pair<Integer, TypeFactory<?>> typePair = typeMap.get(target);
+        if (typePair == null) {
             throw new RuntimeException("Couldn't find class " + target + ". Have you registered yet?");
         }
-        return result;
+
+        TypeFactory<?> typeFactory = typePair.second;
+        if (typeFactory == null) {
+            // The type factory is null, we couldn't create.
+            // Such as `void` type;
+            return null;
+        }
+
+        Type<T> cached = (Type<T>) cachedTypes.getIfPresent(Long.valueOf(typePair.first));
+        if (cached == null) {
+            // Here we should create needle.
+            Type<T> result = (Type<T>) typeFactory.create(0);
+            cachedTypes.put((long) typePair.first, result);
+            return result;
+        }
+        // Found it , just return.
+        return cached;
     }
 
+    /**
+     * NOTE: Return NULL for void !!!
+     */
+    @Nullable
     private static TypeFactory<?> getFactory(int typeIndex) {
         for (Pair<Integer, TypeFactory<?>> entry : typeMap.values()) {
             if (entry.first == typeIndex) {
@@ -78,8 +101,20 @@ public class TypeRegistry {
         throw new RuntimeException("Can't find factory for " + typeIndex);
     }
 
-    static Type<?> getCachedType(long key) {
-        return cachedTypes.getUnchecked(key);
+    static Type<?> getOrLoad(long key) {
+        Type<?> cached = cachedTypes.getIfPresent(key);
+        if (cached != null) return cached;
+
+        TypeFactory<?> factory = getFactory((int) (key & TYPE_MASK));
+        if (factory == null) {
+            // The type factory is null, we couldn't create.
+            // Such as `void` type;
+            return null;
+        }
+
+        Type<?> result = factory.create((int) (key << 32));
+        cachedTypes.put(key, result);
+        return result;
     }
 
     public static int increaseAndGetTypeIdx() {
