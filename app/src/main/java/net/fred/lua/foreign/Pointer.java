@@ -28,7 +28,7 @@ public class Pointer {
         return address;
     }
 
-    public final void set(long address) {
+    protected final void set(long address) {
         this.address = address;
     }
 
