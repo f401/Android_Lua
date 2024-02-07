@@ -8,6 +8,7 @@ import net.fred.lua.PathConstants;
 import net.fred.lua.common.CrashHandler;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
+import net.fred.lua.foreign.allocate.DefaultAllocator;
 import net.fred.lua.foreign.core.DynamicLoadingLibrary;
 import net.fred.lua.foreign.core.ForeignString;
 import net.fred.lua.foreign.core.PrimaryTypes;
@@ -74,7 +75,7 @@ public class Lua5_4 extends Lua {
                         PrimaryTypes.INT,
                         PrimaryTypes.POINTER, PrimaryTypes.STRING);
             }
-        }).call(getPointer(), ForeignString.from(file));
+        }).call(getPointer(), ForeignString.from(DefaultAllocator.INSTANCE, file));
     }
 
     public interface Creator {

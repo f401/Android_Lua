@@ -3,6 +3,7 @@ package net.fred.lua.foreign;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import net.fred.lua.foreign.allocate.IAllocator;
 import net.fred.lua.foreign.internal.ForeignValues;
 import net.fred.lua.foreign.internal.MemoryAccessor;
 import net.fred.lua.foreign.types.Type;
@@ -71,11 +72,11 @@ public class Pointer {
         // 正常来说, 计算机中有符号的整数最高位为符号位(0为正, 1为负)(二进制反码)
         // 例如:
         // 1111 1111 1111 1111 (Short) (代表-1)
-        // 1111 1111 1111 1110 (Short) (Short.MAX_VALUE)
+        // 0111 1111 1111 1111 (Short) (Short.MAX_VALUE)
         // 但 Linux中地址的表述都是无符号整数
         // 所以上面两个数字在无符号时代表的整数就不一样
         // 1111 1111 1111 1111 (Short) (代表65535) (无符号) (unsigned short)
-        // 1111 1111 1111 1110 (Short) (Short.MAX_VALUE) (无符号) (unsigned short)
+        // 0111 1111 1111 1111 (Short) (Short.MAX_VALUE) (无符号) (unsigned short)
         // Long同理
 
         if (this.equals(other)) return false;
@@ -87,7 +88,6 @@ public class Pointer {
         } else {
             return this.address < 0;
         }
-
     }
 
     public static class PointerType extends Type<Pointer> {
@@ -116,7 +116,7 @@ public class Pointer {
         }
 
         @Override
-        public Pointer read(MemoryAccessor accessor, @NonNull Pointer dest) throws NativeMethodException {
+        public Pointer read(IAllocator allocator, MemoryAccessor accessor, @NonNull Pointer dest) throws NativeMethodException {
             return MemoryAccessor.peekPointerUnchecked(dest);
         }
 

@@ -2,10 +2,10 @@ package net.fred.lua.foreign.internal;
 
 import androidx.annotation.NonNull;
 
-import com.google.common.base.Preconditions;
-
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
+import net.fred.lua.foreign.allocate.DefaultAllocator;
+import net.fred.lua.foreign.allocate.IAllocator;
 import net.fred.lua.foreign.types.Type;
 
 public class MemorySegment extends MemoryController {
@@ -25,27 +25,20 @@ public class MemorySegment extends MemoryController {
     /**
      * Create a memory segment of size {@code size}.
      *
-     * @param size The size of the memory segment needs to be created.
+     * @param size      The size of the memory segment needs to be created.
+     * @param allocator The memory allocator.
      * @return This object.
-     * @see MemorySegment#allocate
+     * @see #alloc
+     * @see IAllocator#allocateMemory
      */
     @NonNull
-    public static MemorySegment create(long size) throws NativeMethodException {
-        return new MemorySegment(allocate(size), size);
+    public static MemorySegment create(IAllocator allocator, long size) throws NativeMethodException {
+        return new MemorySegment(allocator.allocateMemory(size), size);
     }
 
-    /**
-     * Create a 'size' length and return a pointer to it.
-     *
-     * @param size The size needs to be created.
-     * @return Pointer to.
-     * @throws NativeMethodException    When creation fails
-     * @throws IllegalArgumentException When {@code size} is less than or equal to 0.
-     */
     @NonNull
-    public static Pointer allocate(long size) throws NativeMethodException {
-        Preconditions.checkPositionIndex((int) size, Integer.MAX_VALUE);
-        return alloc(size);
+    public static MemorySegment create(long size) throws NativeMethodException {
+        return create(DefaultAllocator.INSTANCE, size);
     }
 
     /**
@@ -75,7 +68,7 @@ public class MemorySegment extends MemoryController {
         return base;
     }
 
-    protected static native Pointer alloc(long size) throws NativeMethodException;
+    public static native Pointer alloc(long size) throws NativeMethodException;
 
     public static native void free(Pointer ptr);
 

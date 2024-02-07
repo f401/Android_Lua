@@ -1,13 +1,16 @@
 package net.fred.lua.foreign.types;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 
 import net.fred.lua.common.Pair;
+import net.fred.lua.common.utils.ThrowableUtils;
 import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.core.ForeignString;
 import net.fred.lua.foreign.core.PrimaryTypeWrapper;
@@ -31,8 +34,8 @@ public class TypeRegistry {
     private static final ConcurrentHashMap<Class<?>, Pair<Integer, TypeFactory<?>>> typeMap =
             new ConcurrentHashMap<>();
 
-    //
-    private static final Cache<Long, Type<?>> cachedTypes;
+    // 高32位是feature, 低32是typeIndex
+    private static final LoadingCache<Long, Type<?>> cachedTypes;
 
     static {
         cachedTypes = CacheBuilder.newBuilder()
@@ -43,8 +46,9 @@ public class TypeRegistry {
                     @Override
                     public Type<?> load(@NonNull Long key) {
                         TypeFactory<?> factory = getFactory((int) (key & TYPE_MASK));
+                        Log.d("TypeRegistry", "Found Factory " + factory);
                         return factory != null ?
-                                factory.create((int) (key << 32)) : null;
+                                factory.create((int) (key >>> 32)) : null;
                     }
                 });
 
@@ -56,6 +60,11 @@ public class TypeRegistry {
         typeMap.put(void.class, Pair.makePair(voidType.getTypeIndex(), voidType.getTypeFactory()));
 
         typeMap.put(ForeignString.class, Pair.makePair(ForeignString.ForeignStringType.TYPE_INDEX, ForeignString.ForeignStringType.FACTORY));
+    }
+
+    public static long makeKey(int typeIndex, int features) {
+        return ((long) (typeIndex) & TYPE_MASK) +
+                ((long) (features) << 32);
     }
 
     /**
@@ -77,15 +86,7 @@ public class TypeRegistry {
             return null;
         }
 
-        Type<T> cached = (Type<T>) cachedTypes.getIfPresent(Long.valueOf(typePair.first));
-        if (cached == null) {
-            // Here we should create needle.
-            Type<T> result = (Type<T>) typeFactory.create(0);
-            cachedTypes.put((long) typePair.first, result);
-            return result;
-        }
-        // Found it , just return.
-        return cached;
+        return (Type<T>) cachedTypes.getUnchecked((long) (typePair.first) & TYPE_MASK);
     }
 
     /**
@@ -101,24 +102,15 @@ public class TypeRegistry {
         throw new RuntimeException("Can't find factory for " + typeIndex);
     }
 
-    static Type<?> getOrLoad(long key) {
-        Type<?> cached = cachedTypes.getIfPresent(key);
-        if (cached != null) return cached;
-
-        TypeFactory<?> factory = getFactory((int) (key & TYPE_MASK));
-        if (factory == null) {
-            // The type factory is null, we couldn't create.
-            // Such as `void` type;
-            return null;
-        }
-
-        Type<?> result = factory.create((int) (key << 32));
-        cachedTypes.put(key, result);
-        return result;
+    static Type<?> getOrLoad(int typeIdx, int feat) {
+        return cachedTypes.getUnchecked(makeKey(typeIdx, feat));
     }
 
     public static int increaseAndGetTypeIdx() {
-        return IncreaseHelper.INSTANCE.increase();
+        int id = IncreaseHelper.INSTANCE.increase();
+        Log.i("TypeRegistry", "Register new type " +
+                ThrowableUtils.getCallerString() + " with type id " + id);
+        return id;
     }
 
     private enum IncreaseHelper {

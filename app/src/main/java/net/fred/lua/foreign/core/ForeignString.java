@@ -9,6 +9,7 @@ import net.fred.lua.common.utils.StringUtils;
 import net.fred.lua.common.utils.ThrowableUtils;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
+import net.fred.lua.foreign.allocate.IAllocator;
 import net.fred.lua.foreign.internal.ForeignValues;
 import net.fred.lua.foreign.internal.MemoryAccessor;
 import net.fred.lua.foreign.internal.MemoryController;
@@ -31,10 +32,10 @@ public class ForeignString extends MemorySegment {
     /**
      * Constructing a native string using Java {@code String}.
      *
-     * @see ForeignString#from(MemoryController, String)
+     * @see ForeignString#from(IAllocator, MemoryController, String)
      */
-    public static ForeignString from(final @Nullable String str) throws NativeMethodException {
-        return from(null, str);
+    public static ForeignString from(IAllocator allocator, final @Nullable String str) throws NativeMethodException {
+        return from(allocator, null, str);
     }
 
     /**
@@ -48,7 +49,7 @@ public class ForeignString extends MemorySegment {
      * @throws IllegalArgumentException Attempting to construct a string with a length of 0.
      */
     @NonNull
-    public static ForeignString from(@Nullable MemoryController parent, final @Nullable String str)
+    public static ForeignString from(IAllocator allocator, @Nullable MemoryController parent, final @Nullable String str)
             throws NativeMethodException {
         long length;
         if (StringUtils.isEmpty(str) || (length = str.length()) == 0) {
@@ -57,7 +58,7 @@ public class ForeignString extends MemorySegment {
             throw new IllegalArgumentException(err);
         }
 
-        final Pointer ptr = MemorySegment.allocate(length + 1);
+        final Pointer ptr = allocator.allocateMemory(length + 1);
         MemoryAccessor.putStringUnchecked(ptr, str);
 
         final ForeignString result = new ForeignString(ptr, str);
@@ -110,9 +111,9 @@ public class ForeignString extends MemorySegment {
         }
 
         @Override
-        public ForeignString read(MemoryAccessor accessor, @NonNull Pointer dest) throws NativeMethodException {
+        public ForeignString read(IAllocator allocator, MemoryAccessor accessor, @NonNull Pointer dest) throws NativeMethodException {
             dest = MemoryAccessor.peekPointerUnchecked(dest);
-            return ForeignString.from(accessor.peekString(dest));
+            return ForeignString.from(allocator, accessor.peekString(dest));
         }
 
         @Override

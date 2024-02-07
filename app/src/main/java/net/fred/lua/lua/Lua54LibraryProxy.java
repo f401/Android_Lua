@@ -5,8 +5,9 @@ import androidx.annotation.Nullable;
 import net.fred.lua.PathConstants;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
+import net.fred.lua.foreign.allocate.DefaultAllocator;
 import net.fred.lua.foreign.core.ForeignString;
-import net.fred.lua.foreign.core.StringPool;
+import net.fred.lua.foreign.memorypool.StringPool;
 import net.fred.lua.foreign.proxy.LibraryProxy;
 
 public class Lua54LibraryProxy extends Lua {
@@ -16,7 +17,7 @@ public class Lua54LibraryProxy extends Lua {
 
     protected Lua54LibraryProxy(@Nullable Pointer pointer) {
         super(pointer);
-        this.stringPool = new StringPool();
+        this.stringPool = new StringPool(DefaultAllocator.INSTANCE, 5);
         addChild(stringPool);
     }
 
@@ -41,7 +42,7 @@ public class Lua54LibraryProxy extends Lua {
 
     @Override
     public void dofile(String file) throws NativeMethodException {
-        lib.J_luaL_dofile(getPointer(), stringPool.get(file));
+        lib.J_luaL_dofile(getPointer(), stringPool.getOrLoad(file));
     }
 
     public interface LuaLib {

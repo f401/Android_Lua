@@ -1,11 +1,15 @@
 package net.fred.lua.foreign.ffi;
 
+import android.util.Log;
+
 import androidx.annotation.Nullable;
 
 import com.google.common.base.Preconditions;
 
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
+import net.fred.lua.foreign.allocate.DefaultAllocator;
+import net.fred.lua.foreign.allocate.IAllocator;
 import net.fred.lua.foreign.internal.MemoryAccessor;
 import net.fred.lua.foreign.internal.MemoryController;
 import net.fred.lua.foreign.types.Type;
@@ -76,7 +80,8 @@ public final class FunctionCaller extends MemoryController {
         if (useCache) {
             ffi = describer.prepareCIF().getBasePointer();
         }
-        return ffi_call(MemoryAccessor.UNCHECKED, describer, ffi, funcAddress,
+        Log.i("FunctionCaller", "Call function at address " + funcAddress);
+        return ffi_call(MemoryAccessor.UNCHECKED, DefaultAllocator.INSTANCE, describer, ffi, funcAddress,
                 typedParams, params, describer.getReturnType());
     }
 
@@ -87,6 +92,7 @@ public final class FunctionCaller extends MemoryController {
     }
 
     private native Object ffi_call(MemoryAccessor accessor, // Usual for MemoryAccessor.UNCHECKED
+                                   IAllocator allocator,
                                    FunctionDescriber describer,
                                    Pointer cif, Pointer funcAddress, Type<?>[] typedParams, Object[] params, Type<?> returnType);
 }

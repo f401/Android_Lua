@@ -82,6 +82,7 @@ extern "C"
 JNIEXPORT jobject JNICALL
 Java_net_fred_lua_foreign_ffi_FunctionCaller_ffi_1call(JNIEnv *env, jobject thiz,
                                                        jobject mem_accessor,
+                                                       jobject mem_allocator,
                                                        jobject func_describer,
                                                        jobject _cif,
                                                        jobject _func_address,
@@ -153,13 +154,14 @@ Java_net_fred_lua_foreign_ffi_FunctionCaller_ffi_1call(JNIEnv *env, jobject thiz
     if (rsize != 0) {
         static jmethodID method_type_read;
         FIND_INSTANCE_METHOD(env, type, read, "read",
-                             "(Lnet/fred/lua/foreign/internal/MemoryAccessor;Lnet/fred/lua/foreign/Pointer;)Ljava/lang/Object;");
+                             "(Lnet/fred/lua/foreign/allocate/IAllocator;Lnet/fred/lua/foreign/internal/MemoryAccessor;Lnet/fred/lua/foreign/Pointer;)Ljava/lang/Object;");
         IF_NULL_RETURN(method_type_read, nullptr);
 
         jobject _ret_ptr = pointer_create(env, return_segment);
         IF_NULL_RETURN(_ret_ptr, nullptr);
 
-        return env->CallObjectMethod(return_type, method_type_read, mem_accessor, _ret_ptr);
+        return env->CallObjectMethod(return_type, method_type_read, mem_allocator, mem_accessor,
+                                     _ret_ptr);
     }
     return nullptr;
 }

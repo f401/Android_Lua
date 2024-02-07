@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableMap;
 
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
+import net.fred.lua.foreign.allocate.IAllocator;
 import net.fred.lua.foreign.internal.MemoryAccessor;
 import net.fred.lua.foreign.types.CommonFeatures;
 import net.fred.lua.foreign.types.Type;
@@ -327,7 +328,7 @@ public final class PrimaryTypeWrapper<T> extends Type<T> {
     }
 
     @Override
-    public T read(MemoryAccessor accessor, @NonNull Pointer dest) throws NativeMethodException {
+    public T read(IAllocator allocator, MemoryAccessor accessor, @NonNull Pointer dest) throws NativeMethodException {
         return mapperAs.read(accessor, dest);
     }
 

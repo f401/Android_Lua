@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
+import net.fred.lua.foreign.allocate.IAllocator;
 import net.fred.lua.foreign.internal.MemoryAccessor;
 
 // Type is immutable.
@@ -27,7 +28,7 @@ public abstract class Type<T> {
     @Nullable
     public abstract Pointer getFFIPointer();
 
-    public abstract T read(MemoryAccessor accessor, @NonNull Pointer dest) throws NativeMethodException;
+    public abstract T read(IAllocator allocator, MemoryAccessor accessor, @NonNull Pointer dest) throws NativeMethodException;
 
     public abstract void write(MemoryAccessor accessor, @NonNull Pointer dest, @NonNull Object data) throws NativeMethodException;
 
@@ -38,6 +39,6 @@ public abstract class Type<T> {
     }
 
     public Type<?> withFeatures(int features) {
-        return TypeRegistry.getOrLoad(this.features | features);
+        return TypeRegistry.getOrLoad(getTypeIndex(), this.features | features);
     }
 }

@@ -8,6 +8,7 @@ import androidx.annotation.Nullable;
 import com.google.common.base.Preconditions;
 
 import net.fred.lua.foreign.NativeMethodException;
+import net.fred.lua.foreign.SharedResource;
 import net.fred.lua.foreign.child.IChildPolicy;
 import net.fred.lua.foreign.child.SimpleChildHolder;
 
@@ -37,10 +38,11 @@ public class MemoryController implements Closeable {
     }
 
     private void close(boolean finalized) throws NativeMethodException {
-        if (this.closed.compareAndSet(false, true)) {
+        if (askParentToAllowChildRelease() &&
+                this.closed.compareAndSet(false, true)) {
             onFree(finalized);
-            freeChildren();
-            if (parent != null) {
+            childPolicy.closeAllChild();
+            if (hasParent()) {
                 parent.removeChild(this);
                 parent = null;
             }
@@ -60,11 +62,18 @@ public class MemoryController implements Closeable {
     /**
      * Returns whether the current object has children.
      */
-    public boolean hasChild() {
+    public final boolean hasChild() {
         return childPolicy.hasChild();
     }
 
-    public void addChild(@Nullable AutoCloseable segment) {
+    public final boolean hasParent() {
+        return parent != null;
+    }
+
+    public final void addChild(@Nullable AutoCloseable segment) {
+        if (segment == null) {
+            Log.w("MemoryController", "Try to add child with null value. Ignoring.");
+        }
         childPolicy.addChild(segment);
     }
 
@@ -79,11 +88,26 @@ public class MemoryController implements Closeable {
     }
 
     public synchronized final void detachParent() {
+        onDetachParent();
         this.parent = null;
+    }
+
+    protected void onDetachParent() {
     }
 
     public final boolean checkIsParent(@NonNull MemoryController needle) {
         return this == needle || (parent != null && parent.checkIsParent(needle));
+    }
+
+    /**
+     * Called from child.
+     * Determine whether the parent allows child release.
+     *
+     * @return Returning true indicates permission, while false does not allow.
+     * @see SharedResource
+     */
+    protected boolean askParentToAllowChildRelease() {
+        return true;
     }
 
 
@@ -96,10 +120,6 @@ public class MemoryController implements Closeable {
      */
     public final void removeChild(@NonNull MemoryController child) {
         childPolicy.removeChild(child);
-    }
-
-    public final void freeChildren() {
-       childPolicy.closeAllChild();
     }
 
     /**
@@ -119,6 +139,10 @@ public class MemoryController implements Closeable {
 
     public void setChildPolicy(IChildPolicy policy) {
         this.childPolicy = policy;
+    }
+
+    public final MemoryController getParent() {
+        return parent;
     }
 
     @Override
