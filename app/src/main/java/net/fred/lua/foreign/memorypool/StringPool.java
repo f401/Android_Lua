@@ -25,7 +25,9 @@ public class StringPool extends MemoryController {
     }
 
     public ForeignString getOrLoad(String javaString) {
-        return cache.get(javaString).getResource();
+        SharedResource<ForeignString> r = cache.get(javaString);
+        r.addRefCount();
+        return r.getResource();
     }
 
     @Override
