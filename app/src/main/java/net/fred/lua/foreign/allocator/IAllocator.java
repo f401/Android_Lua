@@ -1,7 +1,7 @@
-package net.fred.lua.foreign.allocate;
+package net.fred.lua.foreign.allocator;
 
 import net.fred.lua.foreign.NativeMethodException;
-import net.fred.lua.foreign.Pointer;
+import net.fred.lua.foreign.Resource;
 
 public interface IAllocator {
     /**
@@ -12,5 +12,5 @@ public interface IAllocator {
      * @throws NativeMethodException    When creation fails
      * @throws IllegalArgumentException When {@code size} is less than or equal to 0.
      */
-    Pointer allocateMemory(long size) throws NativeMethodException;
+    Resource allocateMemory(long size) throws NativeMethodException;
 }

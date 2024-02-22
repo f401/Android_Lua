@@ -5,7 +5,7 @@ import androidx.annotation.Nullable;
 import net.fred.lua.PathConstants;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
-import net.fred.lua.foreign.allocate.DefaultAllocator;
+import net.fred.lua.foreign.allocator.DefaultAllocator;
 import net.fred.lua.foreign.core.ForeignString;
 import net.fred.lua.foreign.memorypool.StringPool;
 import net.fred.lua.foreign.proxy.LibraryProxy;
@@ -22,8 +22,8 @@ public class Lua54LibraryProxy extends Lua {
     }
 
     @Override
-    public void onFree(boolean finalized) throws NativeMethodException {
-        super.onFree(finalized);
+    public void dispose(boolean finalized) throws NativeMethodException {
+        super.dispose(finalized);
         lib.lua_close(getPointer());
     }
 

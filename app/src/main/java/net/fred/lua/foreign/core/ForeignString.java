@@ -9,7 +9,8 @@ import net.fred.lua.common.utils.StringUtils;
 import net.fred.lua.common.utils.ThrowableUtils;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
-import net.fred.lua.foreign.allocate.IAllocator;
+import net.fred.lua.foreign.Resource;
+import net.fred.lua.foreign.allocator.IAllocator;
 import net.fred.lua.foreign.internal.ForeignValues;
 import net.fred.lua.foreign.internal.MemoryAccessor;
 import net.fred.lua.foreign.internal.MemoryController;
@@ -22,10 +23,8 @@ public class ForeignString extends MemorySegment {
     private static final String TAG = "ForeignString";
     private final String refer;
 
-    public static final int DEFAULT_SIZE = 256;
-
-    ForeignString(Pointer src, String refer) {
-        super(src, refer.length());
+    ForeignString(Resource wrapper, String refer) {
+        super(wrapper);
         this.refer = refer;
     }
 
@@ -58,10 +57,10 @@ public class ForeignString extends MemorySegment {
             throw new IllegalArgumentException(err);
         }
 
-        final Pointer ptr = allocator.allocateMemory(length + 1);
-        MemoryAccessor.putStringUnchecked(ptr, str);
+        final Resource resource = allocator.allocateMemory(length + 1);
+        MemoryAccessor.putStringUnchecked(resource.getBasePointer(), str);
 
-        final ForeignString result = new ForeignString(ptr, str);
+        final ForeignString result = new ForeignString(resource, str);
         if (parent != null) {
             parent.addChild(result);
         }

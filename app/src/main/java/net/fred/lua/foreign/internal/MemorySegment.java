@@ -4,22 +4,20 @@ import androidx.annotation.NonNull;
 
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
-import net.fred.lua.foreign.allocate.DefaultAllocator;
-import net.fred.lua.foreign.allocate.IAllocator;
+import net.fred.lua.foreign.Resource;
+import net.fred.lua.foreign.allocator.DefaultAllocator;
+import net.fred.lua.foreign.allocator.IAllocator;
 import net.fred.lua.foreign.types.Type;
 
-public class MemorySegment extends MemoryController {
-    private final long size;
+public class MemorySegment extends ResourceWrapper {
     private final CheckedMemoryAccessor checkedMemoryAccessor;
-    private final Pointer base;
 
     /**
      * See {@link MemorySegment#create}
      */
-    public MemorySegment(Pointer src, long size) {
-        this.base = src;
-        this.size = size;
-        checkedMemoryAccessor = new CheckedMemoryAccessor(src, size);
+    public MemorySegment(Resource wrapper) {
+        super(wrapper);
+        checkedMemoryAccessor = new CheckedMemoryAccessor(wrapper.getBasePointer(), wrapper.size());
     }
 
     /**
@@ -33,21 +31,12 @@ public class MemorySegment extends MemoryController {
      */
     @NonNull
     public static MemorySegment create(IAllocator allocator, long size) throws NativeMethodException {
-        return new MemorySegment(allocator.allocateMemory(size), size);
+        return new MemorySegment(allocator.allocateMemory(size));
     }
 
     @NonNull
     public static MemorySegment create(long size) throws NativeMethodException {
         return create(DefaultAllocator.INSTANCE, size);
-    }
-
-    /**
-     * Get the size of the segment.
-     *
-     * @return the size of the segment
-     */
-    public long size() {
-        return size;
     }
 
     public void put(long off, Type<?> type, Object obj) throws NativeMethodException {
@@ -59,13 +48,9 @@ public class MemorySegment extends MemoryController {
     }
 
     @Override
-    public void onFree(boolean finalized) throws NativeMethodException {
-        super.onFree(finalized);
+    public void dispose(boolean finalized) throws NativeMethodException {
+        super.dispose(finalized);
         free(getBasePointer());
-    }
-
-    public Pointer getBasePointer() {
-        return base;
     }
 
     public static native Pointer alloc(long size) throws NativeMethodException;

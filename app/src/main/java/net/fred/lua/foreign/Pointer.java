@@ -3,7 +3,7 @@ package net.fred.lua.foreign;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import net.fred.lua.foreign.allocate.IAllocator;
+import net.fred.lua.foreign.allocator.IAllocator;
 import net.fred.lua.foreign.internal.ForeignValues;
 import net.fred.lua.foreign.internal.MemoryAccessor;
 import net.fred.lua.foreign.types.Type;

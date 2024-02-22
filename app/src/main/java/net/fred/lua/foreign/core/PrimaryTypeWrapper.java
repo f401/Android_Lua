@@ -19,7 +19,7 @@ import com.google.common.collect.ImmutableMap;
 
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
-import net.fred.lua.foreign.allocate.IAllocator;
+import net.fred.lua.foreign.allocator.IAllocator;
 import net.fred.lua.foreign.internal.MemoryAccessor;
 import net.fred.lua.foreign.types.CommonFeatures;
 import net.fred.lua.foreign.types.Type;

@@ -8,7 +8,7 @@ import net.fred.lua.PathConstants;
 import net.fred.lua.common.CrashHandler;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
-import net.fred.lua.foreign.allocate.DefaultAllocator;
+import net.fred.lua.foreign.allocator.DefaultAllocator;
 import net.fred.lua.foreign.core.DynamicLoadingLibrary;
 import net.fred.lua.foreign.core.ForeignString;
 import net.fred.lua.foreign.core.PrimaryTypes;
@@ -35,8 +35,8 @@ public class Lua5_4 extends Lua {
     }
 
     @Override
-    public void onFree(boolean finalized) throws NativeMethodException {
-        super.onFree(finalized);
+    public void dispose(boolean finalized) throws NativeMethodException {
+        super.dispose(finalized);
         getOrCreateFromCache("lua_close", new Creator() {
             @Override
             public FunctionCaller create(String symbol) throws NativeMethodException {

@@ -74,7 +74,7 @@ public final class DynamicLoadingLibrary extends MemoryController {
     public static native Pointer dlsym(Pointer handle, String src) throws NativeMethodException;
 
     @Override
-    public void onFree(boolean finalized) {
+    public void dispose(boolean finalized) {
         Log.i(TAG, "Release dll at " + libPointer);
         dlclose(libPointer);
     }

@@ -8,8 +8,8 @@ import com.google.common.base.Preconditions;
 
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
-import net.fred.lua.foreign.allocate.DefaultAllocator;
-import net.fred.lua.foreign.allocate.IAllocator;
+import net.fred.lua.foreign.allocator.DefaultAllocator;
+import net.fred.lua.foreign.allocator.IAllocator;
 import net.fred.lua.foreign.internal.MemoryAccessor;
 import net.fred.lua.foreign.internal.MemoryController;
 import net.fred.lua.foreign.types.Type;

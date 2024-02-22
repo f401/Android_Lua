@@ -8,7 +8,7 @@ import androidx.collection.LruCache;
 
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.SharedResource;
-import net.fred.lua.foreign.allocate.IAllocator;
+import net.fred.lua.foreign.allocator.IAllocator;
 import net.fred.lua.foreign.core.ForeignString;
 import net.fred.lua.foreign.internal.MemoryController;
 
@@ -31,8 +31,8 @@ public class StringPool extends MemoryController {
     }
 
     @Override
-    protected void onFree(boolean finalized) throws NativeMethodException {
-        super.onFree(finalized);
+    public void dispose(boolean finalized) throws NativeMethodException {
+        super.dispose(finalized);
         cache.evictAll();
     }
 
