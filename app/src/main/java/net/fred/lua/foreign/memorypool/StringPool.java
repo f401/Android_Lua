@@ -48,12 +48,8 @@ public class StringPool extends MemoryController {
 
         @Override
         protected void entryRemoved(boolean evicted, @NonNull String key, @NonNull SharedResource<ForeignString> oldValue, @Nullable SharedResource<ForeignString> newValue) {
-            try {
-                Log.d(TAG, "Released 1 entry " + oldValue);
-                oldValue.getResource().close();
-            } catch (NativeMethodException e) {
-                Log.e(TAG, "Error when release string ", e);
-            }
+            oldValue.decreaseRefCount();
+            Log.d(TAG, "Current ref count: " + oldValue.getRefCount());
         }
 
         @Nullable

@@ -8,7 +8,6 @@ import net.fred.lua.foreign.internal.ForeignValues;
 import net.fred.lua.foreign.internal.MemoryAccessor;
 import net.fred.lua.foreign.types.Type;
 import net.fred.lua.foreign.types.TypeFactory;
-import net.fred.lua.foreign.types.TypeRegistry;
 
 public class Pointer {
     private long address;
@@ -98,8 +97,6 @@ public class Pointer {
             }
         };
 
-        public static final int TYPE_INDEX = TypeRegistry.increaseAndGetTypeIdx();
-
         protected PointerType() {
             super(NO_FEATURES);
         }
@@ -126,8 +123,9 @@ public class Pointer {
         }
 
         @Override
-        public int getTypeIndex() {
-            return TYPE_INDEX;
+        protected TypeFactory<PointerType> getFactory() {
+            return FACTORY;
         }
+
     }
 }

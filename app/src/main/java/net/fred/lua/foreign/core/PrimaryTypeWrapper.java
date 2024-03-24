@@ -24,7 +24,6 @@ import net.fred.lua.foreign.internal.MemoryAccessor;
 import net.fred.lua.foreign.types.CommonFeatures;
 import net.fred.lua.foreign.types.Type;
 import net.fred.lua.foreign.types.TypeFactory;
-import net.fred.lua.foreign.types.TypeRegistry;
 
 /**
  * Packaging for basic types.
@@ -37,10 +36,11 @@ public final class PrimaryTypeWrapper<T> extends Type<T> {
     static {
         ImmutableMap.Builder<Class<?>, PrimaryType<?>> builder = ImmutableMap.builder();
         builder.put(byte.class, new PrimaryType<Byte>() {
-            private final TypeFactory<PrimaryTypeWrapper<Byte>> FACTORY = new TypeFactory<PrimaryTypeWrapper<Byte>>() {
+            private final TypeFactory<Type<Byte>> FACTORY = new TypeFactory<Type<Byte>>() {
                 @Override
-                public PrimaryTypeWrapper<Byte> create(int feature) {
-                    return PrimaryTypeWrapper.of(byte.class, feature);
+                public Type<Byte> create(int feature) {
+                    return (feature & CommonFeatures.UNSIGNED) > 0 ?
+                            PrimaryTypes.UNSIGNED_BYTE : PrimaryTypes.BYTE;
                 }
             };
 
@@ -50,7 +50,7 @@ public final class PrimaryTypeWrapper<T> extends Type<T> {
             }
 
             @Override
-            public TypeFactory<PrimaryTypeWrapper<Byte>> getTypeFactory() {
+            public TypeFactory<Type<Byte>> getTypeFactory() {
                 return FACTORY;
             }
 
@@ -75,10 +75,11 @@ public final class PrimaryTypeWrapper<T> extends Type<T> {
             }
         });
         builder.put(short.class, new PrimaryType<Short>() {
-            private final TypeFactory<PrimaryTypeWrapper<Short>> FACTORY = new TypeFactory<PrimaryTypeWrapper<Short>>() {
+            private final TypeFactory<Type<Short>> FACTORY = new TypeFactory<Type<Short>>() {
                 @Override
-                public PrimaryTypeWrapper<Short> create(int feature) {
-                    return PrimaryTypeWrapper.of(short.class, feature);
+                public Type<Short> create(int feature) {
+                    return (feature & CommonFeatures.UNSIGNED) > 0 ?
+                            PrimaryTypes.UNSIGNED_SHORT : PrimaryTypes.SHORT;
                 }
             };
 
@@ -88,7 +89,7 @@ public final class PrimaryTypeWrapper<T> extends Type<T> {
             }
 
             @Override
-            public TypeFactory<PrimaryTypeWrapper<Short>> getTypeFactory() {
+            public TypeFactory<Type<Short>> getTypeFactory() {
                 return FACTORY;
             }
 
@@ -113,10 +114,11 @@ public final class PrimaryTypeWrapper<T> extends Type<T> {
             }
         });
         builder.put(int.class, new PrimaryType<Integer>() {
-            private final TypeFactory<PrimaryTypeWrapper<Integer>> FACTORY = new TypeFactory<PrimaryTypeWrapper<Integer>>() {
+            private final TypeFactory<Type<Integer>> FACTORY = new TypeFactory<Type<Integer>>() {
                 @Override
-                public PrimaryTypeWrapper<Integer> create(int feature) {
-                    return PrimaryTypeWrapper.of(int.class, feature);
+                public Type<Integer> create(int feature) {
+                    return (feature & CommonFeatures.UNSIGNED) != 0 ?
+                            PrimaryTypes.UNSIGNED_INT : PrimaryTypes.INT;
                 }
             };
 
@@ -126,7 +128,7 @@ public final class PrimaryTypeWrapper<T> extends Type<T> {
             }
 
             @Override
-            public TypeFactory<PrimaryTypeWrapper<Integer>> getTypeFactory() {
+            public TypeFactory<Type<Integer>> getTypeFactory() {
                 return FACTORY;
             }
 
@@ -151,10 +153,11 @@ public final class PrimaryTypeWrapper<T> extends Type<T> {
             }
         });
         builder.put(long.class, new PrimaryType<Long>() {
-            private final TypeFactory<PrimaryTypeWrapper<Long>> FACTORY = new TypeFactory<PrimaryTypeWrapper<Long>>() {
+            private final TypeFactory<Type<Long>> FACTORY = new TypeFactory<Type<Long>>() {
                 @Override
-                public PrimaryTypeWrapper<Long> create(int feature) {
-                    return PrimaryTypeWrapper.of(long.class, feature);
+                public Type<Long> create(int feature) {
+                    return (feature & CommonFeatures.UNSIGNED) > 0 ?
+                            PrimaryTypes.UNSIGNED_LONG : PrimaryTypes.LONG;
                 }
             };
 
@@ -164,7 +167,7 @@ public final class PrimaryTypeWrapper<T> extends Type<T> {
             }
 
             @Override
-            public TypeFactory<PrimaryTypeWrapper<Long>> getTypeFactory() {
+            public TypeFactory<Type<Long>> getTypeFactory() {
                 return FACTORY;
             }
 
@@ -195,7 +198,7 @@ public final class PrimaryTypeWrapper<T> extends Type<T> {
             }
 
             @Override
-            public TypeFactory<PrimaryTypeWrapper<Void>> getTypeFactory() {
+            public TypeFactory<Type<Void>> getTypeFactory() {
                 return null;
             }
 
@@ -220,10 +223,10 @@ public final class PrimaryTypeWrapper<T> extends Type<T> {
             }
         });
         builder.put(float.class, new PrimaryType<Float>() {
-            private final TypeFactory<PrimaryTypeWrapper<Float>> FACTORY = new TypeFactory<PrimaryTypeWrapper<Float>>() {
+            private final TypeFactory<Type<Float>> FACTORY = new TypeFactory<Type<Float>>() {
                 @Override
-                public PrimaryTypeWrapper<Float> create(int feature) {
-                    return PrimaryTypeWrapper.of(float.class, feature);
+                public Type<Float> create(int feature) {
+                    return PrimaryTypes.FLOAT;
                 }
             };
 
@@ -233,7 +236,7 @@ public final class PrimaryTypeWrapper<T> extends Type<T> {
             }
 
             @Override
-            public TypeFactory<PrimaryTypeWrapper<Float>> getTypeFactory() {
+            public TypeFactory<Type<Float>> getTypeFactory() {
                 return FACTORY;
             }
 
@@ -259,10 +262,10 @@ public final class PrimaryTypeWrapper<T> extends Type<T> {
         });
 
         builder.put(double.class, new PrimaryType<Double>() {
-            private final TypeFactory<PrimaryTypeWrapper<Double>> FACTORY = new TypeFactory<PrimaryTypeWrapper<Double>>() {
+            private final TypeFactory<Type<Double>> FACTORY = new TypeFactory<Type<Double>>() {
                 @Override
-                public PrimaryTypeWrapper<Double> create(int feature) {
-                    return PrimaryTypeWrapper.of(double.class, feature);
+                public Type<Double> create(int feature) {
+                    return PrimaryTypes.DOUBLE;
                 }
             };
 
@@ -272,7 +275,7 @@ public final class PrimaryTypeWrapper<T> extends Type<T> {
             }
 
             @Override
-            public TypeFactory<PrimaryTypeWrapper<Double>> getTypeFactory() {
+            public TypeFactory<Type<Double>> getTypeFactory() {
                 return FACTORY;
             }
 
@@ -338,11 +341,7 @@ public final class PrimaryTypeWrapper<T> extends Type<T> {
     }
 
     @Override
-    public int getTypeIndex() {
-        return mapperAs.getTypeIndex();
-    }
-
-    public TypeFactory<PrimaryTypeWrapper<T>> getTypeFactory() {
+    protected TypeFactory<Type<T>> getFactory() {
         return mapperAs.getTypeFactory();
     }
 
@@ -351,16 +350,6 @@ public final class PrimaryTypeWrapper<T> extends Type<T> {
     }
 
     abstract static class PrimaryType<T> {
-        private final int typeIndex;
-
-        protected PrimaryType() {
-            typeIndex = TypeRegistry.increaseAndGetTypeIdx();
-        }
-
-        public int getTypeIndex() {
-            return typeIndex;
-        }
-
         public abstract Pointer getSignedFFIPointer();
 
         public abstract Pointer getUnsignedFFIPointer();
@@ -371,6 +360,6 @@ public final class PrimaryTypeWrapper<T> extends Type<T> {
 
         public abstract void write(MemoryAccessor accessor, Pointer dest, Object data) throws NativeMethodException;
 
-        public abstract TypeFactory<PrimaryTypeWrapper<T>> getTypeFactory();
+        public abstract TypeFactory<Type<T>> getTypeFactory();
     }
 }

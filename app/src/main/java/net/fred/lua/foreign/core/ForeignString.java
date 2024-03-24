@@ -17,7 +17,6 @@ import net.fred.lua.foreign.internal.MemoryController;
 import net.fred.lua.foreign.internal.MemorySegment;
 import net.fred.lua.foreign.types.Type;
 import net.fred.lua.foreign.types.TypeFactory;
-import net.fred.lua.foreign.types.TypeRegistry;
 
 public class ForeignString extends MemorySegment {
     private static final String TAG = "ForeignString";
@@ -92,7 +91,6 @@ public class ForeignString extends MemorySegment {
                 return new ForeignStringType();
             }
         };
-        public static final int TYPE_INDEX = TypeRegistry.increaseAndGetTypeIdx();
 
         protected ForeignStringType() {
             super(NO_FEATURES);
@@ -121,8 +119,8 @@ public class ForeignString extends MemorySegment {
         }
 
         @Override
-        public int getTypeIndex() {
-            return TYPE_INDEX;
+        protected TypeFactory<ForeignStringType> getFactory() {
+            return FACTORY;
         }
     }
 }

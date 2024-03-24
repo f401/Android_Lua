@@ -36,7 +36,17 @@ public class SharedResource<T extends AutoCloseable> extends MemoryController {
     }
 
     public final void decreaseRefCount() {
-        refCount.decrementAndGet();
+        if (refCount.decrementAndGet() == 0) {
+            try {
+                close();
+            } catch (NativeMethodException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    public final int getRefCount() {
+        return refCount.get();
     }
 
     @SuppressWarnings("unchecked")
@@ -49,7 +59,7 @@ public class SharedResource<T extends AutoCloseable> extends MemoryController {
         try {
             close();
         } catch (NativeMethodException e) {
-            Log.e("SharedResouce", "Exception happened when releasing ", e);
+            Log.e("SharedResource", "Exception happened when releasing ", e);
         }
     }
 }

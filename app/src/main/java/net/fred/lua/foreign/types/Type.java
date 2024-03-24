@@ -32,13 +32,13 @@ public abstract class Type<T> {
 
     public abstract void write(MemoryAccessor accessor, @NonNull Pointer dest, @NonNull Object data) throws NativeMethodException;
 
-    public abstract int getTypeIndex();
-
     protected final int getFeatures() {
         return features;
     }
 
-    public Type<?> withFeatures(int features) {
-        return TypeRegistry.getOrLoad(getTypeIndex(), this.features | features);
-    }
+    /**
+     * Get the factory of the current Type.
+     * Different features obtain the same factory.
+     */
+    protected abstract TypeFactory<? extends Type<T>> getFactory();
 }

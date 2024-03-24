@@ -80,7 +80,7 @@ public final class FunctionCaller extends MemoryController {
         if (useCache) {
             ffi = describer.prepareCIF().getBasePointer();
         }
-        Log.i("FunctionCaller", "Call function at address " + funcAddress);
+        Log.d("FunctionCaller", "Call function at address " + funcAddress);
         return ffi_call(MemoryAccessor.UNCHECKED, DefaultAllocator.INSTANCE, describer, ffi, funcAddress,
                 typedParams, params, describer.getReturnType());
     }
