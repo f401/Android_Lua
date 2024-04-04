@@ -30,7 +30,7 @@ import net.fred.lua.foreign.types.TypeFactory;
  *
  * @param <T> Basic types of packaging required.
  */
-public final class PrimaryTypeWrapper<T> extends Type<T> {
+final class PrimaryTypeWrapper<T> extends Type<T> {
     private static final ImmutableMap<Class<?>, PrimaryType<?>> map;
 
     static {

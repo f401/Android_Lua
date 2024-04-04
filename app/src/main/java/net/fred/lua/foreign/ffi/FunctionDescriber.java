@@ -5,7 +5,7 @@ import androidx.annotation.Nullable;
 
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
-import net.fred.lua.foreign.core.PrimaryTypeWrapper;
+import net.fred.lua.foreign.core.PrimaryTypes;
 import net.fred.lua.foreign.internal.ForeignValues;
 import net.fred.lua.foreign.internal.MemoryController;
 import net.fred.lua.foreign.internal.MemorySegment;
@@ -22,7 +22,7 @@ public final class FunctionDescriber extends MemoryController {
 
     public FunctionDescriber(Type<?> returnType, @Nullable Type<?>[] params) {
         if (returnType == null) {
-            returnType = PrimaryTypeWrapper.of(void.class);
+            returnType = PrimaryTypes.VOID;
         }
         this.returnType = returnType;
         this.params = params;

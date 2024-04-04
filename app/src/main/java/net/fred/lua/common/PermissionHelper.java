@@ -9,6 +9,7 @@ import android.os.Build;
 import android.provider.Settings;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -33,7 +34,7 @@ public class PermissionHelper {
         return ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED;
     }
 
-    public static ArrayList<String> getNotAllowedPermissionList(Context context, String[] permissions) {
+    public static ArrayList<String> filterNotAllowedPermissionList(Context context, String[] permissions) {
         ArrayList<String> notAllowed = new ArrayList<>();
         for (String curr : permissions) {
             if (!hasPermission(context, curr)) {
@@ -43,7 +44,7 @@ public class PermissionHelper {
         return notAllowed;
     }
 
-    public static ArrayList<String> getNotAllowedPermissionList(String[] permissions, int[] grantResults) {
+    public static ArrayList<String> filterNotAllowedPermissionList(String[] permissions, int[] grantResults) {
         ArrayList<String> notAllowed = new ArrayList<>();
         if (permissions.length != 0 && grantResults.length != 0) {
             for (int i = 0; i < grantResults.length; ++i) {
@@ -61,10 +62,11 @@ public class PermissionHelper {
      * @param permissions 需要申请的权限.
      * @return 如果为空，则表示传入的权限当前应用已经全部被授权.
      */
+    @Nullable
     public static PermissionHelper create(Activity context, String... permissions) {
         if (Build.VERSION.SDK_INT >= 23) {
-            ArrayList<String> notAllowed = getNotAllowedPermissionList(context, permissions);
-            return notAllowed.size() == 0 ? null : new PermissionHelper(context, notAllowed);
+            ArrayList<String> notAllowed = filterNotAllowedPermissionList(context, permissions);
+            return notAllowed.isEmpty() ? null : new PermissionHelper(context, notAllowed);
         }
         return null;
     }
@@ -95,18 +97,18 @@ public class PermissionHelper {
     }
 
     public boolean hasCanRequestPermissions() {
-        return canRequest.size() != 0;
+        return !canRequest.isEmpty();
     }
 
     public boolean hasProhibitedPermissions() {
-        return prohibited.size() != 0;
+        return !prohibited.isEmpty();
     }
 
     public boolean onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == CODE_PERMISSION_REQUEST) {
             canRequest.clear();
             prohibited.clear();
-            ArrayList<String> notAllowed = getNotAllowedPermissionList(permissions, grantResults);
+            ArrayList<String> notAllowed = filterNotAllowedPermissionList(permissions, grantResults);
             setProhibitedAndRequestList(notAllowed);
             return true;
         }

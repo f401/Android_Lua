@@ -7,6 +7,10 @@ import android.content.Intent;
 
 import java.lang.ref.WeakReference;
 
+/**
+ * A class specifically designed to accept outgoing broadcasts.
+ * Used in {@link net.fred.lua.common.activity.BaseActivity}
+ */
 public final class ExitReceiver extends BroadcastReceiver {
 
     private final WeakReference<Activity> activity;

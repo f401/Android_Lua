@@ -10,7 +10,7 @@ import com.google.common.base.Preconditions;
 public class ClipboardUtils {
 
     /**
-     * Obtain clipboard manager based on @{code ctx}
+     * Obtain clipboard manager based on {@code ctx}
      *
      * @param ctx Context required.
      * @return Clipboard manager.

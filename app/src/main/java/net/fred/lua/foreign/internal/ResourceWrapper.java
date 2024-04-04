@@ -14,11 +14,18 @@ public class ResourceWrapper extends Resource {
         this.impl = impl;
     }
 
+    /**
+     * {@inheritDoc}
+     * Now, you can use {@link net.fred.lua.foreign.allocator.LibcMallocResourceImpl}
+     */
     @Override
     public final Pointer getBasePointer() {
         return impl.getBasePointer();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public long size() {
         return impl.size();

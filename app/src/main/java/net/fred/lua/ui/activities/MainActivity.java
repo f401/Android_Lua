@@ -16,11 +16,11 @@ import net.fred.lua.R;
 import net.fred.lua.common.CrashHandler;
 import net.fred.lua.common.activity.BaseActivity;
 import net.fred.lua.foreign.Breakpad;
+import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.io.CStandardOutputInput;
 import net.fred.lua.io.LogFileManager;
 import net.fred.lua.lua.Lua54LibraryProxy;
 import net.fred.lua.lua.Lua5_4;
-import net.fred.lua.ui.activities.MainActivity;
 
 public class MainActivity extends BaseActivity {
     private static final String TAG = "MainActivity";
@@ -39,17 +39,24 @@ public class MainActivity extends BaseActivity {
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View p1) {
-                try {
-                    Lua54LibraryProxy proxy = Lua54LibraryProxy.create();
-                    CStandardOutputInput.getInstance().redirectStandardOutTo(
-                            getExternalCacheDir() + "/lua_out.txt"
-                    );
-                    proxy.openlibs();
-                    proxy.dofile(getExternalFilesDir("") + "/l.lua");
-                    proxy.close();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+                new Thread() {
+                    @Override
+                    public void run() {
+                        try {
+                            Lua54LibraryProxy proxy = Lua54LibraryProxy.create();
+                            CStandardOutputInput.getInstance().
+                                    redirectStandardOutTo(
+                                            getExternalCacheDir() + "/lua_out.txt"
+                                    );
+                            proxy.openlibs();
+                            proxy.dofile(
+                                    getExternalFilesDir("") + "/l.lua");
+                            proxy.close();
+                        } catch (NativeMethodException exception) {
+                            throw new RuntimeException(exception);
+                        }
+                    }
+                }.start();
             }
         });
 

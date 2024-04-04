@@ -46,8 +46,6 @@ public class SplashActivity extends BaseActivity {
         tv.setWidth(metrics.widthPixels / 2);
         tv.setHeight(metrics.heightPixels / 2);
 
-
-
         TaskExecutor executor = new TaskExecutor.Builder()
                 .addTask(new Runnable() {
                     @Override
@@ -87,6 +85,7 @@ public class SplashActivity extends BaseActivity {
             public void run() {
                 for (; ; ) {
                     try {
+                        // Wait for all tasks to finish.
                         counter.await();
                         Intent realMain = new Intent(SplashActivity.this, MainActivity.class);
                         Log.i(TAG, "Launching MainActivity");
