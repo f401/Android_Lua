@@ -3,13 +3,15 @@ package net.fred.lua.common.utils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import net.fred.lua.common.functional.Consumer;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
+import androidx.core.util.Consumer;
+import android.util.Log;
 
 public class ThrowableUtils {
+    
+    private static final String TAG = "ThrowableUtils";
 
     /**
      * Obtain exception information for throwable and call stack.
@@ -34,14 +36,14 @@ public class ThrowableUtils {
                         c.close();
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Log.e(TAG, "Error when releasing object "  + c, e);
                 }
             }
         }
     }
 
     /**
-     * Close all non empty objects in @{code t}.
+     * Close all non empty objects in {@code t}.
      *
      * @param t      The collection of objects that need to be closed
      * @param action Actions to be performed before closing. If you don't need it, just pass it @{code null}.
@@ -57,7 +59,7 @@ public class ThrowableUtils {
                         c.close();
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Log.e(TAG, "Error when releasing object "  + c, e);
                 }
             }
         }
