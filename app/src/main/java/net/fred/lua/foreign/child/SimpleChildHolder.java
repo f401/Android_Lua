@@ -2,12 +2,12 @@ package net.fred.lua.foreign.child;
 
 import com.google.common.base.Preconditions;
 
-import net.fred.lua.common.functional.Consumer;
 import net.fred.lua.common.utils.ThrowableUtils;
 import net.fred.lua.foreign.internal.MemoryController;
 
 import java.util.ArrayList;
 import java.util.List;
+import androidx.core.util.Consumer;
 
 public class SimpleChildHolder implements IChildPolicy {
 

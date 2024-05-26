@@ -3,6 +3,7 @@ package net.fred.lua.foreign;
 import net.fred.lua.foreign.child.RejectAllHolder;
 import net.fred.lua.foreign.internal.MemoryController;
 
+// 装饰器设计模式
 public abstract class Resource extends MemoryController {
 
     protected Resource() {

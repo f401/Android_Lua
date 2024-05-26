@@ -2,7 +2,6 @@ package net.fred.lua.foreign.types;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.allocator.IAllocator;
