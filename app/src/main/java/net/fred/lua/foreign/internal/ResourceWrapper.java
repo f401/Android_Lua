@@ -9,6 +9,8 @@ public class ResourceWrapper extends Resource {
     private final Resource impl;
 
     protected ResourceWrapper(Resource impl) {
+        // 不将其设置为我们的Child, 并将使用权归于我们
+        impl.detachParent();
         this.impl = impl;
     }
 

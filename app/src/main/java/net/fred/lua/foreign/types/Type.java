@@ -6,8 +6,9 @@ import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.allocator.IAllocator;
 import net.fred.lua.foreign.internal.MemoryAccessor;
+import javax.annotation.concurrent.Immutable;
 
-// Type is immutable.
+@Immutable
 public abstract class Type<T> {
     public static final int NO_FEATURES = 0;
     private final int features;

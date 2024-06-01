@@ -68,6 +68,7 @@ public class Lua5_4 extends Lua {
 
     @Override
     public void dofile(String file) throws NativeMethodException {
+        ForeignString na = ForeignString.from(DefaultAllocator.INSTANCE, file);
         getOrCreateFromCache("J_luaL_dofile", new Creator() {
             @Override
             public FunctionCaller create(String symbol) throws NativeMethodException {
@@ -75,7 +76,7 @@ public class Lua5_4 extends Lua {
                         PrimaryTypes.INT,
                         PrimaryTypes.POINTER, PrimaryTypes.STRING);
             }
-        }).call(getPointer(), ForeignString.from(DefaultAllocator.INSTANCE, file));
+        }).call(getPointer(), na);
     }
 
     public interface Creator {

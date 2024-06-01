@@ -47,12 +47,6 @@ public class MemorySegment extends ResourceWrapper {
         checkedMemoryAccessor.putPointer(getBasePointer().plus(off), src);
     }
 
-    @Override
-    public void dispose(boolean finalized) throws NativeMethodException {
-        super.dispose(finalized);
-        free(getBasePointer());
-    }
-
     public static native Pointer alloc(long size) throws NativeMethodException;
 
     public static native void free(Pointer ptr);

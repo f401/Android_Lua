@@ -20,6 +20,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import com.google.common.base.FinalizableReferenceQueue;
 
 public class App extends Application {
     public static final String EXIT_ACTION = "net.lua.exit.all";
@@ -27,6 +28,7 @@ public class App extends Application {
     private static final String TAG = "APP";
     private static App instance;
     private static ThreadPoolExecutor threadPool;
+    private static FinalizableReferenceQueue referenceQueue;
 
     public static App getInstance() {
         return instance;
@@ -64,7 +66,8 @@ public class App extends Application {
         instance = this;
         int cpus = Runtime.getRuntime().availableProcessors();
         threadPool = new ThreadPoolExecutor(cpus / 2, cpus * 2, 1, TimeUnit.MINUTES, new ArrayBlockingQueue<Runnable>(cpus));
-
+        referenceQueue = new FinalizableReferenceQueue();
+        
         if (App.isMainProcess()) {
             LogScanner.cleanBuffer();
         }
@@ -120,6 +123,10 @@ public class App extends Application {
     
     public static ThreadPoolExecutor getThreadPool() {
         return threadPool;
+    }
+    
+    public static FinalizableReferenceQueue getReferenceQueue() {
+        return referenceQueue;
     }
 }
    
