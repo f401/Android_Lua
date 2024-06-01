@@ -4,6 +4,7 @@ import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.Resource;
 
+// 装饰器设计模式
 public class ResourceWrapper extends Resource {
     private final Resource impl;
 

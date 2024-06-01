@@ -9,9 +9,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
-
+import java.io.IOException;
+import net.fred.lua.App;
 import net.fred.lua.R;
 import net.fred.lua.common.CrashHandler;
 import net.fred.lua.common.activity.BaseActivity;
@@ -20,8 +20,7 @@ import net.fred.lua.io.CStandardOutputInput;
 import net.fred.lua.io.LogFileManager;
 import net.fred.lua.lua.Lua54LibraryProxy;
 import net.fred.lua.lua.Lua5_4;
-
-import java.io.IOException;
+import net.fred.lua.ui.activities.MainActivity;
 
 public class MainActivity extends BaseActivity {
     private static final String TAG = "MainActivity";
@@ -100,11 +99,24 @@ public class MainActivity extends BaseActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.activity_main_menu_clean_cache) {
-            Toast.makeText(this, getString(R.string.cache_directory_size,
-                    LogFileManager.getInstance().sizeOfDirectoryString()
-            ), Toast.LENGTH_SHORT).show();
-            Log.i(TAG, "Removing cache directory.");
-            LogFileManager.getInstance().delete();
+            App.getThreadPool().submit(new Runnable() {
+
+                @Override
+                public void run() {
+                    Log.i(TAG, "Removing cache directory.");
+                    final String size = LogFileManager.getInstance().sizeOfDirectoryString();
+                    LogFileManager.getInstance().delete();
+                    runOnUiThread(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                Toast.makeText(MainActivity.this, getString(R.string.cache_directory_size,
+                                    size), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                }
+            });
+            
             return true;
         }
         return super.onOptionsItemSelected(item);

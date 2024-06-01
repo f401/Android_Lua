@@ -2,7 +2,7 @@ package net.fred.lua.foreign;
 
 import android.util.Log;
 
-import net.fred.lua.foreign.child.OneChildHolder;
+import net.fred.lua.foreign.child.SingleChildHolder;
 import net.fred.lua.foreign.internal.MemoryController;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -16,7 +16,7 @@ public class SharedResource<T extends AutoCloseable> extends MemoryController {
 
     protected SharedResource() {
         this.refCount = new AtomicInteger(1);
-        setChildPolicy(new OneChildHolder());
+        setChildPolicy(new SingleChildHolder());
     }
 
     public static <T extends AutoCloseable> SharedResource<T> create(T resource) {

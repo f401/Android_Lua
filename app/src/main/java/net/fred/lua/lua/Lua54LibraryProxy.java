@@ -42,7 +42,9 @@ public class Lua54LibraryProxy extends Lua {
 
     @Override
     public void dofile(String file) throws NativeMethodException {
-        lib.J_luaL_dofile(getPointer(), stringPool.getOrLoad(file));
+        ForeignString str = stringPool.getOrLoad(file);
+        lib.J_luaL_dofile(getPointer(), str);
+        str.close();
     }
 
     public interface LuaLib {

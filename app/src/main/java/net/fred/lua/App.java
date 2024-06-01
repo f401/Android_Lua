@@ -16,12 +16,17 @@ import net.fred.lua.io.LogFileManager;
 import net.fred.lua.io.LogScanner;
 
 import java.util.List;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class App extends Application {
-    private static final String TAG = "APP";
-
     public static final String EXIT_ACTION = "net.lua.exit.all";
+    
+    private static final String TAG = "APP";
     private static App instance;
+    private static ThreadPoolExecutor threadPool;
 
     public static App getInstance() {
         return instance;
@@ -57,6 +62,8 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         instance = this;
+        int cpus = Runtime.getRuntime().availableProcessors();
+        threadPool = new ThreadPoolExecutor(cpus / 2, cpus * 2, 1, TimeUnit.MINUTES, new ArrayBlockingQueue<Runnable>(cpus));
 
         if (App.isMainProcess()) {
             LogScanner.cleanBuffer();
@@ -109,6 +116,10 @@ public class App extends Application {
         } catch (Exception e) {
             return false;
         }
+    }
+    
+    public static ThreadPoolExecutor getThreadPool() {
+        return threadPool;
     }
 }
    

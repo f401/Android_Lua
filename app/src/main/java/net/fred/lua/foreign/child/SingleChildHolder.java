@@ -2,7 +2,7 @@ package net.fred.lua.foreign.child;
 
 import net.fred.lua.common.utils.ThrowableUtils;
 
-public class OneChildHolder implements IChildPolicy {
+public class SingleChildHolder implements IChildPolicy {
 
     private AutoCloseable child;
 
