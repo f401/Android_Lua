@@ -68,9 +68,11 @@ do_prep_cif(JNIEnv *env, void *_cif, jobject allocator, jobject return_type, job
                                                          method_allocator_allocateMemory,
                                                          static_cast<jlong>(sizeof(void *) *
                                                                             params_len));
-                params = reinterpret_cast<ffi_type **>(pointer_get_from(env, resource));
+                jobject basePointer = env->CallObjectMethod(resource, method_resource_getBasePointer);
+                params = reinterpret_cast<ffi_type **>(pointer_get_from(env, basePointer));
                 IF_NULL_RETURN(params, -2);
                 env->DeleteLocalRef(resource);
+                env->DeleteLocalRef(basePointer);
             }
             for (jsize i = 0; i < params_len; ++i) {
                 jobject curr = env->GetObjectArrayElement(_params, i);
