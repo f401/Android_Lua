@@ -1,6 +1,7 @@
 //
 // Created by root on 7/27/23.
 //
+#include <android/log.h>
 #include "utils.h"
 
 extern "C" {
@@ -29,7 +30,7 @@ IF_NULL_RETURN(class_resource, EXPR)
 
 static void *get_type_ffi_pointer(JNIEnv *env, jobject type) {
     if (EQUAL_TO_NULL(env, type)) {
-        return FFI_TYPE_VOID;
+        return &ffi_type_void;
     }
     LOAD_CLASS_TYPE(env, nullptr);
 
@@ -66,7 +67,7 @@ do_prep_cif(JNIEnv *env, void *_cif, jobject allocator, jobject return_type, job
             {
                 jobject resource = env->CallObjectMethod(allocator,
                                                          method_allocator_allocateMemory,
-                                                         static_cast<jlong>(sizeof(void *) *
+                                                         static_cast<jlong>(sizeof(ffi_type *) *
                                                                             params_len));
                 jobject basePointer = env->CallObjectMethod(resource, method_resource_getBasePointer);
                 params = reinterpret_cast<ffi_type **>(pointer_get_from(env, basePointer));
@@ -85,6 +86,7 @@ do_prep_cif(JNIEnv *env, void *_cif, jobject allocator, jobject return_type, job
             }
         }
     }
+    __android_log_print(ANDROID_LOG_INFO, "Caller", "cif: %ld, params_len: %d, returnType: %d, parmas: %d", _cif, params_len, returnType, params);
     return ffi_prep_cif(reinterpret_cast<ffi_cif *>(_cif), FFI_DEFAULT_ABI, params_len, returnType,
                         params);
 }
@@ -126,7 +128,7 @@ Java_net_fred_lua_foreign_core_ffi_FunctionCaller_ffi_1call(JNIEnv *env, jobject
         }
 
         char *params_data = reinterpret_cast<char *>(alloca(data_length));
-        params_ptr_index = reinterpret_cast<void **>(alloca(sizeof(void *) * length));
+        params_ptr_index = reinterpret_cast<void **>(alloca(sizeof(void *) * length + 1));
         jint off = 0;
         static jmethodID method_type_write;
         FIND_INSTANCE_METHOD(env, type, write, "write",

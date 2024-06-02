@@ -26,9 +26,9 @@ public class Lua5_4 extends Lua {
         if (dll == null) {
             dll = DynamicLoadingLibrary.open(PathConstants.NATIVE_LIBRARY_DIR + "liblua.so");
         }
-        return (Pointer) getOrCreateFromCache("luaL_newstate", new Creator() {
+        return (Pointer) getOrCreateFromCache(scope, "luaL_newstate", new Creator() {
             @Override
-            public FunctionCaller create(String symbol) throws NativeMethodException {
+            public FunctionCaller create(IScopedResource scope, String symbol) throws NativeMethodException {
                 return FunctionCaller.of(scope, dll.lookupSymbol(symbol), PrimaryTypes.POINTER);
             }
         }).call();
@@ -37,18 +37,18 @@ public class Lua5_4 extends Lua {
     @Override
     public void dispose(boolean finalized) throws NativeMethodException {
         super.dispose(finalized);
-        getOrCreateFromCache("lua_close", new Creator() {
+        getOrCreateFromCache(scope, "lua_close", new Creator() {
             @Override
-            public FunctionCaller create(String symbol) throws NativeMethodException {
+            public FunctionCaller create(IScopedResource scope, String symbol) throws NativeMethodException {
                 return FunctionCaller.of(scope, dll.lookupSymbol(symbol), PrimaryTypes.VOID, PrimaryTypes.POINTER);
             }
         }).call(getPointer());
     }
 
-    private static FunctionCaller getOrCreateFromCache(String symbol, Creator creator) throws NativeMethodException {
+    private static FunctionCaller getOrCreateFromCache(IScopedResource scope, String symbol, Creator creator) throws NativeMethodException {
         FunctionCaller entry = cache.get(symbol);
         if (entry == null) {
-            FunctionCaller result = creator.create(symbol);
+            FunctionCaller result = creator.create(scope, symbol);
             cache.put(symbol, result);
             return result;
         }
@@ -57,9 +57,9 @@ public class Lua5_4 extends Lua {
 
     @Override
     public void openlibs() throws NativeMethodException {
-        getOrCreateFromCache("luaL_openlibs", new Creator() {
+        getOrCreateFromCache(scope, "luaL_openlibs", new Creator() {
             @Override
-            public FunctionCaller create(String symbol) throws NativeMethodException {
+            public FunctionCaller create(IScopedResource scope, String symbol) throws NativeMethodException {
                 return FunctionCaller.of(scope, dll.lookupSymbol(symbol),
                         PrimaryTypes.VOID, PrimaryTypes.POINTER);
             }
@@ -69,9 +69,9 @@ public class Lua5_4 extends Lua {
     @Override
     public void dofile(String file) throws NativeMethodException {
         ForeignString na = ForeignString.from(DefaultAllocator.INSTANCE, file);
-        getOrCreateFromCache("J_luaL_dofile", new Creator() {
+        getOrCreateFromCache(scope, "J_luaL_dofile", new Creator() {
             @Override
-            public FunctionCaller create(String symbol) throws NativeMethodException {
+            public FunctionCaller create(IScopedResource scope, String symbol) throws NativeMethodException {
                 return FunctionCaller.of(scope, false, dll.lookupSymbol(symbol),
                         PrimaryTypes.INT,
                         PrimaryTypes.POINTER, PrimaryTypes.STRING);
@@ -91,7 +91,7 @@ public class Lua5_4 extends Lua {
          * @return a new @{code FunctionCaller}
          * @throws NativeMethodException cause by @{link FunctionCaller#of}
          */
-        FunctionCaller create(String symbol) throws NativeMethodException;
+        FunctionCaller create(IScopedResource scope, String symbol) throws NativeMethodException;
     }
 
     private static class FunctionCallerCache extends LruCache<String, FunctionCaller> {
