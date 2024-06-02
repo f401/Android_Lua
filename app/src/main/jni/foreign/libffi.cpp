@@ -147,8 +147,8 @@ Java_net_fred_lua_foreign_core_ffi_FunctionCaller_ffi_1call(JNIEnv *env, jobject
     }
 
     void *returned_data = nullptr;
-    int rsize;
-    if ((rsize = env->CallIntMethod(_return_type, method_type_getSize, nullptr)) != 0) {
+    int rsize = 0;
+    if (!EQUAL_TO_NULL(env, _return_type) && (rsize = env->CallIntMethod(_return_type, method_type_getSize, nullptr)) != 0) {
         returned_data = alloca(rsize);
     }
 
