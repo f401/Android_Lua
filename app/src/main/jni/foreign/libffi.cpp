@@ -28,6 +28,9 @@ FIND_CLASS(ENV, resource, "net/fred/lua/foreign/Resource"); \
 IF_NULL_RETURN(class_resource, EXPR)
 
 static void *get_type_ffi_pointer(JNIEnv *env, jobject type) {
+    if (EQUAL_TO_NULL(env, type)) {
+        return FFI_TYPE_VOID;
+    }
     LOAD_CLASS_TYPE(env, nullptr);
 
     static jmethodID method_type_get_pointer;
