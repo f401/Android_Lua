@@ -22,11 +22,11 @@ public class Lua5_4 extends Lua {
         this.scope = scope;
     }
 
-    protected static Pointer new_state(final IScopedResource scope) throws NativeMethodException {
+    protected static Pointer new_state(IScopedResource sscope) throws NativeMethodException {
         if (dll == null) {
             dll = DynamicLoadingLibrary.open(PathConstants.NATIVE_LIBRARY_DIR + "liblua.so");
         }
-        return (Pointer) getOrCreateFromCache(scope, "luaL_newstate", new Creator() {
+        return (Pointer) getOrCreateFromCache(sscope, "luaL_newstate", new Creator() {
             @Override
             public FunctionCaller create(IScopedResource scope, String symbol) throws NativeMethodException {
                 return FunctionCaller.of(scope, dll.lookupSymbol(symbol), PrimaryTypes.POINTER);
@@ -52,6 +52,7 @@ public class Lua5_4 extends Lua {
             cache.put(symbol, result);
             return result;
         }
+        entry.setNewScope(scope);
         return entry;
     }
 
@@ -77,6 +78,7 @@ public class Lua5_4 extends Lua {
                         PrimaryTypes.POINTER, PrimaryTypes.STRING);
             }
         }).call(getPointer(), na);
+        na.close();
     }
 
     public interface Creator {

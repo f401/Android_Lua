@@ -86,7 +86,6 @@ do_prep_cif(JNIEnv *env, void *_cif, jobject allocator, jobject return_type, job
             }
         }
     }
-    __android_log_print(ANDROID_LOG_INFO, "Caller", "cif: %ld, params_len: %d, returnType: %d, parmas: %d", _cif, params_len, returnType, params);
     return ffi_prep_cif(reinterpret_cast<ffi_cif *>(_cif), FFI_DEFAULT_ABI, params_len, returnType,
                         params);
 }
@@ -171,6 +170,7 @@ Java_net_fred_lua_foreign_core_ffi_FunctionCaller_ffi_1call(JNIEnv *env, jobject
 
     GET_POINTER_PARAM(env, func_addr, func_address, nullptr);
     //real call
+        __android_log_print(ANDROID_LOG_INFO, "Caller", "cif: %ld, func: %ld, returndata: %ld, parmas: %ld", cif, func_addr, returned_data, params_ptr_index);
     ffi_call((ffi_cif *) cif, (void (*)()) func_addr, returned_data, params_ptr_index);
 
     if (rsize != 0) {

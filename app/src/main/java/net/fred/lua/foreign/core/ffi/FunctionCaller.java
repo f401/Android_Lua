@@ -14,7 +14,7 @@ import net.fred.lua.foreign.scoped.IScopedResource;
 import net.fred.lua.foreign.types.Type;
 
 public class FunctionCaller {
-    private final IScopedResource scope;
+    private IScopedResource scope;
     private final FunctionDescriptor descriptor;
     private final Pointer funcAddress;
     private final boolean saveCIF;
@@ -65,6 +65,11 @@ public class FunctionCaller {
             tempScope.close();
         }
         return result;
+    }
+    
+    public void setNewScope(IScopedResource scope) {
+        this.savedCIFScope = null;
+        this.scope = scope;
     }
 
     private native Object ffi_call(MemoryAccessor accessor, // Usual for MemoryAccessor.UNCHECKED
