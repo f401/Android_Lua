@@ -3,7 +3,6 @@ package net.fred.lua.foreign;
 import android.util.Log;
 
 import net.fred.lua.foreign.child.SingleChildHolder;
-import net.fred.lua.foreign.internal.MemoryController;
 
 import java.util.concurrent.atomic.AtomicInteger;
 

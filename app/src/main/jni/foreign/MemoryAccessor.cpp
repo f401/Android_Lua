@@ -132,7 +132,7 @@ const static JNINativeMethod critial_memoryAccessorMethods[] = {
 extern "C" int registerMemoryAccessorFunctions(JNIEnv *env) {
     bool critical = tryCriticalNative(env);
     __android_log_print(ANDROID_LOG_INFO, "NativeRegister", "CriticalNative is %d", critical);
-    jclass mem_acc = env->FindClass("net/fred/lua/foreign/internal/MemoryAccessor");
+    jclass mem_acc = env->FindClass("net/fred/lua/foreign/MemoryAccessor");
     if (critical) {
         return
             env->RegisterNatives(mem_acc,

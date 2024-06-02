@@ -1,4 +1,4 @@
-package net.fred.lua.foreign.internal;
+package net.fred.lua.foreign;
 
 import android.util.Log;
 
@@ -7,8 +7,6 @@ import androidx.annotation.Nullable;
 
 import com.google.common.base.Preconditions;
 
-import net.fred.lua.foreign.NativeMethodException;
-import net.fred.lua.foreign.SharedResource;
 import net.fred.lua.foreign.child.IChildPolicy;
 import net.fred.lua.foreign.child.SimpleChildHolder;
 
@@ -113,7 +111,7 @@ public class MemoryController implements Closeable {
 
     /**
      * Remove {@code child} from the current object.
-     * If successful, the {@code detachParent} of @{code child} will be automatically called.
+     * If successful, the {@code detachParent} of {@code child} will be automatically called.
      *
      * @param child The object you want to delete.
      * @see IChildPolicy#removeChild(AutoCloseable)
@@ -141,6 +139,7 @@ public class MemoryController implements Closeable {
         this.childPolicy = policy;
     }
 
+    @Nullable
     public final MemoryController getParent() {
         return parent;
     }

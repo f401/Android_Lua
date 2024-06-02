@@ -1,8 +1,4 @@
-package net.fred.lua.foreign.internal;
-
-import net.fred.lua.foreign.NativeMethodException;
-import net.fred.lua.foreign.Pointer;
-import net.fred.lua.foreign.Resource;
+package net.fred.lua.foreign;
 
 // 装饰器设计模式
 public class ResourceWrapper extends Resource {

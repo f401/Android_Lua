@@ -9,14 +9,18 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
-import java.io.IOException;
+
 import net.fred.lua.App;
 import net.fred.lua.R;
 import net.fred.lua.common.CrashHandler;
 import net.fred.lua.common.activity.BaseActivity;
 import net.fred.lua.foreign.Breakpad;
 import net.fred.lua.foreign.NativeMethodException;
+import net.fred.lua.foreign.allocator.DefaultAllocator;
+import net.fred.lua.foreign.scoped.IScopedResource;
+import net.fred.lua.foreign.scoped.ScopeFactory;
 import net.fred.lua.io.CStandardOutputInput;
 import net.fred.lua.io.LogFileManager;
 import net.fred.lua.lua.Lua54LibraryProxy;
@@ -75,13 +79,15 @@ public class MainActivity extends BaseActivity {
             public void onClick(View v) {
                 Log.i(TAG, "Running cif");
                 try {
-                    Lua5_4 lua54 = new Lua5_4();
+                    IScopedResource scope = ScopeFactory.ofManual(DefaultAllocator.INSTANCE);
+                    Lua5_4 lua54 = new Lua5_4(scope);
                     CStandardOutputInput.getInstance().redirectStandardOutTo(
                             getExternalCacheDir() + "/lua_out.txt"
                     );
                     lua54.openlibs();
                     lua54.dofile("/sdcard/l.lua");
                     lua54.close();
+                    scope.close();
                 } catch (Throwable e) {
                     CrashHandler.fastHandleException(e, MainActivity.this);
                 }

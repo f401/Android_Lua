@@ -1,11 +1,12 @@
 package net.fred.lua.foreign.allocator;
 
 import android.util.Log;
+
+import net.fred.lua.BuildConfig;
+import net.fred.lua.foreign.MemorySegment;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.Resource;
-import net.fred.lua.foreign.internal.MemorySegment;
-import net.fred.lua.BuildConfig;
 
 public final class LibcMallocResourceImpl extends Resource {
     private final Pointer pointer;

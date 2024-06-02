@@ -32,8 +32,8 @@
 
 -keepclasseswithmembers interface net.fred.lua.foreign.types.Type {
     net.fred.lua.foreign.Pointer getFFIPointer();
-    void write(net.fred.lua.foreign.internal.MemoryAccessor, net.fred.lua.foreign.Pointer, java.lang.Object);
-    java.lang.Object read(net.fred.lua.foreign.allocator.IAllocator, net.fred.lua.foreign.internal.MemoryAccessor, net.fred.lua.foreign.Pointer);
+    void write(net.fred.lua.foreign.MemoryAccessor, net.fred.lua.foreign.Pointer, java.lang.Object);
+    java.lang.Object read(net.fred.lua.foreign.allocator.IAllocator, net.fred.lua.foreign.MemoryAccessor, net.fred.lua.foreign.Pointer);
     int getSize(java.lang.Object);
 }
 -keepclasseswithmembers class net.fred.lua.foreign.Pointer {

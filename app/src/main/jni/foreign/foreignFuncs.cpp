@@ -100,7 +100,7 @@ const static JNINativeMethod seg_methods[] = {
 
 static int registerMethods(JNIEnv *env) {
     jclass dll = env->FindClass("net/fred/lua/foreign/core/DynamicLoadingLibrary");
-    jclass seg = env->FindClass("net/fred/lua/foreign/internal/MemorySegment");
+    jclass seg = env->FindClass("net/fred/lua/foreign/MemorySegment");
     if (registerMemoryAccessorFunctions(env) == JNI_ERR ||
         env->RegisterNatives(dll, dllMethods, sizeof(dllMethods) / sizeof(dllMethods[0])) ==
         JNI_ERR ||

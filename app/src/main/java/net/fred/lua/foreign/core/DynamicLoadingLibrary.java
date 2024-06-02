@@ -10,10 +10,10 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
 import net.fred.lua.common.utils.FileUtils;
+import net.fred.lua.foreign.Constants;
+import net.fred.lua.foreign.MemoryController;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
-import net.fred.lua.foreign.internal.ForeignValues;
-import net.fred.lua.foreign.internal.MemoryController;
 
 import java.util.concurrent.TimeUnit;
 
@@ -24,7 +24,7 @@ public final class DynamicLoadingLibrary extends MemoryController {
             .build(new CacheLoader<String, DynamicLoadingLibrary>() {
                 @Override
                 public DynamicLoadingLibrary load(@NonNull String key) throws Exception {
-                    Pointer handle = dlopen(key, ForeignValues.RTLD_LAZY);
+                    Pointer handle = dlopen(key, Constants.RTLD_LAZY);
                     Log.i(TAG, "Loaded library " + key + ".At 0x" + Long.toHexString(handle.get()));
                     return new DynamicLoadingLibrary(handle);
                 }

@@ -1,10 +1,7 @@
-package net.fred.lua.foreign.internal;
+package net.fred.lua.foreign;
 
 import androidx.annotation.NonNull;
 
-import net.fred.lua.foreign.NativeMethodException;
-import net.fred.lua.foreign.Pointer;
-import net.fred.lua.foreign.Resource;
 import net.fred.lua.foreign.allocator.DefaultAllocator;
 import net.fred.lua.foreign.allocator.IAllocator;
 import net.fred.lua.foreign.types.Type;

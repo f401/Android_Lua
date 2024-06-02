@@ -4,7 +4,8 @@ import android.util.Log;
 
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.core.DynamicLoadingLibrary;
-import net.fred.lua.foreign.ffi.FunctionCaller;
+import net.fred.lua.foreign.core.ffi.FunctionCaller;
+import net.fred.lua.foreign.scoped.ScopeFactory;
 import net.fred.lua.foreign.types.Type;
 import net.fred.lua.foreign.types.TypeRegistry;
 
@@ -34,8 +35,8 @@ public class CallHandler implements InvocationHandler {
             }
             paramsArray = params.toArray(new Type[params.size()]);
         }
-        return FunctionCaller.of(false, dll.lookupSymbol(method.getName()),
+        return FunctionCaller.of(ScopeFactory.ofGlobal(), false, dll.lookupSymbol(method.getName()),
                 TypeRegistry.getType(method.getReturnType()), paramsArray
-        ).callThenClose(args);
+        ).call(args);
     }
 }

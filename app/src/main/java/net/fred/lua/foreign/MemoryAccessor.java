@@ -1,6 +1,4 @@
-package net.fred.lua.foreign.internal;
-
-import net.fred.lua.foreign.Pointer;
+package net.fred.lua.foreign;
 
 import dalvik.annotation.optimization.CriticalNative;
 

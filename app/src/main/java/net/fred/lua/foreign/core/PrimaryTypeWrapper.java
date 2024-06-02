@@ -1,26 +1,26 @@
 package net.fred.lua.foreign.core;
 
-import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_DOUBLE;
-import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_FLOAT;
-import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_INT16;
-import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_INT32;
-import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_INT64;
-import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_INT8;
-import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_UINT16;
-import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_UINT32;
-import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_UINT64;
-import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_UINT8;
-import static net.fred.lua.foreign.internal.ForeignValues.FFI_TYPE_VOID;
+import static net.fred.lua.foreign.Constants.FFI_TYPE_DOUBLE;
+import static net.fred.lua.foreign.Constants.FFI_TYPE_FLOAT;
+import static net.fred.lua.foreign.Constants.FFI_TYPE_INT16;
+import static net.fred.lua.foreign.Constants.FFI_TYPE_INT32;
+import static net.fred.lua.foreign.Constants.FFI_TYPE_INT64;
+import static net.fred.lua.foreign.Constants.FFI_TYPE_INT8;
+import static net.fred.lua.foreign.Constants.FFI_TYPE_UINT16;
+import static net.fred.lua.foreign.Constants.FFI_TYPE_UINT32;
+import static net.fred.lua.foreign.Constants.FFI_TYPE_UINT64;
+import static net.fred.lua.foreign.Constants.FFI_TYPE_UINT8;
+import static net.fred.lua.foreign.Constants.FFI_TYPE_VOID;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.common.collect.ImmutableMap;
 
+import net.fred.lua.foreign.MemoryAccessor;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.allocator.IAllocator;
-import net.fred.lua.foreign.internal.MemoryAccessor;
 import net.fred.lua.foreign.types.CommonFeatures;
 import net.fred.lua.foreign.types.Type;
 import net.fred.lua.foreign.types.TypeFactory;

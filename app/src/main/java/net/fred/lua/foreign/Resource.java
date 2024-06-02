@@ -1,8 +1,6 @@
 package net.fred.lua.foreign;
 
 import net.fred.lua.foreign.child.RejectAllHolder;
-import net.fred.lua.foreign.internal.MemoryController;
-import net.fred.lua.foreign.internal.ResourceWrapper;
 
 /**
  * Decorator mode.

@@ -1,9 +1,9 @@
 package net.fred.lua.foreign.scoped;
 
+import net.fred.lua.foreign.MemoryController;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Resource;
 import net.fred.lua.foreign.allocator.IAllocator;
-import net.fred.lua.foreign.internal.MemoryController;
 
 abstract class ScopedResourceImpl extends MemoryController implements IScopedResource {
     

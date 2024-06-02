@@ -6,18 +6,19 @@ import androidx.annotation.Nullable;
 
 import com.google.common.base.Preconditions;
 
+import net.fred.lua.foreign.MemoryAccessor;
+import net.fred.lua.foreign.MemoryController;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.allocator.DefaultAllocator;
 import net.fred.lua.foreign.allocator.IAllocator;
-import net.fred.lua.foreign.internal.MemoryAccessor;
-import net.fred.lua.foreign.internal.MemoryController;
 import net.fred.lua.foreign.types.Type;
 
 /**
  * The function caller of the native layer.
  * Attention: Cannot call macro functions!!!
  */
+@Deprecated
 public final class FunctionCaller extends MemoryController {
     private final FunctionDescriber describer;
     private final Pointer funcAddress;

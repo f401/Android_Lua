@@ -6,11 +6,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.collection.LruCache;
 
+import net.fred.lua.foreign.MemoryController;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.SharedResource;
 import net.fred.lua.foreign.allocator.IAllocator;
 import net.fred.lua.foreign.core.ForeignString;
-import net.fred.lua.foreign.internal.MemoryController;
 
 // TODO: Impl using page size allocator
 public class StringPool extends MemoryController {

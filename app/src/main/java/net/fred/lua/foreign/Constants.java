@@ -1,11 +1,9 @@
-package net.fred.lua.foreign.internal;
-
-import net.fred.lua.foreign.Pointer;
+package net.fred.lua.foreign;
 
 /**
  * Contains all native values that this project need.
  */
-public final class ForeignValues {
+public final class Constants {
 
     public static final Pointer NULL;
     public static final int RTLD_LAZY;

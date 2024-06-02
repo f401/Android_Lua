@@ -7,14 +7,14 @@ import androidx.annotation.Nullable;
 
 import net.fred.lua.common.utils.StringUtils;
 import net.fred.lua.common.utils.ThrowableUtils;
+import net.fred.lua.foreign.Constants;
+import net.fred.lua.foreign.MemoryAccessor;
+import net.fred.lua.foreign.MemoryController;
+import net.fred.lua.foreign.MemorySegment;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.Resource;
 import net.fred.lua.foreign.allocator.IAllocator;
-import net.fred.lua.foreign.internal.ForeignValues;
-import net.fred.lua.foreign.internal.MemoryAccessor;
-import net.fred.lua.foreign.internal.MemoryController;
-import net.fred.lua.foreign.internal.MemorySegment;
 import net.fred.lua.foreign.types.Type;
 import net.fred.lua.foreign.types.TypeFactory;
 
@@ -98,13 +98,13 @@ public class ForeignString extends MemorySegment {
 
         @Override
         public int getSize(@Nullable Object obj) {
-            return (int) ForeignValues.SIZE_OF_POINTER;
+            return (int) Constants.SIZE_OF_POINTER;
         }
 
         @Nullable
         @Override
         public Pointer getFFIPointer() {
-            return ForeignValues.FFI_TYPE_POINTER;
+            return Constants.FFI_TYPE_POINTER;
         }
 
         @Override

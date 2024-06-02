@@ -2,9 +2,9 @@ package net.fred.lua.lua;
 
 import androidx.annotation.Nullable;
 
+import net.fred.lua.foreign.MemoryController;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
-import net.fred.lua.foreign.internal.MemoryController;
 
 public abstract class Lua extends MemoryController {
 

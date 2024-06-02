@@ -4,8 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import net.fred.lua.foreign.allocator.IAllocator;
-import net.fred.lua.foreign.internal.ForeignValues;
-import net.fred.lua.foreign.internal.MemoryAccessor;
 import net.fred.lua.foreign.types.Type;
 import net.fred.lua.foreign.types.TypeFactory;
 
@@ -103,13 +101,13 @@ public class Pointer {
 
         @Override
         public int getSize(@Nullable Object obj) {
-            return (int) ForeignValues.SIZE_OF_POINTER;
+            return (int) Constants.SIZE_OF_POINTER;
         }
 
         @Nullable
         @Override
         public Pointer getFFIPointer() {
-            return ForeignValues.FFI_TYPE_POINTER;
+            return Constants.FFI_TYPE_POINTER;
         }
 
         @Override

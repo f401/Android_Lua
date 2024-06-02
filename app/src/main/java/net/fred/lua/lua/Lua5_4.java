@@ -1,35 +1,35 @@
 package net.fred.lua.lua;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.collection.LruCache;
 
 import net.fred.lua.PathConstants;
-import net.fred.lua.common.CrashHandler;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.allocator.DefaultAllocator;
 import net.fred.lua.foreign.core.DynamicLoadingLibrary;
 import net.fred.lua.foreign.core.ForeignString;
 import net.fred.lua.foreign.core.PrimaryTypes;
-import net.fred.lua.foreign.ffi.FunctionCaller;
+import net.fred.lua.foreign.core.ffi.FunctionCaller;
+import net.fred.lua.foreign.scoped.IScopedResource;
 
 public class Lua5_4 extends Lua {
     protected static DynamicLoadingLibrary dll;
     private static final FunctionCallerCache cache = new FunctionCallerCache();
+    private final IScopedResource scope;
 
-    public Lua5_4() throws NativeMethodException {
-        super(new_state());
+    public Lua5_4(IScopedResource scope) throws NativeMethodException {
+        super(new_state(scope));
+        this.scope = scope;
     }
 
-    protected static Pointer new_state() throws NativeMethodException {
+    protected static Pointer new_state(final IScopedResource scope) throws NativeMethodException {
         if (dll == null) {
             dll = DynamicLoadingLibrary.open(PathConstants.NATIVE_LIBRARY_DIR + "liblua.so");
         }
         return (Pointer) getOrCreateFromCache("luaL_newstate", new Creator() {
             @Override
             public FunctionCaller create(String symbol) throws NativeMethodException {
-                return FunctionCaller.of(dll.lookupSymbol(symbol), PrimaryTypes.POINTER);
+                return FunctionCaller.of(scope, dll.lookupSymbol(symbol), PrimaryTypes.POINTER);
             }
         }).call();
     }
@@ -40,7 +40,7 @@ public class Lua5_4 extends Lua {
         getOrCreateFromCache("lua_close", new Creator() {
             @Override
             public FunctionCaller create(String symbol) throws NativeMethodException {
-                return FunctionCaller.of(dll.lookupSymbol(symbol), PrimaryTypes.VOID, PrimaryTypes.POINTER);
+                return FunctionCaller.of(scope, dll.lookupSymbol(symbol), PrimaryTypes.VOID, PrimaryTypes.POINTER);
             }
         }).call(getPointer());
     }
@@ -60,7 +60,7 @@ public class Lua5_4 extends Lua {
         getOrCreateFromCache("luaL_openlibs", new Creator() {
             @Override
             public FunctionCaller create(String symbol) throws NativeMethodException {
-                return FunctionCaller.of(dll.lookupSymbol(symbol),
+                return FunctionCaller.of(scope, dll.lookupSymbol(symbol),
                         PrimaryTypes.VOID, PrimaryTypes.POINTER);
             }
         }).call(getPointer());
@@ -72,7 +72,7 @@ public class Lua5_4 extends Lua {
         getOrCreateFromCache("J_luaL_dofile", new Creator() {
             @Override
             public FunctionCaller create(String symbol) throws NativeMethodException {
-                return FunctionCaller.of(false, dll.lookupSymbol(symbol),
+                return FunctionCaller.of(scope, false, dll.lookupSymbol(symbol),
                         PrimaryTypes.INT,
                         PrimaryTypes.POINTER, PrimaryTypes.STRING);
             }
@@ -99,14 +99,6 @@ public class Lua5_4 extends Lua {
             super(16);
         }
 
-        @Override
-        protected void entryRemoved(boolean evicted, @NonNull String key, @NonNull FunctionCaller oldValue, @Nullable FunctionCaller newValue) {
-            try {
-                oldValue.close();
-            } catch (NativeMethodException e) {
-                CrashHandler.fastHandleException(e);
-            }
-        }
     }
 
 }

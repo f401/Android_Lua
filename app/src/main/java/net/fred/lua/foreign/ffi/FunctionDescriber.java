@@ -3,17 +3,18 @@ package net.fred.lua.foreign.ffi;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import net.fred.lua.foreign.Constants;
+import net.fred.lua.foreign.MemoryController;
+import net.fred.lua.foreign.MemorySegment;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.Pointer;
 import net.fred.lua.foreign.core.PrimaryTypes;
-import net.fred.lua.foreign.internal.ForeignValues;
-import net.fred.lua.foreign.internal.MemoryController;
-import net.fred.lua.foreign.internal.MemorySegment;
 import net.fred.lua.foreign.types.Type;
 
 /**
  * Store CIF in a cached manner.
  */
+@Deprecated
 public final class FunctionDescriber extends MemoryController {
 
     @Nullable
@@ -80,10 +81,10 @@ public final class FunctionDescriber extends MemoryController {
         if (hasChild()) {
             return (MemorySegment) childAt(0);
         }
-        MemorySegment cif = MemorySegment.create(ForeignValues.SIZE_OF_FFI_CIF);
+        MemorySegment cif = MemorySegment.create(Constants.SIZE_OF_FFI_CIF);
         addChild(cif);
         int result = prep_cif(cif.getBasePointer(), returnType, params);
-        if (result != ForeignValues.FFI_STATUS_OK) {
+        if (result != Constants.FFI_STATUS_OK) {
             throw new NativeMethodException("Result: " + result);
         }
         return cif;

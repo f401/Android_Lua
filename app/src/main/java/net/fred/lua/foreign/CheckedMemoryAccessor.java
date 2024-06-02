@@ -1,8 +1,6 @@
-package net.fred.lua.foreign.internal;
+package net.fred.lua.foreign;
 
 import androidx.annotation.NonNull;
-
-import net.fred.lua.foreign.Pointer;
 
 public class CheckedMemoryAccessor extends MemoryAccessor {
     private final Pointer boundary;

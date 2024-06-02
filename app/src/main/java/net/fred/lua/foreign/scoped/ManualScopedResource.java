@@ -1,9 +1,6 @@
 package net.fred.lua.foreign.scoped;
 
-import net.fred.lua.foreign.NativeMethodException;
-import net.fred.lua.foreign.Resource;
 import net.fred.lua.foreign.allocator.IAllocator;
-import net.fred.lua.foreign.internal.MemoryController;
 
 /**
  * 这是IAllocator和MemoryAccessor的结合体, 专门用来分配受管理的内存
@@ -27,6 +24,4 @@ public class ManualScopedResource extends ScopedResourceImpl {
         addChild(result);
         return result;
     }
-
-
 }
