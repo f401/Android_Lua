@@ -32,20 +32,20 @@ public class MemoryController implements Closeable {
     /*** Release this object. After releasing it, you cannot touch it at all. */
     @Override
     public final void close() throws NativeMethodException {
-        close(false);
+        if (askParentToAllowChildRelease(this)
+            && this.closed.compareAndSet(false, true)) {
+                doClose(false);
+        } else {
+            Log.e(TAG, "Pointer freed twice " + this);
+        }
     }
 
-    private void close(boolean finalized) throws NativeMethodException {
-        if (askParentToAllowChildRelease() &&
-                this.closed.compareAndSet(false, true)) {
-            dispose(finalized);
-            childPolicy.closeAllChild();
-            if (hasParent()) {
-                parent.removeChild(this);
-                parent = null;
-            }
-        } else {
-            Log.e(TAG, "Pointer freed twice");
+    private void doClose(boolean finalized) throws NativeMethodException {
+        dispose(finalized);
+        childPolicy.closeAllChild();
+        if (hasParent()) {
+            parent.removeChild(this);
+            parent = null;
         }
     }
 
@@ -104,7 +104,10 @@ public class MemoryController implements Closeable {
      * @return Returning true indicates permission, while false does not allow.
      * @see SharedResource
      */
-    protected boolean askParentToAllowChildRelease() {
+    protected boolean askParentToAllowChildRelease(MemoryController controller) {
+        if (hasParent()) {
+            return parent.askParentToAllowChildRelease(controller);
+        }
         return true;
     }
 
@@ -147,8 +150,8 @@ public class MemoryController implements Closeable {
     @Override
     protected void finalize() throws Throwable {
         super.finalize();
-        if (!closed.get()) {
-            close(true);
+        if (this.closed.compareAndSet(false, true)) {
+            doClose(true);
         }
     }
 }

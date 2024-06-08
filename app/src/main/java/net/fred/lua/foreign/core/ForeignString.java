@@ -65,6 +65,7 @@ public class ForeignString extends MemorySegment {
         }
         return result;
     }
+    
 
     /**
      * Obtain the length of the {@code String}.
@@ -83,7 +84,7 @@ public class ForeignString extends MemorySegment {
     public static ForeignStringType ofType() {
         return new ForeignStringType();
     }
-
+    
     public static class ForeignStringType extends Type<ForeignString> {
         public static final TypeFactory<ForeignStringType> FACTORY = new TypeFactory<ForeignStringType>() {
             @Override

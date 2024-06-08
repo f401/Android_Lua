@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import android.os.StrictMode;
 
 public class App extends Application {
     public static final String EXIT_ACTION = "net.lua.exit.all";
@@ -67,6 +68,9 @@ public class App extends Application {
         int cpus = Runtime.getRuntime().availableProcessors();
         threadPool = new ThreadPoolExecutor(cpus / 2, cpus * 2, 1, TimeUnit.MINUTES, new ArrayBlockingQueue<Runnable>(cpus));
         referenceQueue = new FinalizableReferenceQueue();
+        
+        StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().permitDiskReads().build());
+        StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll().penaltyLog().build());
         
         if (App.isMainProcess()) {
             LogScanner.cleanBuffer();

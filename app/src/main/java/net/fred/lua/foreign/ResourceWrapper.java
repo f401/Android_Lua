@@ -30,7 +30,7 @@ public class ResourceWrapper extends Resource {
     @Override
     public void dispose(boolean finalized) throws NativeMethodException {
         super.dispose(finalized);
-        impl.dispose(finalized);
+        impl.close();
     }
 
 
