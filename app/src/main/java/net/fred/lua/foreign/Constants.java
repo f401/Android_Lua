@@ -12,7 +12,6 @@ public final class Constants {
     public static final int RTLD_LOCAL;
 
     //libffi
-
     public static final Pointer FFI_TYPE_INT8;
     public static final Pointer FFI_TYPE_INT16;
     public static final Pointer FFI_TYPE_INT32;
@@ -29,7 +28,6 @@ public final class Constants {
     public static final Pointer FFI_TYPE_DOUBLE;
 
     //sizes
-
     public static final long SIZE_OF_FFI_CIF;
     public static final long SIZE_OF_POINTER;
 

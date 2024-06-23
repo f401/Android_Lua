@@ -4,7 +4,7 @@ android {
     compileSdkVersion 33
     buildToolsVersion "33.0.0"
     ndkVersion '24.0.8215888'
-    
+
     signingConfigs {
         config {
             keyAlias "NDKLua"
@@ -22,24 +22,27 @@ android {
         versionName "1.0"
         multiDexEnabled true
 
-       // testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        // testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         ndk {
             abiFilters "armeabi-v7a",//arm架构的32位
                     "arm64-v8a",//arm架构的64位
                     "x86",//x86架构的 32位
                     "x86_64"
+            jobs 4
         }
     }
 
     buildTypes {
         release {
             signingConfig signingConfigs.config
-            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
             signingConfig signingConfigs.config
+            ndk {
+                debugSymbolLevel "FULL"
+            }
         }
     }
     externalNativeBuild {
@@ -59,8 +62,8 @@ dependencies {
     implementation 'com.google.guava:guava:30.0-android'
 
     //testImplementation 'junit:junit:4.13.2' // junit is fine
-   // androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
-  //  androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    // androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    //  androidTestImplementation 'androidx.test.ext:junit:1.1.5'
 //    implementation 'androidx.preference:preference:1.2.0'
 //    implementation 'com.google.android.material:material:1.4.+'
     //implementation 'com.google.android.material:material:1.0.0'

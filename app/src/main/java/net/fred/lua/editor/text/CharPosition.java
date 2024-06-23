@@ -1,8 +1,11 @@
 package net.fred.lua.editor.text;
 
-import javax.annotation.concurrent.Immutable;
-import com.google.common.base.Objects;
+import androidx.annotation.NonNull;
+
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
+
+import javax.annotation.concurrent.Immutable;
 
 @Immutable
 public final class CharPosition {
@@ -47,6 +50,7 @@ public final class CharPosition {
         return Objects.hashCode(line, colume, index);
     }
 
+    @NonNull
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
