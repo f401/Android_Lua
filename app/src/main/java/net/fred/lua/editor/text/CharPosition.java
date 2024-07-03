@@ -5,31 +5,39 @@ import androidx.annotation.NonNull;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
-import javax.annotation.concurrent.Immutable;
-
-@Immutable
 public final class CharPosition {
-    
-    private final int line;
-    private final int colume;
-    private final int index;
+    private int mLine;
+    private int mColumn;
+    private int mIndex;
 
-    public CharPosition(int line, int colume, int index) {
-        this.line = line;
-        this.colume = colume;
-        this.index = index;
+    public CharPosition(int line, int column, int index) {
+        this.mLine = line;
+        this.mColumn = column;
+        this.mIndex = index;
     }
 
     public int getLine() {
-        return line;
+        return mLine;
     }
 
-    public int getColume() {
-        return colume;
+    public void setLine(int line) {
+        this.mLine = line;
+    }
+
+    public int getColumn() {
+        return mColumn;
+    }
+
+    public void setColumn(int column) {
+        this.mColumn = column;
     }
 
     public int getIndex() {
-        return index;
+        return mIndex;
+    }
+
+    public void setIndex(int index) {
+        this.mIndex = index;
     }
 
     @Override
@@ -38,25 +46,25 @@ public final class CharPosition {
             return true;
         if (obj instanceof CharPosition) {
             CharPosition other = (CharPosition) obj;
-            return Objects.equal(other.line, this.line) &&
-                Objects.equal(other.colume, this.colume) &&
-                Objects.equal(other.index, this.index);
+            return Objects.equal(other.mLine, this.mLine) &&
+                    Objects.equal(other.mColumn, this.mColumn) &&
+                    Objects.equal(other.mIndex, this.mIndex);
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(line, colume, index);
+        return Objects.hashCode(mLine, mColumn, mIndex);
     }
 
     @NonNull
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
-            .add("line", line)
-            .add("colume", colume)
-            .add("index", index).toString();
+                .add("line", mLine)
+                .add("column", mColumn)
+                .add("index", mIndex).toString();
     }
    
 }

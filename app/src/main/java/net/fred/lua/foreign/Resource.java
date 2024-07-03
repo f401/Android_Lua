@@ -15,7 +15,7 @@ public abstract class Resource extends MemoryController {
 
     /**
      * Obtain the requested memory.
-     * Maybe `mmap` request or `malloc` request
+     * Maybe `mmap` request or `malloc` request.
      * @return Pointer header of the requested memory.
      */
     public abstract Pointer getBasePointer();

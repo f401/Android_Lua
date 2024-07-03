@@ -15,25 +15,23 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MemoryController implements Closeable {
     private static final String TAG = "MemoryController";
-    private final AtomicBoolean closed;
+    private final AtomicBoolean mIsDisposed;
 
-    /**
-     * Contains objects that need to be released together when this object is released.
-     */
-    private IChildPolicy childPolicy;
+    /*** Contains objects that need to be released together when this object is released.} */
+    private IChildPolicy mChildPolicy;
     @Nullable
-    private MemoryController parent;
+    private MemoryController mParent;
 
     public MemoryController() {
-        this.closed = new AtomicBoolean(false);
-        this.childPolicy = new SimpleChildHolder(this);
+        this.mIsDisposed = new AtomicBoolean(false);
+        this.mChildPolicy = new SimpleChildHolder(this);
     }
 
     /*** Release this object. After releasing it, you cannot touch it at all. */
     @Override
     public final void close() throws NativeMethodException {
         if (askParentToAllowChildRelease(this)
-            && this.closed.compareAndSet(false, true)) {
+                && this.mIsDisposed.compareAndSet(false, true)) {
                 doClose(false);
         } else {
             Log.e(TAG, "Pointer freed twice " + this);
@@ -42,59 +40,100 @@ public class MemoryController implements Closeable {
 
     private void doClose(boolean finalized) throws NativeMethodException {
         dispose(finalized);
-        childPolicy.closeAllChild();
+        mChildPolicy.closeAllChild();
         if (hasParent()) {
-            parent.removeChild(this);
-            parent = null;
+            mParent.removeChild(this);
+            mParent = null;
         }
     }
 
+    /**
+     * Determine if it has been disposed.
+     *
+     * @return Has it been disposed.
+     */
     public final boolean isClosed() {
-        return this.closed.get();
+        return this.mIsDisposed.get();
     }
 
+    /**
+     * Obtain the son based on the provided index.
+     * @param idx The index.
+     * @return The son.
+     * @see IChildPolicy#childAt(int)
+     * @exception IndexOutOfBoundsException Throw when the provided quantity is greater than the maximum number of sub items.
+     */
     public final AutoCloseable childAt(int idx) {
-        return childPolicy.childAt(idx);
+        return mChildPolicy.childAt(idx);
     }
 
     /**
      * Returns whether the current object has children.
+     * @return Whether the current object has children.
+     * @see IChildPolicy#hasChild() 
      */
     public final boolean hasChild() {
-        return childPolicy.hasChild();
+        return mChildPolicy.hasChild();
     }
 
+    /**
+     * Returns whether the current object has parent.
+     * @return Whether the current object has parent.
+     */
     public final boolean hasParent() {
-        return parent != null;
+        return mParent != null;
     }
 
+    /**
+     * Bind segment as a child of the current object.
+     * The index will increase as the number of children increases, starting from {@code 0}.
+     * @param segment The child you want to add.
+     * @see IChildPolicy#addChild(AutoCloseable)
+     */
     public final void addChild(@Nullable AutoCloseable segment) {
         if (segment == null) {
             Log.w("MemoryController", "Try to add child with null value. Ignoring.");
+            return;
         }
-        childPolicy.addChild(segment);
+        mChildPolicy.addChild(segment);
     }
 
+    /**
+     * This method will be called when the current object "FINDS" its father.
+     * The meaning is that when the current object is bound to {@code parent}, it will be called.
+     * @param parent The father you want to bind.
+     * @exception IllegalStateException Thrown when the current object already has a father.
+     */
     public final void attachParent(@NonNull MemoryController parent) {
-        Preconditions.checkState(this.parent == null,
+        Preconditions.checkState(this.mParent == null,
                 "The current object already has a father. If you want to replace it, please call 'detachParent' first`.");
-        Preconditions.checkState(this != parent,
-                "Cannot set oneself as Parent.");
         synchronized (this) {
-            this.parent = parent;
+            this.mParent = parent;
         }
     }
 
+    /**
+     * Called when unbinding the current object from the parent
+     * This method will call {@link #onDetachParent()}
+     */
     public synchronized final void detachParent() {
         onDetachParent();
-        this.parent = null;
+        this.mParent = null;
     }
 
+    /**
+     * Called when unbinding the current object from the parent
+     * @see SharedResource#onDetachParent()
+     */
     protected void onDetachParent() {
     }
 
+    /**
+     * Determine if the given {@code needle} is a paternal relative of the current object.
+     * @param needle The object you want to check.
+     */
     public final boolean checkIsParent(@NonNull MemoryController needle) {
-        return this == needle || (parent != null && parent.checkIsParent(needle));
+        return this == needle || (mParent != null && mParent.checkIsParent(needle));
     }
 
     /**
@@ -106,7 +145,7 @@ public class MemoryController implements Closeable {
      */
     protected boolean askParentToAllowChildRelease(MemoryController controller) {
         if (hasParent()) {
-            return parent.askParentToAllowChildRelease(controller);
+            return mParent.askParentToAllowChildRelease(controller);
         }
         return true;
     }
@@ -114,13 +153,13 @@ public class MemoryController implements Closeable {
 
     /**
      * Remove {@code child} from the current object.
-     * If successful, the {@code detachParent} of {@code child} will be automatically called.
+     * If successful, the {@link #detachParent} of {@code child} will be automatically called.
      *
      * @param child The object you want to delete.
      * @see IChildPolicy#removeChild(AutoCloseable)
      */
     public final void removeChild(@NonNull MemoryController child) {
-        childPolicy.removeChild(child);
+        mChildPolicy.removeChild(child);
     }
 
     /**
@@ -134,23 +173,37 @@ public class MemoryController implements Closeable {
         }
     }
 
+    /**
+     * Get the current object's child management method.
+     * @see IChildPolicy
+     */
     public final IChildPolicy getChildPolicy() {
-        return childPolicy;
+        return mChildPolicy;
     }
 
-    public final void setChildPolicy(IChildPolicy policy) {
-        this.childPolicy = policy;
+    /**
+     * Set the current object's child management method.
+     *
+     * @param policy The method you want to set.
+     * @see IChildPolicy
+     */
+    public final void setChildPolicy(@NonNull IChildPolicy policy) {
+        this.mChildPolicy = policy;
     }
 
+    /**
+     * Get the father of the current object.
+     * @return If the current object does not have a father, return null.
+     */
     @Nullable
     public final MemoryController getParent() {
-        return parent;
+        return mParent;
     }
 
     @Override
     protected void finalize() throws Throwable {
         super.finalize();
-        if (this.closed.compareAndSet(false, true)) {
+        if (this.mIsDisposed.compareAndSet(false, true)) {
             doClose(true);
         }
     }

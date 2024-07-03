@@ -7,29 +7,52 @@ import net.fred.lua.foreign.allocator.IAllocator;
 import net.fred.lua.foreign.types.Type;
 import net.fred.lua.foreign.types.TypeFactory;
 
+import javax.annotation.concurrent.Immutable;
+
+/**
+ * Encapsulation of Native Layer Pointers in Java Layer.
+ */
+@Immutable
 public class Pointer {
-    private long address;
+    private long mAddress;
 
     public Pointer(long address) {
-        this.address = address;
+        this.mAddress = address;
     }
 
     /**
-     * Another method for creating @{code Pointer}.
+     * Another method for creating {@code Pointer}.
      */
     @NonNull
     public static Pointer from(long address) {
         return new Pointer(address);
     }
 
+    private static Pointer min(Pointer first, Pointer second) {
+        return first.mAddress < second.mAddress ? first : second;
+    }
+
+    /**
+     * Get the pointer to the native layer.
+     * NOTE: THIS METHOD IS USELESS IN JAVA LAYER.
+     *
+     * @return The pointer in the native layer.
+     */
     public final long get() {
-        return address;
+        return mAddress;
     }
 
+    /**
+     * Set the pointer to the native layer
+     * @param address The pointer value you want to set.
+     */
     protected final void set(long address) {
-        this.address = address;
+        this.mAddress = address;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public final boolean equals(Object o) {
         if (this == o) return true;
@@ -37,23 +60,24 @@ public class Pointer {
 
         Pointer pointer = (Pointer) o;
 
-        return address == pointer.address;
+        return mAddress == pointer.mAddress;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public final int hashCode() {
-        return (int) address;
+        return (int) mAddress;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @NonNull
     @Override
     public final String toString() {
-        return "0x" + Long.toHexString(address);
-    }
-
-    @NonNull
-    public final Pointer plus(long size) {
-        return new Pointer(address + size);
+        return "0x" + Long.toHexString(mAddress);
     }
 
     @NonNull
@@ -61,8 +85,14 @@ public class Pointer {
         return new PointerType();
     }
 
-    private static Pointer min(Pointer first, Pointer second) {
-        return first.address < second.address ? first : second;
+    /**
+     * Add the current pointer to {@code size} and return a new pointer based on the addition result.
+     * @param size The size you want to add.
+     * @return The new pointer.
+     */
+    @NonNull
+    public final Pointer plus(long size) {
+        return new Pointer(mAddress + size);
     }
 
     public final boolean biggerThan(@NonNull Pointer other) {
@@ -79,11 +109,11 @@ public class Pointer {
         if (this.equals(other)) return false;
 
         // 这时两者都大于0或小于0(都有符号位或没有)，可以正常比较
-        if ((this.address > 0 && other.address > 0) ||
-                (this.address < 0 && other.address < 0)) {
-            return this.address > other.address;
+        if ((this.mAddress > 0 && other.mAddress > 0) ||
+                (this.mAddress < 0 && other.mAddress < 0)) {
+            return this.mAddress > other.mAddress;
         } else {
-            return this.address < 0;
+            return this.mAddress < 0;
         }
     }
 
