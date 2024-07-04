@@ -2,12 +2,12 @@ package net.fred.lua.foreign;
 
 // 装饰器设计模式
 public class ResourceWrapper extends Resource {
-    private final Resource impl;
+    private final Resource mImpl;
 
     protected ResourceWrapper(Resource impl) {
         // 不将其设置为我们的Child, 并将使用权归于我们
         impl.detachParent();
-        this.impl = impl;
+        this.mImpl = impl;
     }
 
     /**
@@ -16,7 +16,7 @@ public class ResourceWrapper extends Resource {
      */
     @Override
     public final Pointer getBasePointer() {
-        return impl.getBasePointer();
+        return mImpl.getBasePointer();
     }
 
     /**
@@ -24,13 +24,16 @@ public class ResourceWrapper extends Resource {
      */
     @Override
     public long size() {
-        return impl.size();
+        return mImpl.size();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void dispose(boolean finalized) throws NativeMethodException {
         super.dispose(finalized);
-        impl.close();
+        mImpl.close();
     }
 
 

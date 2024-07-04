@@ -10,10 +10,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class SharedResource<T extends AutoCloseable> extends MemoryController {
 
-    private final AtomicInteger refCount;
+    private final AtomicInteger mRefCount;
 
     protected SharedResource() {
-        this.refCount = new AtomicInteger(1);
+        this.mRefCount = new AtomicInteger(1);
         setChildPolicy(new SingleChildHolder());
     }
 
@@ -29,15 +29,15 @@ public class SharedResource<T extends AutoCloseable> extends MemoryController {
             return true;
         }
         decreaseRefCount();
-        return refCount.get() == 0 || isClosed();
+        return mRefCount.get() == 0 || isClosed();
     }
 
     public final void addRefCount() {
-        refCount.getAndIncrement();
+        mRefCount.getAndIncrement();
     }
 
     public final void decreaseRefCount() {
-        if (refCount.decrementAndGet() == 0) {
+        if (mRefCount.decrementAndGet() == 0) {
             try {
                 close(); // force close
             } catch (NativeMethodException e) {
@@ -47,7 +47,7 @@ public class SharedResource<T extends AutoCloseable> extends MemoryController {
     }
 
     public final int getRefCount() {
-        return refCount.get();
+        return mRefCount.get();
     }
 
     @SuppressWarnings("unchecked")

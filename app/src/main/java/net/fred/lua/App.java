@@ -5,23 +5,19 @@ import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.os.StrictMode;
 import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.multidex.MultiDex;
-
 import com.google.common.base.FinalizableReferenceQueue;
-
-import net.fred.lua.common.CrashHandler;
-import net.fred.lua.io.LogFileManager;
-import net.fred.lua.io.LogScanner;
-
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import android.os.StrictMode;
+import net.fred.lua.common.CrashHandler;
+import net.fred.lua.io.LogFileManager;
+import net.fred.lua.io.LogScanner;
 
 public class App extends Application {
     public static final String EXIT_ACTION = "net.lua.exit.all";

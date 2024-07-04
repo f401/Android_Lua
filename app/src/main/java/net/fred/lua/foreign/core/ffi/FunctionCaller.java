@@ -46,27 +46,38 @@ public class FunctionCaller {
 
     public Object call(Object... params) throws NativeMethodException {
         Type<?>[] typedParams = descriptor.getParams();
+        // Check the consistency of parameters.
+        // Specifically including null check and parameter length check.
         Preconditions.checkArgument((params == null && typedParams == null) || (params != null && typedParams != null));
         Preconditions.checkState(typedParams == null || typedParams.length == params.length, "The length of the passed in parameter does not match the descriptor");
+        
         Pointer ffi = savedCIFPointer;
         IScopedResource tempScope = savedCIFScope;
 
         if (saveCIF && tempScope == null) {
+            // For the first call to saveCIF
             tempScope = savedCIFScope = scope.newScope();
             ffi = savedCIFPointer = descriptor.doPrepare(savedCIFScope);
         } else if (!saveCIF) {
+            // No need for saveCIF to directly create a new 
             tempScope = scope.newScope();
         }
 
         Log.d("FunctionCaller", "Call function at address " + funcAddress);
 
+        // Real Call!
         Object result = ffi_call(MemoryAccessor.UNCHECKED, tempScope, ffi, funcAddress, descriptor.getParams(), params, descriptor.getReturnType());
+        
         if (!saveCIF) {
             tempScope.close();
         }
         return result;
     }
     
+    /**
+     * A way to achieve resource reuse.
+     * Recommended.
+     */
     public void setNewScope(IScopedResource scope) {
         this.savedCIFScope = null;
         this.scope = scope;

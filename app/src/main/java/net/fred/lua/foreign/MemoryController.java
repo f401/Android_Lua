@@ -42,6 +42,7 @@ public class MemoryController implements Closeable {
         dispose(finalized);
         mChildPolicy.closeAllChild();
         if (hasParent()) {
+            // Unbind us from the parent
             mParent.removeChild(this);
             mParent = null;
         }
