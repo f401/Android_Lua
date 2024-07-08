@@ -104,7 +104,7 @@ public class ContentLine implements CharSequence {
         int len = end - start;
         this.ensureCapacity(len + this.mLength);
         System.arraycopy(this.mContent, dstOff, this.mContent, dstOff + len, mLength - dstOff);
-        for (int i = 0; i < len; i++) {
+        for (int i = start; i < end; i++) {
             mContent[dstOff++] = src.charAt(i);
         }
         mLength += len;
