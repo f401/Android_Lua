@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.common.base.Preconditions;
+import com.google.errorprone.annotations.ForOverride;
 
 import net.fred.lua.foreign.child.IChildPolicy;
 import net.fred.lua.foreign.child.SimpleChildHolder;
@@ -126,6 +127,7 @@ public class MemoryController implements Closeable {
      * Called when unbinding the current object from the parent
      * @see SharedResource#onDetachParent()
      */
+    @ForOverride
     protected void onDetachParent() {
     }
 

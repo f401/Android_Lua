@@ -6,15 +6,33 @@ import androidx.annotation.Nullable;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 
+import java.util.Arrays;
+
 import javax.annotation.concurrent.NotThreadSafe;
 
 @NotThreadSafe
 public class ContentLine implements CharSequence {
     public static final float GROW_FACTOR = 1.5f;
 
-    private final LineSeparator mSeparator;
+    private LineSeparator mSeparator;
     private char[] mContent;
     private int mLength;
+
+    ContentLine() {
+        this(true, null);
+    }
+
+    ContentLine(@NonNull ContentLine other) {
+        this(false, other.mSeparator);
+        this.mLength = other.mLength;
+        this.mContent = Arrays.copyOf(other.mContent, other.mLength);
+    }
+
+    ContentLine(int size) {
+        this(false, null);
+        this.mLength = 0;
+        this.mContent = new char[size];
+    }
 
     ContentLine(boolean init, @Nullable LineSeparator separator) {
         if (init) {
@@ -71,6 +89,10 @@ public class ContentLine implements CharSequence {
 
     public final LineSeparator getLineSeparator() {
         return this.mSeparator;
+    }
+
+    public final void setLineSeparator(LineSeparator lineSeparator) {
+        this.mSeparator = lineSeparator;
     }
 
     @NonNull

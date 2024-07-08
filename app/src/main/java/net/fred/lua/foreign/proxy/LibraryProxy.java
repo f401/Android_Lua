@@ -1,6 +1,6 @@
 package net.fred.lua.foreign.proxy;
 
-import net.fred.lua.foreign.ffi.FunctionCaller;
+import net.fred.lua.foreign.core.ffi.FunctionCaller;
 
 import java.lang.reflect.Proxy;
 

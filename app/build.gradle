@@ -17,7 +17,7 @@ android {
     defaultConfig {
         applicationId "net.fred.lua"
         minSdkVersion 21
-        targetSdkVersion 33
+        targetSdkVersion 28
         versionCode 1
         versionName "1.0"
         multiDexEnabled true
@@ -61,11 +61,15 @@ dependencies {
     implementation 'org.apache.commons:commons-compress:1.12'
     implementation 'com.google.guava:guava:30.0-android'
 
-    //testImplementation 'junit:junit:4.13.2' // junit is fine
+    testImplementation 'junit:junit:4.13.2' // junit is fine
     // androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
     //  androidTestImplementation 'androidx.test.ext:junit:1.1.5'
 //    implementation 'androidx.preference:preference:1.2.0'
 //    implementation 'com.google.android.material:material:1.4.+'
     //implementation 'com.google.android.material:material:1.0.0'
     //implementation 'androidx.constraintlayout:constraintlayout:2.0.1'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs += "-Xlint:deprecation"
 }
