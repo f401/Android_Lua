@@ -137,4 +137,11 @@ public class ContentLine implements CharSequence {
     public String toString() {
         return new String(this.mContent, 0, mLength);
     }
+
+    /**
+     * A convenient method to append text to a StringBuilder
+     */
+    public void appendTo(@NonNull StringBuilder sb) {
+        sb.append(mContent, 0, mLength);
+    }
 }

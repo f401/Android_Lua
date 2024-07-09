@@ -14,9 +14,9 @@ public class CachedIndexerImpl implements IIndexer {
     private final List<CharPosition> mCache;
     private final CharPosition mEndPosition;
     private final Content mContent;
-    private int mCacheSize;
-    private int mThresholdIndex;
-    private int mThresholdLine;
+    private final int mCacheSize;
+    private final int mThresholdIndex;
+    private final int mThresholdLine;
 
     public CachedIndexerImpl(Content content, int cacheSize) {
         this.mCache = Lists.newArrayListWithExpectedSize(cacheSize);
@@ -326,6 +326,11 @@ public class CachedIndexerImpl implements IIndexer {
     }
 
     @Override
+    public void beforeReplace(@NonNull Content content) {
+        // Do nothing
+    }
+
+    @Override
     public void afterBatchInsert(@NonNull List<Content.InsertContext> operates) {
         int minStartLine = Integer.MAX_VALUE, minStartColumn = Integer.MAX_VALUE,
                 maxEndLine = Integer.MIN_VALUE, maxEndColumn = Integer.MIN_VALUE,
@@ -363,11 +368,11 @@ public class CachedIndexerImpl implements IIndexer {
     }
 
     @Override
-    public void afterBatchDelete(@NonNull List<Content.InsertContext> operates) {
+    public void afterBatchDelete(@NonNull List<Content.DeleteContext> operates) {
         int minStartLine = Integer.MAX_VALUE, minStartColumn = Integer.MAX_VALUE,
                 maxEndLine = Integer.MIN_VALUE, maxEndColumn = Integer.MIN_VALUE,
                 reduceIndex = 0, reducedLine = 0;
-        for (Content.InsertContext ctx: operates) {
+        for (Content.DeleteContext ctx : operates) {
             reduceIndex += ctx.text.length();
             reducedLine += (ctx.endLine - ctx.startLine);
             if (minStartLine > ctx.startLine && minStartColumn > ctx.startColumn) {

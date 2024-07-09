@@ -30,7 +30,9 @@ public class Content implements CharSequence {
     private final AtomicLong mDocumentVersion;
     @NonNull
     private final IIndexer mIndexer;
-    private int mTextLength;
+    private final UndoStack mUndoStack;
+    private ICursor mCursor;
+    private int mTextLength, mNestedBatchEdit;
 
     public Content(boolean threadSafe) {
         this.mLock = threadSafe ? new ReentrantReadWriteLock() : null;
@@ -38,6 +40,8 @@ public class Content implements CharSequence {
         this.mLines = Lists.newArrayList();
         this.mIndexer = new CachedIndexerImpl(this, 50);
         this.mDocumentVersion = new AtomicLong(0);
+        this.mUndoStack = new UndoStack();
+        this.mNestedBatchEdit = 0;
     }
 
     @LockMethod("mLock")
@@ -85,7 +89,15 @@ public class Content implements CharSequence {
     @Override
     public CharSequence subSequence(int start, int end) {
         Preconditions.checkPositionIndexes(start, end, mTextLength);
-        return null;
+        lock(LockType.READ_LOCK);
+        try {
+            CharPosition startPos = mIndexer.getCharPosition(start);
+            CharPosition endPos = mIndexer.getCharPosition(end);
+            return doSubContent(startPos.getLine(), startPos.getColumn(),
+                    endPos.getLine(), endPos.getColumn());
+        } finally {
+            unlock(LockType.READ_LOCK);
+        }
     }
 
     /**
@@ -140,6 +152,12 @@ public class Content implements CharSequence {
     @CheckReturnValue
     public IIndexer getIndexer() {
         return this.mIndexer;
+    }
+
+    @NonNull
+    @CheckReturnValue
+    public ICursor getCursor() {
+        return this.mCursor;
     }
 
     /**
@@ -268,9 +286,207 @@ public class Content implements CharSequence {
         return content;
     }
 
-    private void dispatchAfterInsert(InsertContext ctx) {
-        // Todo: IMPL it
-        mIndexer.afterInsert(ctx);
+    /**
+     * Delete character in [start,end)
+     *
+     * @param start Start position in content
+     * @param end   End position in content
+     */
+    public void delete(int start, int end) {
+        lock(LockType.WRITE_LOCK);
+        mDocumentVersion.getAndIncrement();
+        try {
+            CharPosition startPos = getIndexer().getCharPosition(start);
+            CharPosition endPos = getIndexer().getCharPosition(end);
+            if (start != end) {
+                dispatchAfterDelete(
+                        doDelete(startPos.getLine(), startPos.getColumn(),
+                                endPos.getLine(), endPos.getColumn()));
+            }
+        } finally {
+            unlock(LockType.WRITE_LOCK);
+        }
+    }
+
+    /**
+     * Delete text in the given region
+     *
+     * @param startLine         The start line position
+     * @param columnOnStartLine The start column position
+     * @param endLine           The end line position
+     * @param columnOnEndLine   The end column position
+     */
+    public void delete(int startLine, int columnOnStartLine, int endLine, int columnOnEndLine) {
+        lock(LockType.WRITE_LOCK);
+        mDocumentVersion.getAndIncrement();
+        try {
+            dispatchAfterDelete(
+                    doDelete(startLine, columnOnStartLine, endLine, columnOnEndLine)
+            );
+        } finally {
+            unlock(LockType.WRITE_LOCK);
+        }
+    }
+
+    @Nullable
+    private DeleteContext doDelete(int startLine, int columnOnStartLine, int endLine, int columnOnEndLine) {
+        if (startLine == endLine && columnOnStartLine == columnOnEndLine) {
+            return null;
+        }
+
+        ContentLine endLineObj = mLines.get(endLine);
+        if (columnOnEndLine > endLineObj.length() && endLine + 1 < getLineCount()) {
+            // Expected to delete the whole newline
+            return doDelete(startLine, columnOnStartLine, endLine + 1, 0);
+        }
+        ContentLine startLineObj = mLines.get(startLine);
+        if (columnOnStartLine > startLineObj.length()) {
+            // Expected to delete the whole newline
+            return doDelete(startLine, startLineObj.length(), endLine, columnOnEndLine);
+        }
+
+        StringBuilder changedContent = new StringBuilder();
+        if (startLine == endLine) {
+            ContentLine curr = mLines.get(startLine);
+            int len = curr.length();
+            Preconditions.checkPositionIndexes(columnOnStartLine, columnOnEndLine, len);
+            changedContent.append(curr, columnOnStartLine, columnOnEndLine);
+            curr.delete(columnOnStartLine, columnOnEndLine);
+            mTextLength -= columnOnEndLine - columnOnStartLine;
+        } else if (startLine < endLine) {
+            for (int i = startLine + 1; i <= endLine - 1; i++) {
+                ContentLine line = mLines.get(i);
+                LineSeparator separator = mLines.get(i).getLineSeparator();
+                mTextLength -= line.length() + separator.length();
+                line.appendTo(changedContent);
+                changedContent.append(separator.getChar());
+            }
+            if (endLine > startLine + 1) {
+                mLines.subList(startLine + 1, endLine).clear();
+            }
+
+            int currEnd = startLine + 1;
+            ContentLine start = mLines.get(startLine);
+            ContentLine end = mLines.get(currEnd);
+            mTextLength -= start.length() - columnOnStartLine;
+            changedContent.insert(0, start, columnOnStartLine, start.length())
+                    .insert(start.length() - columnOnStartLine, start.getLineSeparator().getChar());
+            start.delete(columnOnStartLine, start.length());
+            mTextLength -= columnOnEndLine;
+            changedContent.append(end, 0, columnOnEndLine);
+            mTextLength -= start.getLineSeparator().length();
+            mLines.remove(currEnd);
+            start.append(new TextReference(end, columnOnEndLine, end.length()));
+            start.setLineSeparator(end.getLineSeparator());
+        } else {
+            throw new IllegalArgumentException("start line > end line");
+        }
+        return new DeleteContext(this, startLine, columnOnStartLine,
+                endLine, columnOnEndLine, changedContent);
+    }
+
+    /**
+     * Replace the text in the given region
+     * This action will be completed by calling {@link Content#delete(int, int, int, int)} and {@link Content#insert(int, int, CharSequence)}
+     *
+     * @param startLine         The start line position
+     * @param columnOnStartLine The start column position
+     * @param endLine           The end line position
+     * @param columnOnEndLine   The end column position
+     * @param text              The text to replace old text
+     */
+    public void replace(int startLine, int columnOnStartLine, int endLine, int columnOnEndLine, CharSequence text) {
+        if (text == null) {
+            throw new IllegalArgumentException("text can not be null");
+        }
+        lock(LockType.WRITE_LOCK);
+        mDocumentVersion.getAndIncrement();
+        try {
+            dispatchBeforeReplace();
+            dispatchAfterDelete(doDelete(startLine, columnOnStartLine, endLine, columnOnEndLine));
+            dispatchAfterInsert(doInsert(startLine, columnOnStartLine, text));
+            // TODO dispatch after replace
+        } finally {
+            unlock(LockType.WRITE_LOCK);
+        }
+    }
+
+    /**
+     * Replace text in the given region with the text
+     */
+    public void replace(int startIndex, int endIndex, @NonNull CharSequence text) {
+        CharPosition start = getIndexer().getCharPosition(startIndex);
+        CharPosition end = getIndexer().getCharPosition(endIndex);
+        replace(start.getLine(), start.getColumn(),
+                end.getLine(), end.getColumn(), text);
+    }
+
+    private void dispatchBeforeReplace() {
+        // TODO: IMPL it
+        mIndexer.beforeReplace(this);
+        mUndoStack.beforeReplace(this);
+    }
+
+    private void dispatchAfterDelete(@Nullable DeleteContext deleteContext) {
+        // TODO: IMPL it
+        if (deleteContext != null) {
+            mUndoStack.afterDelete(deleteContext);
+            mIndexer.afterDelete(deleteContext);
+        }
+    }
+
+    private void dispatchAfterInsert(@Nullable InsertContext ctx) {
+        // TODO: IMPL it
+        if (ctx != null) {
+            mUndoStack.afterInsert(ctx);
+            mIndexer.afterInsert(ctx);
+        }
+    }
+
+    /**
+     * A delegate method.
+     * Notify the UndoManager to begin batch edit(enter a new layer).
+     * NOTE: batch edit in Android can be nested.
+     *
+     * @return Whether in batch edit
+     */
+    public boolean beginBatchEdit() {
+        mNestedBatchEdit++;
+        return isInBatchEdit();
+    }
+
+    /**
+     * A delegate method.
+     * Notify the UndoManager to end batch edit(exit current layer).
+     *
+     * @return Whether in batch edit
+     */
+    public boolean endBatchEdit() {
+        mNestedBatchEdit--;
+        if (mNestedBatchEdit == 0) {
+            mUndoStack.onExitBatchEdit();
+        }
+        if (mNestedBatchEdit < 0) {
+            mNestedBatchEdit = 0;
+        }
+        return isInBatchEdit();
+    }
+
+    public int getNestedBatchEdit() {
+        return mNestedBatchEdit;
+    }
+
+    public void resetBatchEdit() {
+        mNestedBatchEdit = 0;
+    }
+
+    /**
+     * Returns whether we are in batch edit
+     *
+     * @return Whether in batch edit
+     */
+    public boolean isInBatchEdit() {
+        return mNestedBatchEdit > 0;
     }
 
     protected enum LockType {
@@ -278,9 +494,11 @@ public class Content implements CharSequence {
     }
 
     public interface OnContentChangeListener {
+        void beforeReplace(@NonNull Content content);
+
         void afterBatchInsert(@NonNull List<Content.InsertContext> operates);
 
-        void afterBatchDelete(@NonNull List<Content.InsertContext> operates);
+        void afterBatchDelete(@NonNull List<DeleteContext> operates);
 
         void afterInsert(@NonNull Content.InsertContext ctx);
 
