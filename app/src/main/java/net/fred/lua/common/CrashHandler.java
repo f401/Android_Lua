@@ -66,7 +66,7 @@ public final class CrashHandler implements Thread.UncaughtExceptionHandler {
                         }).show();
                 return;
             } catch (Throwable e) {
-                e.printStackTrace();
+                Log.e(TAG, "Exception when building dialog.", e);
             }
         }
         getInstance().uncaughtException(Thread.currentThread(), exception);

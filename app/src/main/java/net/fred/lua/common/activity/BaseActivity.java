@@ -1,6 +1,8 @@
 package net.fred.lua.common.activity;
 
+import android.content.Context;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -23,7 +25,11 @@ public class BaseActivity extends AppCompatActivity {
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(App.EXIT_ACTION);
-        registerReceiver(this.receiver, filter);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(this.receiver, filter, Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            registerReceiver(this.receiver, filter);
+        }
     }
 
     @Override

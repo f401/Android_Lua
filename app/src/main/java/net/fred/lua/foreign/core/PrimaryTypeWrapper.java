@@ -331,7 +331,7 @@ final class PrimaryTypeWrapper<T> extends Type<T> {
     }
 
     @Override
-    public T read(IAllocator allocator, MemoryAccessor accessor, @NonNull Pointer dest) throws NativeMethodException {
+    public T read(IAllocator allocator, MemoryAccessor accessor, @NonNull Pointer dest) {
         return mapperAs.read(accessor, dest);
     }
 

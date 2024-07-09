@@ -33,7 +33,7 @@ public class CallHandler implements InvocationHandler {
             for (Class<?> param : method.getParameterTypes()) {
                 params.add(TypeRegistry.getType(param));
             }
-            paramsArray = params.toArray(new Type[params.size()]);
+            paramsArray = params.toArray(new Type[0]);
         }
         return FunctionCaller.of(ScopeFactory.ofGlobal(), false, dll.lookupSymbol(method.getName()),
                 TypeRegistry.getType(method.getReturnType()), paramsArray

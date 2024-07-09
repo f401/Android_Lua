@@ -41,11 +41,3 @@
     long get();
 }
 -keep class net.fred.lua.foreign.NativeMethodException {}
-
--keep class net.fred.lua.foreign.ffi.FunctionDescriber {
-   long requestMemory(long);
-}
-
--keep class net.fred.lua.foreign.ffi.FunctionCaller {
-    long evalParamsTotalSize(java.lang.Object[]);
-}

@@ -71,7 +71,7 @@ public class PermissionHelper {
         return null;
     }
 
-    private void setProhibitedAndRequestList(ArrayList<String> notAllowed) {
+    private void filterProhibitedAndRequestList(ArrayList<String> notAllowed) {
         canRequest.clear();
         prohibited.clear();
 
@@ -92,7 +92,7 @@ public class PermissionHelper {
 
     public void tryShowRequestDialog() {
         if (hasCanRequestPermissions()) {
-            ActivityCompat.requestPermissions(ctx, canRequest.toArray(new String[canRequest.size()]), CODE_PERMISSION_REQUEST);
+            ActivityCompat.requestPermissions(ctx, canRequest.toArray(new String[0]), CODE_PERMISSION_REQUEST);
         }
     }
 
@@ -109,7 +109,7 @@ public class PermissionHelper {
             canRequest.clear();
             prohibited.clear();
             ArrayList<String> notAllowed = filterNotAllowedPermissionList(permissions, grantResults);
-            setProhibitedAndRequestList(notAllowed);
+            filterProhibitedAndRequestList(notAllowed);
             return true;
         }
         return false;

@@ -41,7 +41,7 @@ public class SimpleChildHolder implements IChildPolicy {
 
     @Override
     public void closeAllChild() {
-        if (children != null && children.size() != 0) {
+        if (children != null && !children.isEmpty()) {
             // During the deletion process, the subclass will call the remove method.
             // This can cause data modification during traversal, resulting in exceptions being thrown.
             synchronized (this) {
@@ -71,7 +71,7 @@ public class SimpleChildHolder implements IChildPolicy {
 
     @Override
     public boolean hasChild() {
-        return children != null && children.size() != 0;
+        return children != null && !children.isEmpty();
     }
 
     @Override

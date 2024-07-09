@@ -18,7 +18,6 @@ public class SingleChildHolder implements IChildPolicy {
 
     @Override
     public void removeChild(AutoCloseable child) {
-        child = null;
     }
 
     @Override

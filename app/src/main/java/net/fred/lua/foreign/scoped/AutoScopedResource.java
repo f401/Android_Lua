@@ -1,9 +1,7 @@
 package net.fred.lua.foreign.scoped;
 
-import net.fred.lua.App;
 import net.fred.lua.foreign.NativeMethodException;
 import net.fred.lua.foreign.allocator.IAllocator;
-import net.fred.lua.foreign.child.IChildPolicy;
 
 public class AutoScopedResource extends ScopedResourceImpl {
 

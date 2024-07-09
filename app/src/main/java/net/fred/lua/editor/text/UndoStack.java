@@ -47,7 +47,7 @@ public class UndoStack implements Content.OnContentChangeListener, Parcelable {
     private int stackPointer;
     private boolean ignoreModification;
     private boolean forceNewMultiAction;
-    private TextRange memorizedCursorRange;
+    private TextRange[] memorizedCursorRange;
 
     /**
      * Create an UndoManager
@@ -106,7 +106,7 @@ public class UndoStack implements Content.OnContentChangeListener, Parcelable {
      * @param content Undo Target
      */
     @Nullable
-    public TextRange undo(Content content) {
+    public TextRange[] undo(Content content) {
         if (canUndo() && !isModifyingContent()) {
             ignoreModification = true;
             ContentAction action = actionStack.get(stackPointer - 1);
@@ -293,7 +293,7 @@ public class UndoStack implements Content.OnContentChangeListener, Parcelable {
         }
         replaceMark = true;
         targetContent = content;
-        memorizedCursorRange = content.getCursor().getRange();
+        memorizedCursorRange = content.getCursor().getRanges();
     }
 
     @Override
@@ -323,7 +323,7 @@ public class UndoStack implements Content.OnContentChangeListener, Parcelable {
     }
 
     @Override
-    public void afterDelete(Content.DeleteContext ctx) {
+    public void afterDelete(@NonNull Content.DeleteContext ctx) {
         if (ignoreModification) {
             return;
         }
@@ -365,7 +365,7 @@ public class UndoStack implements Content.OnContentChangeListener, Parcelable {
     }
 
     public static abstract class ContentAction implements Parcelable {
-        public transient TextRange cursor;
+        public transient TextRange[] cursor;
 
         public abstract void undo(Content content);
 

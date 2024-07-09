@@ -3,6 +3,7 @@ package net.fred.lua.foreign;
 import android.util.Log;
 
 import net.fred.lua.foreign.child.SingleChildHolder;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -44,10 +45,6 @@ public class SharedResource<T extends AutoCloseable> extends MemoryController {
                 throw new RuntimeException(e);
             }
         }
-    }
-
-    public final int getRefCount() {
-        return mRefCount.get();
     }
 
     @SuppressWarnings("unchecked")

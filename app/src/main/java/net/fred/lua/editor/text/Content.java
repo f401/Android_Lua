@@ -31,7 +31,7 @@ public class Content implements CharSequence {
     @NonNull
     private final IIndexer mIndexer;
     private final UndoStack mUndoStack;
-    private ICursor mCursor;
+    private Cursor mCursor;
     private int mTextLength, mNestedBatchEdit;
 
     public Content(boolean threadSafe) {
@@ -156,7 +156,7 @@ public class Content implements CharSequence {
 
     @NonNull
     @CheckReturnValue
-    public ICursor getCursor() {
+    public Cursor getCursor() {
         return this.mCursor;
     }
 

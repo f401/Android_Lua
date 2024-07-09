@@ -2,6 +2,8 @@ package net.fred.lua.foreign.allocator;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import net.fred.lua.BuildConfig;
 import net.fred.lua.foreign.MemorySegment;
 import net.fred.lua.foreign.NativeMethodException;
@@ -37,6 +39,7 @@ public final class LibcMallocResourceImpl extends Resource {
         MemorySegment.free(pointer);
     }
 
+    @NonNull
     @Override
     public String toString() {
         return super.toString() + (BuildConfig.DEBUG ? "trace " + stack : "");
