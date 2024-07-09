@@ -62,7 +62,7 @@ public class ContentLine implements CharSequence {
     @Override
     public char charAt(int index) {
         // Check for line separator
-        if (index > this.mLength) {
+        if (index >= this.mLength) {
             return this.mSeparator.getChar().charAt(index - this.mLength);
         }
         return mContent[index];
