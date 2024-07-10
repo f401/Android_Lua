@@ -18,26 +18,29 @@
  *     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *     USA
  *
+ *     Please contact Rosemoe by email 2073412493@qq.com if you need
+ *     additional information or have any questions
  */
+package io.github.rosemoe.sora.lang.smartEnter;
 
-package net.fred.lua.editor.text;
+public class NewlineHandleResult {
 
-import androidx.annotation.NonNull;
+    /**
+     * Text to insert
+     */
+    public final CharSequence text;
 
-public interface IIndexer extends Content.OnContentChangeListener {
-    int getCharIndex(int line, int column);
+    /**
+     * Count to shift left from the end of {@link NewlineHandleResult#text}
+     */
+    public final int shiftLeft;
 
-    int getCharLine(int index);
+    public NewlineHandleResult(CharSequence text, int shiftLeft) {
+        this.text = text;
+        this.shiftLeft = shiftLeft;
+        if (shiftLeft < 0 || shiftLeft > text.length()) {
+            throw new IllegalArgumentException("invalid shiftLeft");
+        }
+    }
 
-    int getCharColumn(int index);
-
-    @NonNull
-    CharPosition getCharPosition(int index);
-
-    @NonNull
-    CharPosition getCharPosition(int line, int column);
-
-    void getCharPosition(int index, CharPosition dest);
-
-    void getCharPosition(int line, int column, CharPosition dest);
 }

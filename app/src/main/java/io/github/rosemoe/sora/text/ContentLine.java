@@ -1,4 +1,4 @@
-package net.fred.lua.editor.text;
+package io.github.rosemoe.sora.text;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -143,5 +143,10 @@ public class ContentLine implements CharSequence {
      */
     public void appendTo(@NonNull StringBuilder sb) {
         sb.append(mContent, 0, mLength);
+    }
+
+    public void getChars(int srcBegin, int srcEnd, @NonNull char[] dst, int dstBegin) {
+        Preconditions.checkPositionIndexes(srcBegin, srcEnd, length());
+        System.arraycopy(mContent, srcBegin, dst, dstBegin, srcEnd - srcBegin);
     }
 }

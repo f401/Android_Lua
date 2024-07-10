@@ -18,7 +18,7 @@
  *     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *     USA
  */
-package net.fred.lua.editor.text;
+package io.github.rosemoe.sora.text;
 
 import androidx.annotation.NonNull;
 

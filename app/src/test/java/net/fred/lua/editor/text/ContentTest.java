@@ -1,8 +1,11 @@
 package net.fred.lua.editor.text;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
+
+import io.github.rosemoe.sora.text.CharPosition;
+import io.github.rosemoe.sora.text.Content;
 
 public class ContentTest {
     @Test

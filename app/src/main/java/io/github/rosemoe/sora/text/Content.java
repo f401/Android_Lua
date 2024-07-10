@@ -1,4 +1,4 @@
-package net.fred.lua.editor.text;
+package io.github.rosemoe.sora.text;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -85,6 +85,23 @@ public class Content implements CharSequence {
         }
     }
 
+
+    /**
+     * Get the character at the given position
+     *
+     * @param line   The line position of character
+     * @param column The column position of character
+     * @return The character at the given position
+     */
+    public char charAt(int line, int column) {
+        lock(LockType.READ_LOCK);
+        try {
+            return mLines.get(line).charAt(column);
+        } finally {
+            unlock(LockType.READ_LOCK);
+        }
+    }
+
     @NonNull
     @Override
     public CharSequence subSequence(int start, int end) {
@@ -158,6 +175,33 @@ public class Content implements CharSequence {
     @CheckReturnValue
     public Cursor getCursor() {
         return this.mCursor;
+    }
+
+    public long getDocumentVersion() {
+        return mDocumentVersion.get();
+    }
+
+    /**
+     * Get characters of line
+     */
+    public void getLineChars(int line, char[] dest) {
+        getRegionOnLine(line, 0, getColumnCount(line), dest, 0);
+    }
+
+
+    /**
+     * Get region of the given line
+     *
+     * @param dest   Destination of characters
+     * @param offset Offset in dest to store the chars
+     */
+    public void getRegionOnLine(int line, int start, int end, char[] dest, int offset) {
+        lock(LockType.READ_LOCK);
+        try {
+            mLines.get(line).getChars(start, end, dest, offset);
+        } finally {
+            unlock(LockType.READ_LOCK);
+        }
     }
 
     /**

@@ -19,7 +19,7 @@
  *     USA
  *
  */
-package net.fred.lua.editor.text;
+package io.github.rosemoe.sora.text;
 
 import androidx.annotation.NonNull;
 
