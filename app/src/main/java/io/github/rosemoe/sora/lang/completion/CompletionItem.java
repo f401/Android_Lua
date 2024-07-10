@@ -90,7 +90,7 @@ public abstract class CompletionItem {
         this(label, desc, null);
     }
 
-    public CompletionItem(CharSequence label, CharSequence desc, Drawable icon) {
+    public CompletionItem(CharSequence label, CharSequence desc, @Nullable Drawable icon) {
         this.label = label;
         this.desc = desc;
         this.icon = icon;
