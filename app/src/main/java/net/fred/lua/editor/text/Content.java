@@ -443,6 +443,36 @@ public class Content implements CharSequence {
         }
     }
 
+    @NonNull
+    @Override
+    public String toString() {
+        return appendToStringBuilder().toString();
+    }
+
+    public StringBuilder appendToStringBuilder() {
+        StringBuilder sb = new StringBuilder();
+        appendToStringBuilder(sb);
+        return sb;
+    }
+
+    /**
+     * Append the content to the given {@link StringBuilder}
+     */
+    public void appendToStringBuilder(@NonNull StringBuilder sb) {
+        sb.ensureCapacity(sb.length() + length());
+        lock(LockType.READ_LOCK);
+        try {
+            final int lines = getLineCount();
+            for (int i = 0; i < lines; i++) {
+                ContentLine line = this.mLines.get(i);
+                line.appendTo(sb);
+                sb.append(line.getLineSeparator().getChar());
+            }
+        } finally {
+            unlock(LockType.READ_LOCK);
+        }
+    }
+
     /**
      * A delegate method.
      * Notify the UndoManager to begin batch edit(enter a new layer).
