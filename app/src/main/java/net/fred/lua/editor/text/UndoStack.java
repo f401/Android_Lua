@@ -21,7 +21,7 @@ public class UndoStack implements Content.OnContentChangeListener, Parcelable {
             o.undoEnabled = parcel.readInt() > 0;
             int count = parcel.readInt();
             while (count > 0) {
-                o.actionStack.add(parcel.readParcelable(UndoStack.class.getClassLoader()));
+                o.actionStack.add(parcel.<ContentAction>readParcelable(UndoStack.class.getClassLoader()));
                 count--;
             }
             return o;
@@ -484,7 +484,7 @@ public class UndoStack implements Content.OnContentChangeListener, Parcelable {
                 MultiAction o = new MultiAction();
                 int count = parcel.readInt();
                 while (count > 0) {
-                    o.mActions.add(parcel.readParcelable(MultiAction.class.getClassLoader()));
+                    o.mActions.add(parcel.<ContentAction>readParcelable(MultiAction.class.getClassLoader()));
                     count--;
                 }
                 return o;
