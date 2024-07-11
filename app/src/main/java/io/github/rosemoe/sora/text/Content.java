@@ -10,6 +10,7 @@ import com.google.errorprone.annotations.CheckReturnValue;
 import com.google.errorprone.annotations.concurrent.LockMethod;
 import com.google.errorprone.annotations.concurrent.UnlockMethod;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -518,6 +519,36 @@ public class Content implements CharSequence {
     }
 
     /**
+     * Copy text in this Content object.
+     * Returns a new thread-safe Content object with the same text as this object. By default, the object is
+     * thread-safe and access operations are locked when accessed by multiple threads.
+     */
+    public Content copyText() {
+        return copyText(true);
+    }
+
+    /**
+     * Copy text in this Content object.
+     * Returns a new Content object with the same text as this object.
+     */
+    public Content copyText(boolean newContentThreadSafe) {
+        lock(LockType.READ_LOCK);
+        try {
+            Content n = new Content(newContentThreadSafe);
+            n.mLines.clear();
+            ((ArrayList<ContentLine>) n.mLines).ensureCapacity(getLineCount());
+
+            for (ContentLine line : mLines) {
+                n.mLines.add(new ContentLine(line));
+            }
+            n.mTextLength = mTextLength;
+            return n;
+        } finally {
+            unlock(LockType.READ_LOCK);
+        }
+    }
+
+    /**
      * A delegate method.
      * Notify the UndoManager to begin batch edit(enter a new layer).
      * NOTE: batch edit in Android can be nested.
@@ -561,6 +592,10 @@ public class Content implements CharSequence {
      */
     public boolean isInBatchEdit() {
         return mNestedBatchEdit > 0;
+    }
+
+    public void setUndoEnabled(boolean b) {
+        mUndoStack.setUndoEnabled(b);
     }
 
     protected enum LockType {

@@ -7,6 +7,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 
+import io.github.rosemoe.sora.lang.analysis.AnalyzeManager;
 import io.github.rosemoe.sora.lang.completion.CompletionCancelledException;
 import io.github.rosemoe.sora.lang.completion.CompletionPublisher;
 import io.github.rosemoe.sora.lang.format.IFormatter;
@@ -16,6 +17,13 @@ import io.github.rosemoe.sora.text.ContentReference;
 import io.github.rosemoe.sora.widget.SymbolPairMatch;
 
 public interface ILanguage {
+
+    /**
+     * Get {@link AnalyzeManager} of the language.
+     * This is called from time to time by the editor. Cache your instance please.
+     */
+    @NonNull
+    AnalyzeManager getAnalyzeManager();
 
     /**
      * Get the interruption level for auto-completion.
