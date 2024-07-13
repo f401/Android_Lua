@@ -14,6 +14,7 @@ import io.github.rosemoe.sora.lang.format.IFormatter;
 import io.github.rosemoe.sora.lang.smartEnter.NewlineHandler;
 import io.github.rosemoe.sora.text.CharPosition;
 import io.github.rosemoe.sora.text.ContentReference;
+import io.github.rosemoe.sora.widget.CodeEditor;
 import io.github.rosemoe.sora.widget.SymbolPairMatch;
 
 public interface ILanguage {
@@ -67,6 +68,35 @@ public interface ILanguage {
      */
     @UiThread
     int getIndentAdvance(@NonNull ContentReference content, int line, int column);
+
+    /**
+     * Get delta indent spaces count.
+     *
+     * @param content          Content of given line.
+     * @param line             0-indexed line number. The indentation is applied on line index: {@code line + 1}.
+     * @param column           Column on the given line, where a line separator is inserted.
+     * @param spaceCountOnLine The number of spaces on {@code line}.
+     * @param tabCountOnLine   The number of tabs on {@code line}.
+     * @return Delta count of indent spaces. It can be a negative/positive number or zero.
+     */
+    @UiThread
+    /*default int getIndentAdvance(
+            @NonNull ContentReference content,
+            int line,
+            int column,
+            int spaceCountOnLine,
+            int tabCountOnLine
+    ) {
+        return getIndentAdvance(content, line, column);
+    }*
+     */
+    int getIndentAdvance(
+            @NonNull ContentReference content,
+            int line,
+            int column,
+            int spaceCountOnLine,
+            int tabCountOnLine
+    );
 
     /**
      * Use tab to format

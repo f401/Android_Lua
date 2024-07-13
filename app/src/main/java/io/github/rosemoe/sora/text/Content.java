@@ -236,6 +236,7 @@ public class Content implements CharSequence {
             column = mLines.get(line).length();
         }
 
+        dispatchBeforeModification();
         int workLine = line;
         int workIndex = column;
         ContentLine currLine = mLines.get(workLine);
@@ -395,10 +396,14 @@ public class Content implements CharSequence {
             ContentLine curr = mLines.get(startLine);
             int len = curr.length();
             Preconditions.checkPositionIndexes(columnOnStartLine, columnOnEndLine, len);
+
+            dispatchBeforeModification();
+
             changedContent.append(curr, columnOnStartLine, columnOnEndLine);
             curr.delete(columnOnStartLine, columnOnEndLine);
             mTextLength -= columnOnEndLine - columnOnStartLine;
         } else if (startLine < endLine) {
+            dispatchBeforeModification();
             for (int i = startLine + 1; i <= endLine - 1; i++) {
                 ContentLine line = mLines.get(i);
                 LineSeparator separator = mLines.get(i).getLineSeparator();
@@ -488,13 +493,18 @@ public class Content implements CharSequence {
         }
     }
 
+    private void dispatchBeforeModification() {
+        mUndoStack.beforeModification(this);
+        // TODO: IMPL
+    }
+
     @NonNull
     @Override
     public String toString() {
-        return appendToStringBuilder().toString();
+        return toStringBuilder().toString();
     }
 
-    public StringBuilder appendToStringBuilder() {
+    public StringBuilder toStringBuilder() {
         StringBuilder sb = new StringBuilder();
         appendToStringBuilder(sb);
         return sb;
@@ -594,15 +604,109 @@ public class Content implements CharSequence {
         return mNestedBatchEdit > 0;
     }
 
-    public void setUndoEnabled(boolean b) {
-        mUndoStack.setUndoEnabled(b);
+    /**
+     * Set whether enable this module
+     *
+     * @param enabled Enable or disable
+     * @see UndoStack#setUndoEnabled(boolean)
+     */
+    public void setUndoEnabled(boolean enabled) {
+        mUndoStack.setUndoEnabled(enabled);
     }
+
+    /**
+     * Undo on the given Content
+     *
+     * @see UndoStack#undo
+     */
+    public TextRange[] undo() {
+        return mUndoStack.undo(this);
+    }
+
+    /**
+     * Redo on the given Content
+     *
+     * @see UndoStack#redo
+     */
+    public void redo() {
+        mUndoStack.redo(this);
+    }
+
+    /**
+     * Whether it can undo
+     *
+     * @see UndoStack#canUndo()
+     */
+    public boolean canUndo() {
+        return mUndoStack.canUndo();
+    }
+
+    public boolean canRedo() {
+        return mUndoStack.canRedo();
+    }
+
+    /**
+     * Read the lines (ordered).
+     * This is for optimizing frequent lock acquiring.
+     *
+     * @param startLine inclusive
+     * @param endLine   inclusive
+     */
+    public void runReadActionsOnLines(int startLine, int endLine, @NonNull ContentLineConsumer consumer) {
+        lock(LockType.READ_LOCK);
+        try {
+            for (int i = startLine; i <= endLine; i++) {
+                consumer.accept(i, mLines.get(i));
+            }
+        } finally {
+            unlock(LockType.READ_LOCK);
+        }
+    }
+
+    /**
+     * Read the lines (ordered).
+     * This is for optimizing frequent lock acquiring.
+     *
+     * @param startLine inclusive
+     * @param endLine   inclusive
+     */
+    public void runReadActionsOnLines(int startLine, int endLine, @NonNull ContentLineConsumer2 consumer) {
+        lock(LockType.READ_LOCK);
+        try {
+            ContentLineConsumer2.AbortFlag flag = new ContentLineConsumer2.AbortFlag();
+            for (int i = startLine; i <= endLine && !flag.set; i++) {
+                consumer.accept(i, mLines.get(i), flag);
+            }
+        } finally {
+            unlock(LockType.READ_LOCK);
+        }
+    }
+
+
+    public interface ContentLineConsumer {
+
+        void accept(int lineIndex, @NonNull ContentLine line);
+
+    }
+
+    public interface ContentLineConsumer2 {
+
+        void accept(int lineIndex, @NonNull ContentLine line, @NonNull AbortFlag flag);
+
+        class AbortFlag {
+            public boolean set = false;
+        }
+
+    }
+
 
     protected enum LockType {
         READ_LOCK, WRITE_LOCK
     }
 
     public interface OnContentChangeListener {
+        void beforeModification(@NonNull Content content);
+
         void beforeReplace(@NonNull Content content);
 
         void afterBatchInsert(@NonNull List<Content.InsertContext> operates);

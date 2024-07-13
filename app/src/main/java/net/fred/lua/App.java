@@ -7,17 +7,19 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.StrictMode;
 import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.multidex.MultiDex;
-import com.google.common.base.FinalizableReferenceQueue;
+
+import net.fred.lua.common.CrashHandler;
+import net.fred.lua.io.LogFileManager;
+import net.fred.lua.io.LogScanner;
+
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import net.fred.lua.common.CrashHandler;
-import net.fred.lua.io.LogFileManager;
-import net.fred.lua.io.LogScanner;
 
 public class App extends Application {
     public static final String EXIT_ACTION = "net.lua.exit.all";
@@ -25,7 +27,6 @@ public class App extends Application {
     private static final String TAG = "APP";
     private static App instance;
     private static ThreadPoolExecutor threadPool;
-    private static FinalizableReferenceQueue referenceQueue;
 
     public static App getInstance() {
         return instance;
@@ -63,8 +64,7 @@ public class App extends Application {
         instance = this;
         int cpus = Runtime.getRuntime().availableProcessors();
         threadPool = new ThreadPoolExecutor(cpus / 2, cpus * 2, 1, TimeUnit.MINUTES, new ArrayBlockingQueue<Runnable>(cpus));
-        referenceQueue = new FinalizableReferenceQueue();
-        
+
         StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().permitDiskReads().build());
         StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll().penaltyLog().build());
         
@@ -125,8 +125,5 @@ public class App extends Application {
         return threadPool;
     }
     
-    public static FinalizableReferenceQueue getReferenceQueue() {
-        return referenceQueue;
-    }
 }
    

@@ -6,6 +6,7 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 import java.util.List;
@@ -21,7 +22,7 @@ public class UndoStack implements Content.OnContentChangeListener, Parcelable {
             o.undoEnabled = parcel.readInt() > 0;
             int count = parcel.readInt();
             while (count > 0) {
-                o.actionStack.add(parcel.<ContentAction>readParcelable(UndoStack.class.getClassLoader()));
+                o.actionStack.add(parcel.readParcelable(UndoStack.class.getClassLoader()));
                 count--;
             }
             return o;
@@ -133,7 +134,7 @@ public class UndoStack implements Content.OnContentChangeListener, Parcelable {
     }
 
     /**
-     * Called by {@link Content}
+     * Called by {@link Content#endBatchEdit()}
      */
     void onExitBatchEdit() {
         forceNewMultiAction = true;
@@ -154,6 +155,7 @@ public class UndoStack implements Content.OnContentChangeListener, Parcelable {
 
     /**
      * Whether it can redo
+     * @see UndoStack#canRedo()
      */
     public boolean canRedo() {
         return isUndoEnabled() && (stackPointer < actionStack.size());
@@ -195,10 +197,8 @@ public class UndoStack implements Content.OnContentChangeListener, Parcelable {
      * @param maxSize max stack size
      */
     public void setMaxUndoStackSize(int maxSize) {
-        if (maxSize <= 0) {
-            throw new IllegalArgumentException(
-                    "max size can not be zero or smaller.Did you want to disable undo module by calling setUndoEnabled()?");
-        }
+        Preconditions.checkArgument(maxSize > 0,
+                "max size can not be zero or smaller.Did you want to disable undo module by calling setUndoEnabled()?");
         maxStackSize = maxSize;
         cleanStack();
     }
@@ -284,6 +284,11 @@ public class UndoStack implements Content.OnContentChangeListener, Parcelable {
         }
         replaceMark = false;
         targetContent = null;
+    }
+
+    @Override
+    public void beforeModification(@NonNull Content content) {
+
     }
 
     @Override
@@ -484,7 +489,7 @@ public class UndoStack implements Content.OnContentChangeListener, Parcelable {
                 MultiAction o = new MultiAction();
                 int count = parcel.readInt();
                 while (count > 0) {
-                    o.mActions.add(parcel.<ContentAction>readParcelable(MultiAction.class.getClassLoader()));
+                    o.mActions.add(parcel.readParcelable(MultiAction.class.getClassLoader()));
                     count--;
                 }
                 return o;

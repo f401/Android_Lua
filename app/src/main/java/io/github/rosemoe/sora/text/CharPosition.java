@@ -36,6 +36,10 @@ public final class CharPosition {
         this.mIndex = index;
     }
 
+    public CharPosition() {
+        this(0, 0, 0);
+    }
+
     public int getLine() {
         return mLine;
     }

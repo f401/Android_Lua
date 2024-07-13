@@ -149,4 +149,13 @@ public class ContentLine implements CharSequence {
         Preconditions.checkPositionIndexes(srcBegin, srcEnd, length());
         System.arraycopy(mContent, srcBegin, dst, dstBegin, srcEnd - srcBegin);
     }
+
+    /**
+     * Get the backing char array of this object.
+     * The result array should not be modified.
+     */
+    @NonNull
+    public char[] getBackingCharArray() {
+        return this.mContent;
+    }
 }

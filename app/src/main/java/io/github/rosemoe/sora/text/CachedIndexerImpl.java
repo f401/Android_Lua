@@ -326,6 +326,11 @@ public class CachedIndexerImpl implements IIndexer {
     }
 
     @Override
+    public void beforeModification(@NonNull Content content) {
+        // do nothing
+    }
+
+    @Override
     public void beforeReplace(@NonNull Content content) {
         // Do nothing
     }
