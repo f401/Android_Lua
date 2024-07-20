@@ -28,11 +28,11 @@ import java.util.List;
 
 import io.github.rosemoe.sora.widget.schemes.EditorColorScheme;
 
-public class EmptyReader implements ISpans.Reader {
+public class EmptyReader implements Spans.Reader {
 
     private final static EmptyReader INSTANCE = new EmptyReader();
 
-    private final List<ISpan> spans;
+    private final List<Span> spans;
 
     public EmptyReader() {
         spans = new ArrayList<>(1);
@@ -49,7 +49,7 @@ public class EmptyReader implements ISpans.Reader {
     }
 
     @Override
-    public ISpan getSpanAt(int index) {
+    public Span getSpanAt(int index) {
         return spans.get(index);
     }
 
@@ -59,7 +59,7 @@ public class EmptyReader implements ISpans.Reader {
     }
 
     @Override
-    public List<ISpan> getSpansOnLine(int line) {
+    public List<Span> getSpansOnLine(int line) {
         return new ArrayList<>(spans);
     }
 }

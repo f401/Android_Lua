@@ -47,15 +47,15 @@ public class Paint extends android.graphics.Paint {
         tabWidth = measureText("\t");
     }
 
-    public boolean isRenderFunctionCharacters() {
-        return renderFunctionCharacters;
-    }
-
     public void setRenderFunctionCharacters(boolean renderFunctionCharacters) {
         this.renderFunctionCharacters = renderFunctionCharacters;
         if (widths != null) {
             widths.clearCache();
         }
+    }
+
+    public boolean isRenderFunctionCharacters() {
+        return renderFunctionCharacters;
     }
 
     private void ensureCacheObject() {

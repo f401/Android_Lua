@@ -31,7 +31,7 @@ public class Quickfix {
 
     @NonNull
     public CharSequence resolveTitle(@NonNull Context context) {
-        return MoreObjects.firstNonNull(title, context.getString(resourceId))
+        return MoreObjects.firstNonNull(title, context.getString(resourceId));
     }
 
     public void executeQuickfix() {

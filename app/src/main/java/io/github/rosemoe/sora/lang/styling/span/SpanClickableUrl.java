@@ -2,10 +2,11 @@ package io.github.rosemoe.sora.lang.styling.span;
 
 import androidx.annotation.NonNull;
 
-public class SpanClickableUrl implements ISpanInteractionInfo {
+public final class SpanClickableUrl implements SpanInteractionInfo {
+    @NonNull
     private final String link;
 
-    public SpanClickableUrl(String link) {
+    public SpanClickableUrl(@NonNull String link) {
         this.link = link;
     }
 

@@ -45,7 +45,6 @@ import java.lang.reflect.Field;
 public class TextLayoutHelper {
 
     private static final ThreadLocal<TextLayoutHelper> sLocal;
-    private final static int CHAR_FACTOR = 64;
 
     static {
         sLocal = new ThreadLocal<>();
@@ -53,6 +52,7 @@ public class TextLayoutHelper {
 
     private final Editable text = Editable.Factory.getInstance().newEditable("");
     private final DynamicLayout layout;
+    private final static int CHAR_FACTOR = 64;
 
     private TextLayoutHelper() {
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {

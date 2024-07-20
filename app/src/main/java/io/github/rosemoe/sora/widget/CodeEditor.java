@@ -77,15 +77,16 @@ import androidx.annotation.Nullable;
 import androidx.annotation.Px;
 import androidx.annotation.UiThread;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import io.github.rosemoe.sora.I18nConfig;
 import io.github.rosemoe.sora.R;
+import io.github.rosemoe.sora.annotations.UnsupportedUserUsage;
 import io.github.rosemoe.sora.event.BuildEditorInfoEvent;
 import io.github.rosemoe.sora.event.ColorSchemeUpdateEvent;
 import io.github.rosemoe.sora.event.ContentChangeEvent;
@@ -104,19 +105,21 @@ import io.github.rosemoe.sora.event.SubscriptionReceipt;
 import io.github.rosemoe.sora.event.TextSizeChangeEvent;
 import io.github.rosemoe.sora.graphics.Paint;
 import io.github.rosemoe.sora.lang.EmptyLanguage;
-import io.github.rosemoe.sora.lang.ILanguage;
+import io.github.rosemoe.sora.lang.Language;
+import io.github.rosemoe.sora.lang.QuickQuoteHandler;
 import io.github.rosemoe.sora.lang.analysis.AnalyzeManager;
 import io.github.rosemoe.sora.lang.analysis.StyleUpdateRange;
 import io.github.rosemoe.sora.lang.diagnostic.DiagnosticsContainer;
-import io.github.rosemoe.sora.lang.format.IFormatter;
+import io.github.rosemoe.sora.lang.format.Formatter;
 import io.github.rosemoe.sora.lang.styling.CodeBlock;
-import io.github.rosemoe.sora.lang.styling.ISpan;
-import io.github.rosemoe.sora.lang.styling.ISpans;
+import io.github.rosemoe.sora.lang.styling.Span;
 import io.github.rosemoe.sora.lang.styling.SpanFactory;
+import io.github.rosemoe.sora.lang.styling.Spans;
 import io.github.rosemoe.sora.lang.styling.Styles;
 import io.github.rosemoe.sora.text.CharPosition;
 import io.github.rosemoe.sora.text.Content;
 import io.github.rosemoe.sora.text.ContentLine;
+import io.github.rosemoe.sora.text.ContentListener;
 import io.github.rosemoe.sora.text.ContentReference;
 import io.github.rosemoe.sora.text.Cursor;
 import io.github.rosemoe.sora.text.LineSeparator;
@@ -130,6 +133,7 @@ import io.github.rosemoe.sora.util.EditorHandler;
 import io.github.rosemoe.sora.util.Floats;
 import io.github.rosemoe.sora.util.IntPair;
 import io.github.rosemoe.sora.util.KeyboardUtils;
+import io.github.rosemoe.sora.util.Logger;
 import io.github.rosemoe.sora.util.LongArrayList;
 import io.github.rosemoe.sora.util.Numbers;
 import io.github.rosemoe.sora.util.TemporaryFloatBuffer;
@@ -143,15 +147,27 @@ import io.github.rosemoe.sora.widget.component.EditorTextActionWindow;
 import io.github.rosemoe.sora.widget.component.Magnifier;
 import io.github.rosemoe.sora.widget.layout.Layout;
 import io.github.rosemoe.sora.widget.layout.LineBreakLayout;
+import io.github.rosemoe.sora.widget.layout.Row;
 import io.github.rosemoe.sora.widget.layout.ViewMeasureHelper;
 import io.github.rosemoe.sora.widget.layout.WordwrapLayout;
 import io.github.rosemoe.sora.widget.rendering.RenderContext;
 import io.github.rosemoe.sora.widget.schemes.EditorColorScheme;
+import io.github.rosemoe.sora.widget.snippet.SnippetController;
+import io.github.rosemoe.sora.widget.style.CursorAnimator;
+import io.github.rosemoe.sora.widget.style.DiagnosticIndicatorStyle;
+import io.github.rosemoe.sora.widget.style.LineInfoPanelPosition;
+import io.github.rosemoe.sora.widget.style.LineInfoPanelPositionMode;
+import io.github.rosemoe.sora.widget.style.LineNumberTipTextProvider;
 import io.github.rosemoe.sora.widget.style.SelectionHandleStyle;
+import io.github.rosemoe.sora.widget.style.builtin.DefaultLineNumberTip;
+import io.github.rosemoe.sora.widget.style.builtin.HandleStyleDrop;
+import io.github.rosemoe.sora.widget.style.builtin.HandleStyleSideDrop;
+import io.github.rosemoe.sora.widget.style.builtin.MoveCursorAnimator;
+import kotlin.text.StringsKt;
 
 /**
  * CodeEditor is an editor that can highlight text regions by doing basic syntax analyzing
- * This project in <a href="https://kkgithub.com/Rosemoe/sora-editor">GitHub</a>
+ * This project in <a href="https://github.com/Rosemoe/sora-editor">GitHub</a>
  * <p>
  * Note:
  * Row and line are different in this editor
@@ -161,7 +177,7 @@ import io.github.rosemoe.sora.widget.style.SelectionHandleStyle;
  * @author Rosemoe
  */
 @SuppressWarnings("unused")
-public class CodeEditor extends View implements Content.OnContentChangeListener, IFormatter.FormatResultReceiver {
+public class CodeEditor extends View implements ContentListener, Formatter.FormatResultReceiver {
 
     /**
      * The default text size when creating the editor object. Unit is sp.
@@ -229,6 +245,7 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
     static final int ACTION_MODE_NONE = 0;
     static final int ACTION_MODE_SEARCH_TEXT = 1;
     static final int ACTION_MODE_SELECT_TEXT = 2;
+    private final static Logger logger = Logger.instance("CodeEditor");
     /**
      * Digits for line number measuring
      */
@@ -240,10 +257,10 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
     protected EditorTextActionWindow textActionWindow;
     protected EditorDiagnosticTooltipWindow diagnosticTooltip;
     protected EditorContextMenuCreator contextMenuCreator;
-    protected List<ISpan> defaultSpans = new ArrayList<>(2);
+    protected List<Span> defaultSpans = new ArrayList<>(2);
     protected EditorStyleDelegate styleDelegate;
-    protected CharPosition selectionAnchor;
     int startedActionMode;
+    protected CharPosition selectionAnchor;
     EditorInputConnection inputConnection;
     EventManager eventManager;
     Layout layout;
@@ -311,7 +328,7 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
     private EditorColorScheme colorScheme;
     private LineNumberTipTextProvider lineNumberTipTextProvider;
     private String formatTip;
-    private ILanguage editorLanguage;
+    private Language editorLanguage;
     private DiagnosticIndicatorStyle diagnosticStyle = DiagnosticIndicatorStyle.WAVY_LINE;
     private long lastMakeVisible = 0;
     private EditorAutoCompletion completionWindow;
@@ -406,7 +423,7 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
      * @param <T>         Type of built-in component
      */
     public <T extends EditorBuiltinComponent> void replaceComponent(@NonNull Class<T> clazz, @NonNull T replacement) {
-        T old = getComponent(clazz);
+        EditorBuiltinComponent old = getComponent(clazz);
         boolean isEnabled = old.isEnabled();
         old.setEnabled(false);
         if (clazz == EditorAutoCompletion.class) {
@@ -734,7 +751,7 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
         notifyIMEExternalCursorChange();
         if (selectionOffset != text.length()) {
             CharPosition pos = this.text.getIndexer().getCharPosition(cur.getRight() - (text.length() - selectionOffset));
-            setSelection(pos.getLine(), pos.getColumn());
+            setSelection(pos.line, pos.column);
         }
     }
 
@@ -796,8 +813,7 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
      * @see HandleStyleSideDrop
      */
     public void setSelectionHandleStyle(@NonNull SelectionHandleStyle style) {
-        Preconditions.checkNotNull(style);
-        handleStyle = style;
+        handleStyle = Objects.requireNonNull(style);
         invalidate();
     }
 
@@ -873,7 +889,7 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
      * @return EditorLanguage
      */
     @NonNull
-    public ILanguage getEditorLanguage() {
+    public Language getEditorLanguage() {
         return editorLanguage;
     }
 
@@ -883,15 +899,15 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
      *
      * @param lang New EditorLanguage for editor
      */
-    public void setEditorLanguage(@Nullable ILanguage lang) {
+    public void setEditorLanguage(@Nullable Language lang) {
         if (lang == null) {
             lang = new EmptyLanguage();
         }
 
         // Destroy old one
-        ILanguage old = editorLanguage;
+        Language old = editorLanguage;
         if (old != null) {
-            IFormatter formatter = old.getFormatter();
+            Formatter formatter = old.getFormatter();
             formatter.setReceiver(null);
             formatter.destroy();
             old.getAnalyzeManager().setReceiver(null);
@@ -1002,6 +1018,14 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
     }
 
     /**
+     * This only makes sense when wordwrap is enabled.
+     * Checks if anti word breaking is enabled in wordwrap mode.
+     */
+    public boolean isAntiWordBreaking() {
+        return antiWordBreaking;
+    }
+
+    /**
      * Set whether text in editor should be wrapped to fit its size, with anti-word-breaking enabled
      * by default
      *
@@ -1011,14 +1035,6 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
      */
     public void setWordwrap(boolean wordwrap) {
         setWordwrap(wordwrap, true);
-    }
-
-    /**
-     * This only makes sense when wordwrap is enabled.
-     * Checks if anti word breaking is enabled in wordwrap mode.
-     */
-    public boolean isAntiWordBreaking() {
-        return antiWordBreaking;
     }
 
     /**
@@ -1086,18 +1102,13 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
         invalidate();
     }
 
-    @Nullable
-    public Drawable getHorizontalScrollbarThumbDrawable() {
-        return renderer.getHorizontalScrollbarThumbDrawable();
-    }
-
     public void setHorizontalScrollbarThumbDrawable(@Nullable Drawable drawable) {
         renderer.setHorizontalScrollbarThumbDrawable(drawable);
     }
 
     @Nullable
-    public Drawable getHorizontalScrollbarTrackDrawable() {
-        return renderer.getHorizontalScrollbarTrackDrawable();
+    public Drawable getHorizontalScrollbarThumbDrawable() {
+        return renderer.getHorizontalScrollbarThumbDrawable();
     }
 
     public void setHorizontalScrollbarTrackDrawable(@Nullable Drawable drawable) {
@@ -1105,8 +1116,8 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
     }
 
     @Nullable
-    public Drawable getVerticalScrollbarThumbDrawable() {
-        return renderer.getVerticalScrollbarThumbDrawable();
+    public Drawable getHorizontalScrollbarTrackDrawable() {
+        return renderer.getHorizontalScrollbarTrackDrawable();
     }
 
     public void setVerticalScrollbarThumbDrawable(@Nullable Drawable drawable) {
@@ -1114,12 +1125,17 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
     }
 
     @Nullable
-    public Drawable getVerticalScrollbarTrackDrawable() {
-        return renderer.getVerticalScrollbarTrackDrawable();
+    public Drawable getVerticalScrollbarThumbDrawable() {
+        return renderer.getVerticalScrollbarThumbDrawable();
     }
 
     public void setVerticalScrollbarTrackDrawable(@Nullable Drawable drawable) {
         renderer.setVerticalScrollbarTrackDrawable(drawable);
+    }
+
+    @Nullable
+    public Drawable getVerticalScrollbarTrackDrawable() {
+        return renderer.getVerticalScrollbarTrackDrawable();
     }
 
     /**
@@ -1380,7 +1396,7 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
         if (res == null) {
             return;
         }
-        int lineLeft = text.getIndexer().getCharIndex(line, 0);
+        int lineLeft = text.getCharIndex(line, 0);
         int lineRight = lineLeft + text.getColumnCount(line);
         for (int i = Math.max(0, positions.lowerBoundByFirst(lineLeft) - 1); i < res.size(); i++) {
             long region = res.get(i);
@@ -1522,8 +1538,8 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
      * Get spans on the given line
      */
     @NonNull
-    public List<ISpan> getSpansForLine(int line) {
-        ISpans spanMap = textStyles == null ? null : textStyles.spans;
+    public List<Span> getSpansForLine(int line) {
+        Spans spanMap = textStyles == null ? null : textStyles.spans;
         if (defaultSpans.isEmpty()) {
             defaultSpans.add(SpanFactory.obtain(0, EditorColorScheme.TEXT_NORMAL));
         }
@@ -1635,8 +1651,7 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
                 // indentation contains spaces as well as tabs
                 // replace the leading indentation with appropriate indendation (according to language.useTabs())
                 // this should be done while incrementing the indentation
-                final int finalSpaceCount = ((requiredSpaces == 0 ? tabWidth : requiredSpaces) + spaces)
-                        / tabWidth;
+                final int finalSpaceCount = ((requiredSpaces == 0 ? tabWidth : requiredSpaces) + spaces) / tabWidth;
                 text.replace(i, 0, i, endColumn, Strings.repeat(tabString, finalSpaceCount));
                 continue;
             }
@@ -1668,7 +1683,7 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
 
         text.beginBatchEdit();
         for (int i = cursor.getLeftLine(); i <= cursor.getRightLine(); i++) {
-            final String line = text.getLine(i).toString();
+            final String line = text.getLineString(i);
             final long result = TextUtils.countLeadingSpacesAndTabs(line);
             final int spaceCount = IntPair.getFirst(result);
             final int tabCount = IntPair.getSecond(result);
@@ -1678,15 +1693,15 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
                 continue;
             }
 
-            final var endColumn = spaceCount + tabCount;
+            final int endColumn = spaceCount + tabCount;
 
-            final var extraSpaces = spaces % tabWidth;
+            final int extraSpaces = spaces % tabWidth;
             if (spaceCount > 0 && tabCount > 0) {
                 // indentation contains spaces as well as tabs
                 // replace the leading indentation with appropriate indendation (according to language.useTabs())
                 // this should be done while decrementing the indentation
-                final var finalSpaceCount = Math.abs(spaces - (extraSpaces == 0 ? tabWidth : extraSpaces)) / tabWidth;
-                text.replace(i, 0, i, endColumn, StringsKt.repeat(tabString, finalSpaceCount));
+                final int finalSpaceCount = Math.abs(spaces - (extraSpaces == 0 ? tabWidth : extraSpaces)) / tabWidth;
+                text.replace(i, 0, i, endColumn, Strings.repeat(tabString, finalSpaceCount));
                 continue;
             }
 
@@ -1727,13 +1742,13 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
         }
 
         final CharPosition left = cursor.left();
-        final ContentLine line = getText().getLine(left.getLine());
+        final ContentLine line = getText().getLine(left.line);
 
         final long count = TextUtils.countLeadingSpacesAndTabs(line);
         final int spaceCount = IntPair.getFirst(count);
         final int tabCount = IntPair.getSecond(count);
 
-        if (left.getColumn() > spaceCount + tabCount) {
+        if (left.column > spaceCount + tabCount) {
             // there is text before the cursor
             commitTab();
             return;
@@ -1748,7 +1763,7 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
      * @return The string to insert for tab character.
      */
     protected String createTabString() {
-        final ILanguage language = getEditorLanguage();
+        final Language language = getEditorLanguage();
         return TextUtils.createIndent(getTabWidth(), getTabWidth(), language.useTab());
     }
 
@@ -1888,7 +1903,7 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
 
         Cursor cur = cursor;
         Content editorText = this.text;
-        var quoteHandler = editorLanguage.getQuickQuoteHandler();
+        QuickQuoteHandler quoteHandler = editorLanguage.getQuickQuoteHandler();
 
         if (pair != null && pair != SymbolPairMatch.SymbolPair.EMPTY_SYMBOL_PAIR
                 && (pair.shouldReplace(this))
@@ -1915,9 +1930,9 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
                 return;
             } else if (cur.isSelected() && quoteHandler != null) {
                 if (text.length() > 0 && text.length() == 1) {
-                    var result = quoteHandler.onHandleTyping(text.toString(), this.text, getCursorRange(), getStyles());
+                    QuickQuoteHandler.HandleResult result = quoteHandler.onHandleTyping(text.toString(), this.text, getCursorRange(), getStyles());
                     if (result.isConsumed()) {
-                        var range = result.getNewCursorRange();
+                        TextRange range = result.getNewCursorRange();
                         if (range != null) {
                             setSelectionRegion(range.getStart().line, range.getStart().column, range.getEnd().line, range.getEnd().column);
                         }
@@ -1931,17 +1946,16 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
                         .getIndexer()
                         .getCharPosition(pair.getInsertOffset());
 
-                editorText.replace(insertPosition.getLine(), insertPosition.getColumn(),
+                editorText.replace(insertPosition.line, insertPosition.column,
                         cur.getRightLine(), cur.getRightColumn(), pair.open);
-                editorText.insert(insertPosition.getLine(), insertPosition.getColumn()
-                        + pair.open.length(), pair.close);
+                editorText.insert(insertPosition.line, insertPosition.column + pair.open.length(), pair.close);
                 editorText.endBatchEdit();
 
                 CharPosition cursorPosition = editorText
                         .getIndexer()
                         .getCharPosition(pair.getCursorOffset());
 
-                setSelection(cursorPosition.getLine(), cursorPosition.getColumn());
+                setSelection(cursorPosition.line, cursorPosition.column);
 
                 return;
             }
@@ -1954,7 +1968,7 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
             if (props.autoIndent && text.length() != 0 && applyAutoIndent) {
                 char first = text.charAt(0);
                 if (first == '\n' || first == '\r') {
-                    String line = this.text.getLine(cur.getLeftLine()).toString();
+                    String line = this.text.getLineString(cur.getLeftLine());
                     int p = 0, spaceCount = 0, tabCount = 0;
                     while (p < cur.getLeftColumn()) {
                         if (isWhitespace(line.charAt(p))) {
@@ -2097,7 +2111,7 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
         float charWidth = column == 0 ? 0 : renderer.measureText(text.getLine(line), line, column - 1, 1);
         if (xOffset < currFinalX + (pinLineNumber ? measureTextRegionOffset() : 0)) {
             float backupX = targetX;
-            float scrollSlopX = getWidth() / 2;
+            int scrollSlopX = getWidth() / 2;
             targetX = xOffset + (pinLineNumber ? -measureTextRegionOffset() : 0) - charWidth;
             if (Math.abs(targetX - backupX) < scrollSlopX) {
                 targetX = Math.max(1, backupX - scrollSlopX);
@@ -2178,9 +2192,9 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
      */
     public boolean isScreenPointOnText(float x, float y) {
         long pos = getPointPositionOnScreen(x, y);
-        int rowIdx = layout.getRowIndexForPosition(text.getIndexer().getCharIndex(IntPair.getFirst(pos), IntPair.getSecond(pos)));
-        var row = layout.getRowAt(rowIdx);
-        int layoutMax = renderer.measureText(text.getLine(row.lineIndex), row.lineIndex, row.startColumn, row.endColumn - row.startColumn);
+        int rowIdx = layout.getRowIndexForPosition(text.getCharIndex(IntPair.getFirst(pos), IntPair.getSecond(pos)));
+        Row row = layout.getRowAt(rowIdx);
+        float layoutMax = renderer.measureText(text.getLine(row.lineIndex), row.lineIndex, row.startColumn, row.endColumn - row.startColumn);
         float textRegionX = measureTextRegionOffset();
         float lineRegionRightX = textRegionX + layoutMax;
         float offset = getOffsetX() + x;
@@ -2226,9 +2240,7 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
      */
     public int getScrollMaxY() {
         ViewGroup.LayoutParams params = getLayoutParams();
-        return Math.max(0, layout.getLayoutHeight() -
-                (int) (params == null || params.height == ViewGroup.LayoutParams.WRAP_CONTENT ?
-                        getHeight() : getHeight() * (1 - verticalExtraSpaceFactor)));
+        return Math.max(0, layout.getLayoutHeight() - (int) (params == null || params.height == ViewGroup.LayoutParams.WRAP_CONTENT ? getHeight() : getHeight() * (1 - verticalExtraSpaceFactor)));
     }
 
     /**
@@ -2238,15 +2250,6 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
      */
     public int getScrollMaxX() {
         return (int) Math.max(0, layout.getLayoutWidth() + measureTextRegionOffset() - getWidth() / 2f);
-    }
-
-    /**
-     * Get the factor used to compute extra space of vertical viewport.
-     *
-     * @see #setVerticalExtraSpaceFactor(float)
-     */
-    public float getVerticalExtraSpaceFactor() {
-        return verticalExtraSpaceFactor;
     }
 
     /**
@@ -2265,6 +2268,15 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
         this.verticalExtraSpaceFactor = extraSpaceFactor;
         // ensure offset is in scroll range
         touchHandler.scrollBy(0, 0);
+    }
+
+    /**
+     * Get the factor used to compute extra space of vertical viewport.
+     *
+     * @see #setVerticalExtraSpaceFactor(float)
+     */
+    public float getVerticalExtraSpaceFactor() {
+        return verticalExtraSpaceFactor;
     }
 
     /**
@@ -2296,6 +2308,7 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
      * @see #isBasicDisplayMode()
      */
     public void setBasicDisplayMode(boolean enabled) {
+        text.setBidiEnabled(!enabled);
         renderContext.invalidateRenderNodes();
         renderer.basicDisplayMode = enabled;
         renderer.updateTimestamp();
@@ -2327,7 +2340,7 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
         if (isFormatting()) {
             return false;
         }
-        IFormatter formatter = editorLanguage.getFormatter();
+        Formatter formatter = editorLanguage.getFormatter();
         formatter.setReceiver(this);
         Content formatContent = text.copyText(false);
         formatContent.setUndoEnabled(false);
@@ -2340,20 +2353,20 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
      * Format text in the given region.
      * <p>
      * Note: Make sure the given positions are valid (line, column and index). Typically, you should
-     * obtain a position by an object of {@link io.github.rosemoe.sora.text.IIndexer}
+     * obtain a position by an object of {@link io.github.rosemoe.sora.text.Indexer}
      *
      * @param start Start position created by Indexer
      * @param end   End position created by Indexer
      * @return Whether the format task is scheduled
      */
     public synchronized boolean formatCodeAsync(CharPosition start, CharPosition end) {
-        if (start.getIndex() > end.getIndex()) {
+        if (start.index > end.index) {
             throw new IllegalArgumentException("start > end");
         }
         if (isFormatting()) {
             return false;
         }
-        IFormatter formatter = editorLanguage.getFormatter();
+        Formatter formatter = editorLanguage.getFormatter();
         formatter.setReceiver(this);
         Content formatContent = text.copyText(false);
         formatContent.setUndoEnabled(false);
@@ -2476,6 +2489,9 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
      * @see LineSeparator
      */
     public void setLineSeparator(@NonNull LineSeparator lineSeparator) {
+        if (Objects.requireNonNull(lineSeparator) == LineSeparator.NONE) {
+            throw new IllegalArgumentException();
+        }
         this.lineSeparator = lineSeparator;
     }
 
@@ -2502,18 +2518,14 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
      * Undo last action
      */
     public void undo() {
-        TextRange[] range = text.undo();
+        TextRange range = text.undo();
         if (range != null) {
-            TextRange singleRange = range[0];
             try {
-                setSelectionRegion(singleRange.getStart().getLine(),
-                        singleRange.getStart().getColumn(),
-                        singleRange.getEnd().getLine(),
-                        singleRange.getEnd().getColumn(), true, SelectionChangeEvent.CAUSE_TEXT_MODIFICATION);
+                setSelectionRegion(range.getStart().line, range.getStart().column, range.getEnd().line, range.getEnd().column, true, SelectionChangeEvent.CAUSE_TEXT_MODIFICATION);
             } catch (IndexOutOfBoundsException e) {
                 // Suppressed, typically because an invalid position is memorized.
             }
-        }// TODO: column select
+        }
         notifyIMEExternalCursorChange();
     }
 
@@ -2625,14 +2637,9 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
                     return false;
                 }
                 switch (p2.getItemId()) {
-                    case 1:
-                        getSearcher().gotoPrevious();
-                        break;
-                    case 0:
-                        getSearcher().gotoNext();
-                        break;
-                    case 2:
-                    case 3: {
+                    case 1 -> getSearcher().gotoPrevious();
+                    case 0 -> getSearcher().gotoNext();
+                    case 2, 3 -> {
                         final boolean replaceAll = p2.getItemId() == 3;
                         final EditText et = new EditText(getContext());
                         et.setHint(I18nConfig.getResourceId(R.string.sora_editor_replacement));
@@ -2650,7 +2657,6 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
                                     dialog.dismiss();
                                 })
                                 .show();
-                        break;
                     }
                 }
                 return false;
@@ -2716,19 +2722,19 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
     }
 
     /**
-     * @see #setLineNumberMarginLeft(float)
-     */
-    public float getLineNumberMarginLeft() {
-        return lineNumberMarginLeft;
-    }
-
-    /**
      * Set line number margin left
      */
     public void setLineNumberMarginLeft(@Px float lineNumberMarginLeft) {
         this.lineNumberMarginLeft = lineNumberMarginLeft;
         requestLayoutIfNeeded();
         invalidate();
+    }
+
+    /**
+     * @see #setLineNumberMarginLeft(float)
+     */
+    public float getLineNumberMarginLeft() {
+        return lineNumberMarginLeft;
     }
 
     /**
@@ -3087,7 +3093,7 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
                 int line = IntPair.getFirst(touchHandler.memoryPosition);
                 int column = IntPair.getSecond(touchHandler.memoryPosition);
                 // Compute new scroll position
-                var row = ((WordwrapLayout) layout).findRow(line, column);
+                int row = ((WordwrapLayout) layout).findRow(line, column);
                 float afterScrollY = row * getRowHeight() - touchHandler.focusY;
                 EditorScroller scroller = touchHandler.getScroller();
                 dispatchEvent(new ScrollEvent(this, scroller.getCurrX(),
@@ -3212,10 +3218,12 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
      */
     public boolean isInMouseMode() {
         switch (props.mouseMode) {
-            case DirectAccessProps.MOUSE_MODE_ALWAYS:
+            case DirectAccessProps.MOUSE_MODE_ALWAYS: {
                 return true;
-            case DirectAccessProps.MOUSE_MODE_NEVER:
+            }
+            case DirectAccessProps.MOUSE_MODE_NEVER: {
                 return false;
+            }
         }
         // MOUSE_MODE_AUTO
         return hasMouseHovering() || hasMousePressed();
@@ -3555,7 +3563,7 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
         } else if (shouldCopyLine) {
             copyLine();
         } else {
-            var text = getLineSeparator().getContent();
+            String text = getLineSeparator().getContent();
             copyTextToClipboard(text, 0, text.length());
         }
     }
@@ -3572,7 +3580,7 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
             return;
         }
         try {
-            var clip = (text instanceof Content) ? ((Content) text).substring(start, end) : text.subSequence(start, end).toString();
+            CharSequence clip = (text instanceof Content) ? ((Content) text).substring(start, end) : text.subSequence(start, end).toString();
             clipboardManager.setPrimaryClip(ClipData.newPlainText(clip, clip));
         } catch (RuntimeException e) {
             if (e.getCause() instanceof TransactionTooLargeException) {
@@ -3588,13 +3596,13 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
      * Copies the current line to clipboard.
      */
     private void copyLine() {
-        final var cursor = getCursor();
+        final Cursor cursor = getCursor();
         if (cursor.isSelected()) {
             copyText();
             return;
         }
 
-        final var line = cursor.left().line;
+        final int line = cursor.left().line;
         setSelectionRegion(line, 0, line, getText().getColumnCount(line));
         copyText(false);
     }
@@ -3616,15 +3624,15 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
      * Copy the current line to clipboard and delete it.
      */
     public void cutLine() {
-        final var cursor = getCursor();
+        final Cursor cursor = getCursor();
         if (cursor.isSelected()) {
             cutText();
             return;
         }
 
-        final var left = cursor.left();
-        final var line = left.line;
-        final var column = getText().getColumnCount(left.line);
+        final CharPosition left = cursor.left();
+        final int line = left.line;
+        final int column = getText().getColumnCount(left.line);
 
         if (line + 1 == getLineCount()) {
             int columnCount = getText().getColumnCount(line);
@@ -3649,13 +3657,13 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
      * Does not selects the duplicated line.
      */
     public void duplicateLine() {
-        final var cursor = getCursor();
+        final Cursor cursor = getCursor();
         if (cursor.isSelected()) {
             duplicateSelection();
             return;
         }
 
-        final var left = cursor.left();
+        final CharPosition left = cursor.left();
         setSelectionRegion(left.line, 0, left.line, getText().getColumnCount(left.line), true);
         duplicateSelection("\n", false);
     }
@@ -3685,20 +3693,20 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
      * @param selectDuplicate Whether to select the duplicated content.
      */
     public void duplicateSelection(String prefix, boolean selectDuplicate) {
-        final var cursor = getCursor();
+        final Cursor cursor = getCursor();
         if (!cursor.isSelected()) {
             return;
         }
 
-        final var left = cursor.left();
-        final var right = cursor.right().fromThis();
-        final var sub = getText().subContent(left.line, left.column, right.line, right.column);
+        final CharPosition left = cursor.left();
+        final CharPosition right = cursor.right().fromThis();
+        final Content sub = getText().subContent(left.line, left.column, right.line, right.column);
 
         setSelection(right.line, right.column);
         commitText(prefix + sub, false);
 
         if (selectDuplicate) {
-            final var r = cursor.right();
+            final CharPosition r = cursor.right();
             setSelectionRegion(right.line, right.column, r.line, r.column);
         }
     }
@@ -3707,7 +3715,7 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
      * Selects the word at the left selection handle.
      */
     public void selectCurrentWord() {
-        final var left = getCursor().left();
+        final CharPosition left = getCursor().left();
         selectWord(left.line, left.column);
     }
 
@@ -3718,9 +3726,9 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
      * @param column The column.
      */
     public void selectWord(int line, int column) {
-        final var range = getWordRange(line, column);
-        final var start = range.getStart();
-        final var end = range.getEnd();
+        final TextRange range = getWordRange(line, column);
+        final CharPosition start = range.getStart();
+        final CharPosition end = range.getEnd();
         setSelectionRegion(start.line, start.column, end.line, end.column, SelectionChangeEvent.CAUSE_LONG_PRESS);
     }
 
@@ -3854,13 +3862,6 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
     }
 
     /**
-     * @see #setRenderFunctionCharacters(boolean)
-     */
-    public boolean isRenderFunctionCharacters() {
-        return renderFunctionCharacters;
-    }
-
-    /**
      * Render ASCII Function characters
      *
      * @see #isRenderFunctionCharacters()
@@ -3873,6 +3874,13 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
             createLayout();
             invalidate();
         }
+    }
+
+    /**
+     * @see #setRenderFunctionCharacters(boolean)
+     */
+    public boolean isRenderFunctionCharacters() {
+        return renderFunctionCharacters;
     }
 
     /**
@@ -4151,19 +4159,10 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
      */
     protected boolean checkSoftInputEnabled() {
         if (isDisableSoftKbdIfHardKbdAvailable()
-                && KeyboardUtils.INSTANCE.isHardKeyboardConnected(getContext())) {
+                && KeyboardUtils.isHardKeyboardConnected(getContext())) {
             return false;
         }
         return isSoftKeyboardEnabled();
-    }
-
-    /**
-     * Returns whether the soft keyboard is enabled.
-     *
-     * @return Whether the soft keyboard is enabled.
-     */
-    public boolean isSoftKeyboardEnabled() {
-        return this.isSoftKbdEnabled;
     }
 
     /**
@@ -4183,12 +4182,12 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
     }
 
     /**
-     * Returns whether the soft keyboard should be enabled if hardware keyboard is connected.
+     * Returns whether the soft keyboard is enabled.
      *
-     * @return Whether the soft keyboard should be enabled if hardware keyboard is connected.
+     * @return Whether the soft keyboard is enabled.
      */
-    public boolean isDisableSoftKbdIfHardKbdAvailable() {
-        return isDisableSoftKbdOnHardKbd;
+    public boolean isSoftKeyboardEnabled() {
+        return this.isSoftKbdEnabled;
     }
 
     /**
@@ -4209,11 +4208,20 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
     }
 
     /**
+     * Returns whether the soft keyboard should be enabled if hardware keyboard is connected.
+     *
+     * @return Whether the soft keyboard should be enabled if hardware keyboard is connected.
+     */
+    public boolean isDisableSoftKbdIfHardKbdAvailable() {
+        return isDisableSoftKbdOnHardKbd;
+    }
+
+    /**
      * Send current selection position to input method
      */
     protected void updateSelection() {
         if (props.disallowSuggestions) {
-            var index = new java.util.Random().nextInt();
+            int index = new java.util.Random().nextInt();
             inputMethodManager.updateSelection(this, index, index, -1, -1);
             return;
         }
@@ -4338,7 +4346,7 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
         released = true;
         if (editorLanguage != null) {
             editorLanguage.getAnalyzeManager().destroy();
-            var formatter = editorLanguage.getFormatter();
+            Formatter formatter = editorLanguage.getFormatter();
             formatter.setReceiver(null);
             formatter.destroy();
             editorLanguage.destroy();
@@ -4350,7 +4358,7 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
         diagnostics = null;
         styleDelegate.reset();
 
-        final var text = this.text;
+        final Content text = this.text;
         if (text != null) {
             text.removeContentListener(this);
         }
@@ -4459,7 +4467,7 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
 
     @Override
     public AccessibilityNodeInfo createAccessibilityNodeInfo() {
-        var info = super.createAccessibilityNodeInfo();
+        AccessibilityNodeInfo info = super.createAccessibilityNodeInfo();
         if (isEnabled()) {
             info.setEditable(isEditable());
             info.setTextSelection(cursor.getLeft(), cursor.getRight());
@@ -4474,7 +4482,7 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
             final int scrollRange = getScrollMaxY();
             if (scrollRange > 0) {
                 info.setScrollable(true);
-                var scrollY = getOffsetY();
+                int scrollY = getOffsetY();
                 if (scrollY > 0) {
                     info.addAction(
                             AccessibilityNodeInfo.AccessibilityAction.ACTION_SCROLL_BACKWARD);
@@ -4496,7 +4504,7 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
     @Override
     public void onInitializeAccessibilityEvent(AccessibilityEvent event) {
         super.onInitializeAccessibilityEvent(event);
-        var maxScrollY = getScrollMaxY();
+        int maxScrollY = getScrollMaxY();
         event.setScrollable(maxScrollY > 0);
         event.setMaxScrollX(getScrollMaxX());
         event.setMaxScrollY(maxScrollY);
@@ -4505,38 +4513,38 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
     @Override
     public boolean performAccessibilityAction(int action, Bundle arguments) {
         switch (action) {
-            case AccessibilityNodeInfo.ACTION_COPY -> {
+            case AccessibilityNodeInfo.ACTION_COPY: {
                 copyText();
                 return true;
             }
-            case AccessibilityNodeInfo.ACTION_CUT -> {
+            case AccessibilityNodeInfo.ACTION_CUT: {
                 cutText();
                 return true;
             }
-            case AccessibilityNodeInfo.ACTION_PASTE -> {
+            case AccessibilityNodeInfo.ACTION_PASTE: {
                 pasteText();
                 return true;
             }
-            case AccessibilityNodeInfo.ACTION_SET_TEXT -> {
+            case AccessibilityNodeInfo.ACTION_SET_TEXT: {
                 setText(arguments.getCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE));
                 return true;
             }
-            case AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD -> {
+            case AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD: {
                 moveSelection(SelectionMovement.PAGE_DOWN);
                 return true;
             }
-            case AccessibilityNodeInfo.ACTION_SCROLL_FORWARD -> {
+            case AccessibilityNodeInfo.ACTION_SCROLL_FORWARD: {
                 moveSelection(SelectionMovement.PAGE_UP);
                 return true;
             }
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             switch (action) {
-                case android.R.id.accessibilityActionScrollDown -> {
+                case android.R.id.accessibilityActionScrollDown: {
                     moveSelection(SelectionMovement.PAGE_UP);
                     return true;
                 }
-                case android.R.id.accessibilityActionScrollUp -> {
+                case android.R.id.accessibilityActionScrollUp: {
                     moveSelection(SelectionMovement.PAGE_DOWN);
                     return true;
                 }
@@ -4554,13 +4562,14 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
     public boolean dispatchTouchEvent(MotionEvent event) {
         int x = (int) event.getX();
         switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN -> {
+            case MotionEvent.ACTION_DOWN: {
                 downX = x;
                 if (forceHorizontalScrollable) {
                     getParent().requestDisallowInterceptTouchEvent(true);
                 }
+                break;
             }
-            case MotionEvent.ACTION_MOVE -> {
+            case MotionEvent.ACTION_MOVE: {
                 int deltaX = x - downX;
                 if (forceHorizontalScrollable && !touchHandler.hasAnyHeldHandle()) {
                     if (deltaX > 0 && getScroller().getCurrX() == 0
@@ -4568,6 +4577,7 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
                         getParent().requestDisallowInterceptTouchEvent(false);
                     }
                 }
+                break;
             }
         }
         return super.dispatchTouchEvent(event);
@@ -4620,9 +4630,9 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
                         || getInsertHandleDescriptor().position.contains(event.getX(), event.getY())) {
                     return PointerIcon.getSystemIcon(getContext(), PointerIcon.TYPE_GRAB);
                 }
-                var res = RegionResolverKt.resolveTouchRegion(this, event, pointerIndex);
-                var region = IntPair.getFirst(res);
-                var inbound = IntPair.getSecond(res) == RegionResolverKt.IN_BOUND;
+                long res = RegionResolverKt.resolveTouchRegion(this, event, pointerIndex);
+                int region = IntPair.getFirst(res);
+                boolean inbound = IntPair.getSecond(res) == RegionResolverKt.IN_BOUND;
                 if (region == RegionResolverKt.REGION_TEXT && inbound) {
                     if (touchHandler.mouseCanMoveText && !touchHandler.mouseClick) {
                         return PointerIcon.getSystemIcon(getContext(), PointerIcon.TYPE_GRABBING);
@@ -4630,8 +4640,8 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
                     return PointerIcon.getSystemIcon(getContext(), PointerIcon.TYPE_TEXT);
                 } else if (region == RegionResolverKt.REGION_LINE_NUMBER) {
                     switch (props.actionWhenLineNumberClicked) {
-                        case DirectAccessProps.LN_ACTION_SELECT_LINE,
-                             DirectAccessProps.LN_ACTION_PLACE_SELECTION_HOME -> {
+                        case DirectAccessProps.LN_ACTION_SELECT_LINE:
+                        case DirectAccessProps.LN_ACTION_PLACE_SELECTION_HOME: {
                             return PointerIcon.getSystemIcon(getContext(), PointerIcon.TYPE_HAND);
                         }
                     }
@@ -4717,24 +4727,24 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
     @Override
     public boolean onDragEvent(DragEvent event) {
         switch (event.getAction()) {
-            case DragEvent.ACTION_DRAG_STARTED -> {
+            case DragEvent.ACTION_DRAG_STARTED: {
                 return true;
             }
-            case DragEvent.ACTION_DRAG_LOCATION -> {
-                var pos = getPointPositionOnScreen(event.getX(), event.getY());
+            case DragEvent.ACTION_DRAG_LOCATION: {
+                long pos = getPointPositionOnScreen(event.getX(), event.getY());
                 int line = IntPair.getFirst(pos), column = IntPair.getSecond(pos);
                 touchHandler.draggingSelection = getText().getIndexer().getCharPosition(line, column);
                 postInvalidate();
                 touchHandler.scrollIfReachesEdge(null, event.getX(), event.getY());
                 return true;
             }
-            case DragEvent.ACTION_DRAG_EXITED -> {
+            case DragEvent.ACTION_DRAG_EXITED: {
                 touchHandler.draggingSelection = null;
                 postInvalidate();
                 return true;
             }
-            case DragEvent.ACTION_DROP -> {
-                var targetPos = touchHandler.draggingSelection;
+            case DragEvent.ACTION_DROP: {
+                CharPosition targetPos = touchHandler.draggingSelection;
                 if (targetPos == null) {
                     return false;
                 }
@@ -4975,13 +4985,14 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
     }
 
     @Override
-    public void afterInsert(Content.InsertContext ctx) {
-        renderContext.updateForInsertion(ctx.startLine, ctx.endLine);
+    public void afterInsert(@NonNull Content content, int startLine, int startColumn, int endLine,
+                            int endColumn, @NonNull CharSequence insertedContent) {
+        renderContext.updateForInsertion(startLine, endLine);
         renderer.updateTimestamp();
         styleDelegate.onTextChange();
-        CharPosition start = text.getIndexer().getCharPosition(ctx.startLine, ctx.startColumn);
-        CharPosition end = text.getIndexer().getCharPosition(ctx.endLine, ctx.endColumn);
-        renderer.buildMeasureCacheForLines(ctx.startLine, ctx.endLine);
+        CharPosition start = text.getIndexer().getCharPosition(startLine, startColumn);
+        CharPosition end = text.getIndexer().getCharPosition(endLine, endColumn);
+        renderer.buildMeasureCacheForLines(startLine, endLine);
 
         // Update spans
         try {
@@ -4989,7 +5000,7 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
                 textStyles.adjustOnInsert(start, end);
             }
             if (diagnostics != null) {
-                diagnostics.shiftOnInsert(start.getIndex(), end.getIndex());
+                diagnostics.shiftOnInsert(start.index, end.index);
             }
         } catch (Exception e) {
             Log.w(LOG_TAG, "Update failure", e);
@@ -5014,34 +5025,34 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
         selectionAnchor = lastAnchorIsSelLeft ? cursor.left() : cursor.right();
         dispatchEvent(new ContentChangeEvent(this, ContentChangeEvent.ACTION_INSERT, start, end, insertedContent, text.isUndoManagerWorking()));
         onSelectionChanged(SelectionChangeEvent.CAUSE_TEXT_MODIFICATION);
-        lastInsertion = new TextRange(start.copy(), end.copy());
+        lastInsertion = new TextRange(start.fromThis(), end.fromThis());
     }
 
     @Override
-    public void afterDelete(Content.DeleteContext ctx) {
-        renderContext.updateForDeletion(ctx.startLine, ctx.endLine);
+    public void afterDelete(@NonNull Content content, int startLine, int startColumn, int endLine,
+                            int endColumn, @NonNull CharSequence deletedContent) {
+        renderContext.updateForDeletion(startLine, endLine);
         renderer.updateTimestamp();
         styleDelegate.onTextChange();
-        CharPosition start = text.getIndexer().getCharPosition(ctx.startLine, ctx.startColumn);
-        CharPosition end = start.copy();
-        end.setColumn(ctx.endColumn);
-        end.setLine(ctx.endLine);
-        end.setIndex(start.getIndex() + ctx.text.length());
-        renderer.buildMeasureCacheForLines(ctx.startLine, ctx.startLine + 1);
+        CharPosition start = text.getIndexer().getCharPosition(startLine, startColumn);
+        CharPosition end = start.fromThis();
+        end.column = endColumn;
+        end.line = endLine;
+        end.index = start.index + deletedContent.length();
+        renderer.buildMeasureCacheForLines(startLine, startLine + 1);
 
         try {
             if (textStyles != null) {
                 textStyles.adjustOnDelete(start, end);
             }
             if (diagnostics != null) {
-                diagnostics.shiftOnDelete(start.getIndex(), end.getIndex());
+                diagnostics.shiftOnDelete(start.index, end.index);
             }
         } catch (Exception e) {
             Log.w(LOG_TAG, "Update failure", e);
         }
 
-        layout.afterDelete(ctx.content, ctx.startLine, ctx.startColumn,
-                ctx.endLine, ctx.endColumn, ctx.text);
+        layout.afterDelete(content, startLine, startColumn, endLine, endColumn, deletedContent);
         checkForRelayout();
 
         updateCursor();
@@ -5055,7 +5066,7 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
             cursorAnimator.markEndPos();
             cursorAnimator.start();
         }
-        editorLanguage.getAnalyzeManager().delete(start, end, ctx.text);
+        editorLanguage.getAnalyzeManager().delete(start, end, deletedContent);
         selectionAnchor = lastAnchorIsSelLeft ? cursor.left() : cursor.right();
         dispatchEvent(new ContentChangeEvent(this, ContentChangeEvent.ACTION_DELETE, start, end, deletedContent, text.isUndoManagerWorking()));
         onSelectionChanged(SelectionChangeEvent.CAUSE_TEXT_MODIFICATION);
@@ -5075,8 +5086,7 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
             int column = cursor.getLeftColumn();
             int x = getOffsetX();
             int y = getOffsetY();
-            CharSequence string = (applyContent instanceof Content) ?
-                    ((Content) applyContent).toStringBuilder() : applyContent;
+            Content string = (applyContent instanceof Content) ? ((Content) applyContent).toStringBuilder() : applyContent;
             text.beginBatchEdit();
             text.delete(0, 0, text.getLineCount() - 1,
                     text.getColumnCount(text.getLineCount() - 1));
@@ -5089,8 +5099,7 @@ public class CodeEditor extends View implements Content.OnContentChangeListener,
                 try {
                     CharPosition start = cursorRange.getStart();
                     CharPosition end = cursorRange.getEnd();
-                    setSelectionRegion(start.getLine(), start.getColumn(),
-                            end.getLine(), end.getColumn());
+                    setSelectionRegion(start.line, start.column, end.line, end.column);
                 } catch (IndexOutOfBoundsException e) {
                     Log.w(LOG_TAG, e);
                 }

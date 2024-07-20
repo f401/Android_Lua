@@ -7,7 +7,7 @@ import io.github.rosemoe.sora.widget.CodeEditor;
 /**
  * Trigger when the editor is attached to window/detached from window
  */
-public class EditorAttachStateChangeEvent extends Event {
+public final class EditorAttachStateChangeEvent extends Event {
     private final boolean isAttachedToWindow;
 
     public EditorAttachStateChangeEvent(@NonNull CodeEditor editor, boolean isAttachedToWindow) {

@@ -6,7 +6,7 @@ import com.google.common.base.MoreObjects;
 
 import java.util.concurrent.ArrayBlockingQueue;
 
-public class SpanPool<T extends ISpan> {
+public class SpanPool<T extends Span> {
 
     /**
      * Small capacity (8192 objects). This should be used for spans that will not
@@ -63,7 +63,7 @@ public class SpanPool<T extends ISpan> {
         return target;
     }
 
-    public interface Factory<T extends ISpan> {
+    public interface Factory<T extends Span> {
         @NonNull
         T create(int column, long style);
     }

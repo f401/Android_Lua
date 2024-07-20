@@ -37,7 +37,7 @@ public class TextUtils {
     /**
      * Counts the number of whitespaces at the start of the given {@link CharSequence}.
      *
-     * @param text The text to count the spaces in.
+     * @param text     The text to count the spaces in.
      * @return A long packed with the number of spaces and tabs at the start of the line.
      * Use {@link IntPair#getFirst(long)} to get the number of spaces and {@link IntPair#getSecond(long)}
      * for the number of tabs.

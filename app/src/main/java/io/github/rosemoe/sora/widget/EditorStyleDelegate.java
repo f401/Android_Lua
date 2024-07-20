@@ -38,6 +38,7 @@ import io.github.rosemoe.sora.lang.brackets.BracketsProvider;
 import io.github.rosemoe.sora.lang.brackets.PairedBracket;
 import io.github.rosemoe.sora.lang.diagnostic.DiagnosticsContainer;
 import io.github.rosemoe.sora.lang.styling.Styles;
+import io.github.rosemoe.sora.text.ContentReference;
 
 public class EditorStyleDelegate implements StyleReceiver {
 

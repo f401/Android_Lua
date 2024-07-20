@@ -39,7 +39,7 @@ public final class Cursor {
     public final static int DIRECTION_RTL = 2;
 
     private final Content content;
-    private final CachedIndexerImpl indexer;
+    private final CachedIndexer indexer;
     private CharPosition leftSel, rightSel;
     private CharPosition cache0, cache1, cache2;
     private int selDirection = DIRECTION_NONE;
@@ -51,9 +51,9 @@ public final class Cursor {
      */
     public Cursor(@NonNull Content content) {
         this.content = content;
-        indexer = new CachedIndexerImpl(content, 30);
-        leftSel = new CharPosition();
-        rightSel = new CharPosition();
+        indexer = new CachedIndexer(content);
+        leftSel = new CharPosition().toBOF();
+        rightSel = new CharPosition().toBOF();
     }
 
     /**
@@ -84,7 +84,7 @@ public final class Cursor {
      * @param column The column position
      */
     public void setLeft(int line, int column) {
-        leftSel = indexer.getCharPosition(line, column).copy();
+        leftSel = indexer.getCharPosition(line, column).fromThis();
     }
 
     /**
@@ -94,7 +94,7 @@ public final class Cursor {
      * @param column The column position
      */
     public void setRight(int line, int column) {
-        rightSel = indexer.getCharPosition(line, column).copy();
+        rightSel = indexer.getCharPosition(line, column).fromThis();
     }
 
     /**
@@ -160,7 +160,7 @@ public final class Cursor {
      * @return index of left cursor
      */
     public int getLeft() {
-        return leftSel.getIndex();
+        return leftSel.index;
     }
 
     /**
@@ -169,7 +169,7 @@ public final class Cursor {
      * @return index of right cursor
      */
     public int getRight() {
-        return rightSel.getIndex();
+        return rightSel.index;
     }
 
     /**
@@ -190,7 +190,7 @@ public final class Cursor {
      *
      * @return Using Indexer
      */
-    public CachedIndexerImpl getIndexer() {
+    public CachedIndexer getIndexer() {
         return indexer;
     }
 
@@ -200,16 +200,7 @@ public final class Cursor {
      * @return Whether selected
      */
     public boolean isSelected() {
-        return leftSel.getIndex() != rightSel.getIndex();
-    }
-
-    /**
-     * Get current direction of selection
-     *
-     * @see #setSelectionDirection(int)
-     */
-    public int getSelectionDirection() {
-        return selDirection;
+        return leftSel.index != rightSel.index;
     }
 
     /**
@@ -222,6 +213,15 @@ public final class Cursor {
      */
     public void setSelectionDirection(int selDirection) {
         this.selDirection = selDirection;
+    }
+
+    /**
+     * Get current direction of selection
+     *
+     * @see #setSelectionDirection(int)
+     */
+    public int getSelectionDirection() {
+        return selDirection;
     }
 
     /**
@@ -273,7 +273,7 @@ public final class Cursor {
      */
     @NonNull
     public CharPosition left() {
-        return leftSel.copy();
+        return leftSel.fromThis();
     }
 
     /**
@@ -281,7 +281,7 @@ public final class Cursor {
      */
     @NonNull
     public CharPosition right() {
-        return rightSel.copy();
+        return rightSel.fromThis();
     }
 
     /**
@@ -300,7 +300,7 @@ public final class Cursor {
      * @param startColumn Start column
      */
     void beforeInsert(int startLine, int startColumn) {
-        cache0 = indexer.getCharPosition(startLine, startColumn).copy();
+        cache0 = indexer.getCharPosition(startLine, startColumn).fromThis();
     }
 
     /**
@@ -312,8 +312,8 @@ public final class Cursor {
      * @param endColumn   End column
      */
     void beforeDelete(int startLine, int startColumn, int endLine, int endColumn) {
-        cache1 = indexer.getCharPosition(startLine, startColumn).copy();
-        cache2 = indexer.getCharPosition(endLine, endColumn).copy();
+        cache1 = indexer.getCharPosition(startLine, startColumn).fromThis();
+        cache2 = indexer.getCharPosition(endLine, endColumn).fromThis();
     }
 
     /**
@@ -334,14 +334,13 @@ public final class Cursor {
      */
     void afterInsert(int startLine, int startColumn, int endLine, int endColumn,
                      CharSequence insertedContent) {
-        indexer.afterInsert(
-                new Content.InsertContext(content, startLine, startColumn, endLine, endColumn, insertedContent));
+        indexer.afterInsert(content, startLine, startColumn, endLine, endColumn, insertedContent);
         int beginIdx = cache0.getIndex();
         if (getLeft() >= beginIdx) {
-            leftSel = indexer.getCharPosition(getLeft() + insertedContent.length()).copy();
+            leftSel = indexer.getCharPosition(getLeft() + insertedContent.length()).fromThis();
         }
         if (getRight() >= beginIdx) {
-            rightSel = indexer.getCharPosition(getRight() + insertedContent.length()).copy();
+            rightSel = indexer.getCharPosition(getRight() + insertedContent.length()).fromThis();
         }
     }
 
@@ -356,8 +355,7 @@ public final class Cursor {
      */
     void afterDelete(int startLine, int startColumn, int endLine, int endColumn,
                      CharSequence deletedContent) {
-        indexer.afterDelete(
-                new Content.DeleteContext(content, startLine, startColumn, endLine, endColumn, deletedContent));
+        indexer.afterDelete(content, startLine, startColumn, endLine, endColumn, deletedContent);
         int beginIdx = cache1.getIndex();
         int endIdx = cache2.getIndex();
         int left = getLeft();
@@ -367,11 +365,9 @@ public final class Cursor {
         }
         left = left - Math.max(0, Math.min(left - beginIdx, endIdx - beginIdx));
         right = right - Math.max(0, Math.min(right - beginIdx, endIdx - beginIdx));
-        leftSel = indexer.getCharPosition(left).copy();
-        rightSel = indexer.getCharPosition(right).copy();
+        leftSel = indexer.getCharPosition(left).fromThis();
+        rightSel = indexer.getCharPosition(right).fromThis();
     }
 
-    public TextRange[] getRanges() {
-        return new TextRange[]{new TextRange(leftSel, rightSel)};
-    }
 }
+

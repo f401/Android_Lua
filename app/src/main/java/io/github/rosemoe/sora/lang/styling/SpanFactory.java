@@ -1,6 +1,6 @@
 /*
  *    sora-editor - the awesome code editor for Android
- *    https://kkgithub.com/Rosemoe/sora-editor
+ *    https://github.com/Rosemoe/sora-editor
  *    Copyright (C) 2020-2024  Rosemoe
  *
  *     This library is free software; you can redistribute it and/or
@@ -27,31 +27,31 @@ import androidx.annotation.NonNull;
 
 import java.util.Collection;
 
-import io.github.rosemoe.sora.lang.styling.span.SpanImpl;
+import io.github.rosemoe.sora.lang.styling.span.internal.SpanImpl;
 
 /**
- * Factory for {@link ISpan}
+ * Factory for {@link Span}
  */
-public final class SpanFactory {
+public class SpanFactory {
 
     private SpanFactory() {
 
     }
 
     /**
-     * Get an available {@link ISpan} object from either cache or new instance.
+     * Get an available {@link Span} object from either cache or new instance.
      * The result object will be initialized with the given arguments.
      */
     @NonNull
-    public static ISpan obtain(int column, long style) {
+    public static Span obtain(int column, long style) {
         return SpanImpl.obtain(column, style);
     }
 
     /**
      * Recycle all spans in the given collection
      */
-    public static void recycleAll(@NonNull Collection<ISpan> spans) {
-        for (ISpan span : spans) {
+    public static void recycleAll(@NonNull Collection<Span> spans) {
+        for (Span span : spans) {
             if (!span.recycle()) {
                 return;
             }

@@ -1,6 +1,6 @@
 /*
  *    sora-editor - the awesome code editor for Android
- *    https://kkgithub.com/Rosemoe/sora-editor
+ *    https://github.com/Rosemoe/sora-editor
  *    Copyright (C) 2020-2024  Rosemoe
  *
  *     This library is free software; you can redistribute it and/or
@@ -23,8 +23,6 @@
  */
 package io.github.rosemoe.sora.lang.styling;
 
-import android.util.MutableInt;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -40,6 +38,7 @@ import io.github.rosemoe.sora.data.ObjectAllocator;
 import io.github.rosemoe.sora.lang.styling.line.LineAnchorStyle;
 import io.github.rosemoe.sora.lang.styling.line.LineStyles;
 import io.github.rosemoe.sora.text.CharPosition;
+import io.github.rosemoe.sora.util.MutableInt;
 
 /**
  * This class stores styles of text and other decorations in editor related to code.
@@ -53,7 +52,7 @@ import io.github.rosemoe.sora.text.CharPosition;
 @SuppressWarnings("unused")
 public class Styles {
 
-    public ISpans spans;
+    public Spans spans;
 
     /**
      * <strong>Sorted</strong> list of LineStyles
@@ -75,11 +74,11 @@ public class Styles {
         this(null);
     }
 
-    public Styles(@Nullable ISpans spans) {
+    public Styles(@Nullable Spans spans) {
         this(spans, true);
     }
 
-    public Styles(@Nullable ISpans spans, boolean initCodeBlocks) {
+    public Styles(@Nullable Spans spans, boolean initCodeBlocks) {
         this.spans = spans;
         if (initCodeBlocks) {
             blocks = new ArrayList<>(128);
@@ -90,7 +89,7 @@ public class Styles {
      * Get analyzed spans
      */
     @Nullable
-    public ISpans getSpans() {
+    public Spans getSpans() {
         return spans;
     }
 
@@ -150,15 +149,15 @@ public class Styles {
      */
     public void adjustOnInsert(@NonNull CharPosition start, @NonNull CharPosition end) {
         spans.adjustOnInsert(start, end);
-        int delta = end.getLine() - start.getLine();
+        int delta = end.line - start.line;
         if (delta == 0) {
             return;
         }
         if (blocks != null)
-            BlocksUpdater.update(blocks, start.getLine(), delta);
+            BlocksUpdater.update(blocks, start.line, delta);
         if (lineStyles != null) {
             for (LineStyles styles : lineStyles) {
-                if (styles.getLine() > start.getLine()) {
+                if (styles.getLine() > start.line) {
                     styles.setLine(styles.getLine() + delta);
                     styles.updateElements();
                 }
@@ -171,21 +170,21 @@ public class Styles {
      */
     public void adjustOnDelete(@NonNull CharPosition start, @NonNull CharPosition end) {
         spans.adjustOnDelete(start, end);
-        int delta = start.getLine() - end.getLine();
+        int delta = start.line - end.line;
         if (delta == 0) {
             return;
         }
         if (blocks != null)
-            BlocksUpdater.update(blocks, start.getLine(), delta);
+            BlocksUpdater.update(blocks, start.line, delta);
         if (lineStyles != null) {
             Iterator<LineStyles> itr = lineStyles.iterator();
             while (itr.hasNext()) {
                 LineStyles styles = itr.next();
                 int line = styles.getLine();
-                if (line > end.getLine()) {
+                if (line > end.line) {
                     styles.setLine(line + delta);
                     styles.updateElements();
-                } else if (line > start.getLine() /* line <= end.line */) {
+                } else if (line > start.line /* line <= end.line */) {
                     itr.remove();
                 }
             }
@@ -245,13 +244,6 @@ public class Styles {
     }
 
     /**
-     * @see #setIndentCountMode(boolean)
-     */
-    public boolean isIndentCountMode() {
-        return indentCountMode;
-    }
-
-    /**
      * @param indentCountMode true if the column in {@link #blocks} is the count of spaces.
      *                        In other words, the indentation level. false if the column in
      *                        {@link #blocks} are based on actual characters.
@@ -259,6 +251,13 @@ public class Styles {
      */
     public void setIndentCountMode(boolean indentCountMode) {
         this.indentCountMode = indentCountMode;
+    }
+
+    /**
+     * @see #setIndentCountMode(boolean)
+     */
+    public boolean isIndentCountMode() {
+        return indentCountMode;
     }
 
     /**

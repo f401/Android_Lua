@@ -37,7 +37,7 @@ import io.github.rosemoe.sora.event.EventManager;
 import io.github.rosemoe.sora.event.InterceptTarget;
 import io.github.rosemoe.sora.event.KeyBindingEvent;
 import io.github.rosemoe.sora.event.SelectionChangeEvent;
-import io.github.rosemoe.sora.lang.ILanguage;
+import io.github.rosemoe.sora.lang.Language;
 import io.github.rosemoe.sora.lang.smartEnter.NewlineHandleResult;
 import io.github.rosemoe.sora.lang.smartEnter.NewlineHandler;
 import io.github.rosemoe.sora.text.CharPosition;
@@ -205,24 +205,23 @@ public class EditorKeyEventHandler {
                         final CharPosition left = editorCursor.left();
                         final CharPosition right = editorCursor.right();
                         final int lines = editorText.getLineCount();
-                        if (right.getLine() == lines - 1) {
+                        if (right.line == lines - 1) {
                             // last line, cannot move down
                             return editorKeyEvent.result(true);
                         }
 
-                        final String next = editorText.getLine(right.getLine() + 1).toString();
+                        final String next = editorText.getLine(right.line + 1).toString();
                         editorText.beginBatchEdit();
-                        editorText.delete(right.getLine(), editorText.getColumnCount(right.getLine()), right.getLine() + 1, next.length());
-                        editorText.insert(left.getLine(), 0, next.concat(editor.getLineSeparator().getChar()));
+                        editorText.delete(right.line, editorText.getColumnCount(right.line), right.line + 1, next.length());
+                        editorText.insert(left.line, 0, next.concat(editor.getLineSeparator().getContent()));
                         editorText.endBatchEdit();
 
                         // Update selection
-                        final CharPosition newLeft = editorText.getIndexer().getCharPosition(left.getLine() + 1, left.getColumn());
-                        final CharPosition newRight = editorText.getIndexer().getCharPosition(right.getLine() + 1, right.getColumn());
-                        if (left.getIndex() != right.getIndex()) {
+                        final CharPosition newLeft = editorText.getIndexer().getCharPosition(left.line + 1, left.column);
+                        final CharPosition newRight = editorText.getIndexer().getCharPosition(right.line + 1, right.column);
+                        if (left.index != right.index) {
                             CharPosition backupAnchor = editor.selectionAnchor;
-                            editor.setSelectionRegion(newLeft.getLine(), newLeft.getColumn(),
-                                    newRight.getLine(), newRight.getColumn());
+                            editor.setSelectionRegion(newLeft.line, newLeft.column, newRight.line, newRight.column);
                             if (backupAnchor != null) {
                                 if (backupAnchor.equals(left)) {
                                     editor.selectionAnchor = newLeft;
@@ -231,7 +230,7 @@ public class EditorKeyEventHandler {
                                 }
                             }
                         } else {
-                            editor.setSelection(newLeft.getLine(), newLeft.getColumn());
+                            editor.setSelection(newLeft.line, newLeft.column);
                         }
 
                         return editorKeyEvent.result(true);
@@ -246,23 +245,23 @@ public class EditorKeyEventHandler {
                     if (isShiftPressed) {
                         final CharPosition left = editorCursor.left();
                         final CharPosition right = editorCursor.right();
-                        if (left.getLine() == 0) {
+                        if (left.line == 0) {
                             // first line, cannot move up
                             return editorKeyEvent.result(true);
                         }
 
-                        final String prev = editorText.getLine(left.getLine() - 1).toString();
+                        final String prev = editorText.getLine(left.line - 1).toString();
                         editorText.beginBatchEdit();
-                        editorText.delete(left.getLine() - 1, 0, left.getLine(), 0);
-                        editorText.insert(right.getLine() - 1, editorText.getColumnCount(right.getLine() - 1), editor.getLineSeparator().getContent().concat(prev));
+                        editorText.delete(left.line - 1, 0, left.line, 0);
+                        editorText.insert(right.line - 1, editorText.getColumnCount(right.line - 1), editor.getLineSeparator().getContent().concat(prev));
                         editorText.endBatchEdit();
 
                         // Update selection
-                        final CharPosition newLeft = editorText.getIndexer().getCharPosition(left.getLine() - 1, left.getColumn());
-                        final CharPosition newRight = editorText.getIndexer().getCharPosition(right.getLine() - 1, right.getColumn());
-                        if (left.getIndex() != right.getIndex()) {
+                        final CharPosition newLeft = editorText.getIndexer().getCharPosition(left.line - 1, left.column);
+                        final CharPosition newRight = editorText.getIndexer().getCharPosition(right.line - 1, right.column);
+                        if (left.index != right.index) {
                             CharPosition backupAnchor = editor.selectionAnchor;
-                            editor.setSelectionRegion(newLeft.getLine(), newLeft.getColumn(), newRight.getLine(), newRight.getColumn());
+                            editor.setSelectionRegion(newLeft.line, newLeft.column, newRight.line, newRight.column);
                             if (backupAnchor != null) {
                                 if (backupAnchor.equals(left)) {
                                     editor.selectionAnchor = newLeft;
@@ -271,7 +270,7 @@ public class EditorKeyEventHandler {
                                 }
                             }
                         } else {
-                            editor.setSelection(newLeft.getLine(), newLeft.getColumn());
+                            editor.setSelection(newLeft.line, newLeft.column);
                         }
 
                         return editorKeyEvent.result(true);
@@ -359,9 +358,8 @@ public class EditorKeyEventHandler {
                 return editorKeyEvent.result(true);
             case KeyEvent.KEYCODE_ESCAPE:
                 if (editorCursor.isSelected()) {
-                    final CharPosition newPosition = editor.getProps().positionOfCursorWhenExitSelecting ?
-                            editorCursor.right() : editorCursor.left();
-                    editor.setSelection(newPosition.getLine(), newPosition.getColumn(), true);
+                    final CharPosition newPosition = editor.getProps().positionOfCursorWhenExitSelecting ? editorCursor.right() : editorCursor.left();
+                    editor.setSelection(newPosition.line, newPosition.column, true);
                 }
                 return editorKeyEvent.result(true);
             default:
@@ -513,8 +511,8 @@ public class EditorKeyEventHandler {
         final Cursor editorCursor = editor.getCursor();
         final Content editorText = editor.getText();
         if (editor.isEditable()) {
-            String lineSeparator = editor.getLineSeparator().getChar();
-            final ILanguage editorLanguage = editor.getEditorLanguage();
+            String lineSeparator = editor.getLineSeparator().getContent();
+            final Language editorLanguage = editor.getEditorLanguage();
 
             if (isShiftPressed && !isAltPressed && !isCtrlPressed) {
                 // Shift + Enter
@@ -524,7 +522,7 @@ public class EditorKeyEventHandler {
             if (isCtrlPressed && !isShiftPressed) {
                 if (isAltPressed) {
                     // Ctrl + Alt + Enter
-                    int line = editorCursor.left().getLine();
+                    int line = editorCursor.left().line;
                     if (line == 0) {
                         editorText.insert(0, 0, lineSeparator);
                         editor.setSelection(0, 0);
@@ -538,9 +536,9 @@ public class EditorKeyEventHandler {
                 }
 
                 // Ctrl + Enter
-                final CharPosition left = editorCursor.left().copy();
+                final CharPosition left = editorCursor.left().fromThis();
                 editor.commitText(lineSeparator);
-                editor.setSelection(left.getLine(), left.getColumn());
+                editor.setSelection(left.line, left.column);
                 editor.ensureSelectionVisible();
                 return keybindingEvent.result(true) || editorKeyEvent.result(true);
             }
@@ -560,7 +558,7 @@ public class EditorKeyEventHandler {
                                 if (delta != 0) {
                                     int newSel = Math.max(editorCursor.getLeft() - delta, 0);
                                     CharPosition charPosition = editorCursor.getIndexer().getCharPosition(newSel);
-                                    editor.setSelection(charPosition.getLine(), charPosition.getColumn());
+                                    editor.setSelection(charPosition.line, charPosition.column);
                                 }
                                 consumed = true;
                             } catch (Exception ex) {
@@ -581,9 +579,9 @@ public class EditorKeyEventHandler {
 
     private boolean startNewLine(CodeEditor editor, Cursor editorCursor, Content
             editorText, EditorKeyEvent e, KeyBindingEvent keybindingEvent) {
-        final int line = editorCursor.right().getLine();
+        final int line = editorCursor.right().line;
         editor.setSelection(line, editorText.getColumnCount(line));
-        editor.commitText(editor.getLineSeparator().getChar());
+        editor.commitText(editor.getLineSeparator().getContent());
         editor.ensureSelectionVisible();
         return keybindingEvent.result(true) || e.result(true);
     }

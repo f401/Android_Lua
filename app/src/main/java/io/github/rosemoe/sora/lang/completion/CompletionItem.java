@@ -62,10 +62,19 @@ public abstract class CompletionItem {
      * Text to display as description in adapter
      */
     public CharSequence desc;
+
+    /**
+     * The kind of this completion item. Based on the kind
+     * an icon is chosen by the editor.
+     */
+    @Nullable
+    protected CompletionItemKind kind;
+
     /**
      * Use for default sort
      */
     public int prefixLength = 0;
+
     /**
      * A string that should be used when comparing this item
      * with other items. When null the {@link #label label}
@@ -73,12 +82,7 @@ public abstract class CompletionItem {
      */
     @Nullable
     public String sortText;
-    /**
-     * The kind of this completion item. Based on the kind
-     * an icon is chosen by the editor.
-     */
-    @Nullable
-    protected CompletionItemKind kind;
+
     @Nullable
     protected Object extra;
 
@@ -90,7 +94,7 @@ public abstract class CompletionItem {
         this(label, desc, null);
     }
 
-    public CompletionItem(CharSequence label, CharSequence desc, @Nullable Drawable icon) {
+    public CompletionItem(CharSequence label, CharSequence desc, Drawable icon) {
         this.label = label;
         this.desc = desc;
         this.icon = icon;
@@ -128,7 +132,7 @@ public abstract class CompletionItem {
      * @param position The requested completion position (the one passed to completion thread)
      */
     public void performCompletion(@NonNull CodeEditor editor, @NonNull Content text, @NonNull CharPosition position) {
-        performCompletion(editor, text, position.getLine(), position.getColumn());
+        performCompletion(editor, text, position.line, position.column);
     }
 
     /**
@@ -147,3 +151,4 @@ public abstract class CompletionItem {
     public abstract void performCompletion(@NonNull CodeEditor editor, @NonNull Content text, int line, int column);
 
 }
+

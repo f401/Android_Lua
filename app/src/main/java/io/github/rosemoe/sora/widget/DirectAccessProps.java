@@ -43,41 +43,11 @@ import java.io.Serializable;
 public class DirectAccessProps implements Serializable {
 
     /**
-     * Do nothing
-     */
-    public final static int LN_ACTION_NOTHING = 0;
-    /**
-     * Select the whole line
-     */
-    public final static int LN_ACTION_SELECT_LINE = 1;
-    /**
-     * Set selection to line start
-     */
-    public final static int LN_ACTION_PLACE_SELECTION_HOME = 2;
-    /**
-     * Enable mouse mode if a mouse is currently hovering in editor
-     */
-    public final static int MOUSE_MODE_AUTO = 0;
-    /**
-     * Always use mouse mode
-     */
-    public final static int MOUSE_MODE_ALWAYS = 1;
-    /**
-     * Do not use mouse mode
-     */
-    public final static int MOUSE_MODE_NEVER = 2;
-    /**
      * Define symbol pairs for any language,
      * Override language settings.
      */
     @NonNull
     public final SymbolPairMatch overrideSymbolPairs = new SymbolPairMatch();
-    /**
-     * Specify the marker text size factor, such as hardwrap markers.
-     * not available for setting now
-     */
-    @FloatRange(from = 0.0f, to = 1.0f)
-    public final float miniMarkerSizeFactor = 0.85f;
     /**
      * If set to be true, the editor will delete the whole line if the current line is empty (only tabs or spaces)
      * when the users press the DELETE key.
@@ -134,6 +104,7 @@ public class DirectAccessProps implements Serializable {
      * restarting inputs.
      */
     public boolean disallowSuggestions = false;
+
     /**
      * Max text length that can be extracted by {@link android.view.inputmethod.InputConnection#getExtractedText(ExtractedTextRequest, int)}
      * and other methods related to text content.
@@ -148,6 +119,7 @@ public class DirectAccessProps implements Serializable {
      */
     @IntRange(from = 0)
     public int maxIPCTextLength = 500000;
+
     /**
      * Whether over scroll is permitted.
      * When over scroll is enabled, the user will be able to scroll out of displaying
@@ -155,24 +127,29 @@ public class DirectAccessProps implements Serializable {
      * This is implemented by {@link OverScroller#fling(int, int, int, int, int, int, int, int, int, int)}
      */
     public boolean overScrollEnabled = false;
+
     /**
      * Allow fling scroll
      */
     public boolean scrollFling = true;
+
     /**
      * If the two completion requests are sent within this time, the completion will not
      * show.
      */
     public long cancelCompletionNs = 70 * 1000000;
+
     /**
      * Whether the editor should adjust its scroll position to make selection visible when its
      * layout height decreases.
      */
     public boolean adjustToSelectionOnResize = true;
+
     /**
      * Show scroll bars even when the scroll is caused by editor's adjustment but not user interaction
      */
     public boolean awareScrollbarWhenAdjust = false;
+
     /**
      * Wave length of problem indicators.
      * <p>
@@ -180,6 +157,7 @@ public class DirectAccessProps implements Serializable {
      */
     @FloatRange(from = 0.0f, fromInclusive = false)
     public float indicatorWaveLength = 18f;
+
     /**
      * Wave width of problem indicators.
      * <p>
@@ -187,6 +165,7 @@ public class DirectAccessProps implements Serializable {
      */
     @FloatRange(from = 0.0f, fromInclusive = false)
     public float indicatorWaveWidth = 0.9f;
+
     /**
      * Wave amplitude of problem indicators.
      * <p>
@@ -194,67 +173,86 @@ public class DirectAccessProps implements Serializable {
      */
     @FloatRange(from = 0.0f, fromInclusive = false)
     public float indicatorWaveAmplitude = 4f;
+
     /**
      * Compare the text to commit with composing text.
      * <p>
      * See detailed issue: #155
      */
     public boolean trackComposingTextOnCommit = true;
+
     /**
      * Try to simplify composing text update as a single insertion or deletion.
      * <p>
      * See detailed issue: #357
      */
     public boolean minimizeComposingTextUpdate = true;
+
     /**
      * Draw side block line when in wordwrap mode
      */
     public boolean drawSideBlockLine = true;
+
     /**
      * Cache RenderNode of long text lines
      * This costs some memory, but improves performance when the line is not too long.
      */
     public boolean cacheRenderNodeForLongLines = false;
+
     /**
      * Use the ICU library to find range of words on double tap or long press.
      */
     public boolean useICULibToSelectWords = true;
+
     /**
      * Highlight matching delimiters. This requires language support.
      */
     public boolean highlightMatchingDelimiters = true;
+
     /**
      * Make matching delimiters bold
      */
     public boolean boldMatchingDelimiters = true;
+
     /**
      * Whether the editor will use round rectangle for text background
      */
     public boolean enableRoundTextBackground = true;
+
     /**
      * The text background wraps the actual text, but not the whole line
      */
     public boolean textBackgroundWrapTextOnly = false;
+
     /**
      * The new cursor position when the user exits selecting mode.
      * {@code true} for the current right cursor
      * {@code false} for the current left cursor
      */
     public boolean positionOfCursorWhenExitSelecting = true;
+
     /**
      * Draw custom line background color (specified by {@link io.github.rosemoe.sora.lang.styling.line.LineBackground})
      * on current line
      */
     public boolean drawCustomLineBgOnCurrentLine = false;
+
     /**
      * The factor of round rectangle, affecting the corner radius of the resulting display
      */
     public float roundTextBackgroundFactor = 0.13f;
+
     /**
      * Specify the icon size factor. result size = row height * sideIconSizeFactor
      */
     @FloatRange(from = 0.0f, to = 1.0f)
     public float sideIconSizeFactor = 0.7f;
+
+    /**
+     * Do nothing
+     */
+    public final static int LN_ACTION_NOTHING = 0;
+
     /**
      * Specify editor behavior when line number is clicked.
      *
@@ -264,20 +262,36 @@ public class DirectAccessProps implements Serializable {
      */
     public int actionWhenLineNumberClicked = LN_ACTION_PLACE_SELECTION_HOME;
     /**
+     * Select the whole line
+     */
+    public final static int LN_ACTION_SELECT_LINE = 1;
+    /**
+     * Set selection to line start
+     */
+    public final static int LN_ACTION_PLACE_SELECTION_HOME = 2;
+    /**
+     * Enable mouse mode if a mouse is currently hovering in editor
+     */
+    public final static int MOUSE_MODE_AUTO = 0;
+
+    /**
      * Format pasted text (when text is pasted by {@link CodeEditor#pasteText()})
      */
     public boolean formatPastedText = false;
+
     /**
      * Use enhanced function of home and end. When it is enabled, clicking home will place
      * the selection to actually text start on the line if the selection is currently at the start
      * of line. End works in similar way, too.
      */
     public boolean enhancedHomeAndEnd = true;
+
     /**
      * Show hard wrap marker near the column. (a reminder for starting a new line)
      * Use 0 or negative number for no marker
      */
     public int hardwrapColumn = 0;
+
     /**
      * Select words even if some texts are already selected when the editor is
      * long-pressed.
@@ -285,10 +299,12 @@ public class DirectAccessProps implements Serializable {
      * selected.
      */
     public boolean reselectOnLongPress = true;
+
     /**
      * Show selection above selection handle when text is selected
      */
     public boolean showSelectionWhenSelected = false;
+
     /**
      * Limit length for copying text to clipboard. When the length of copying text exceeded the limit,
      * copying is aborted and a toast tip is shown to notify user that the action is failed.
@@ -296,6 +312,7 @@ public class DirectAccessProps implements Serializable {
      * Default size is 512*1024 Java characters, which is 1MB in UTF-16 encoding
      */
     public int clipboardTextLengthLimit = 512 * 1024;
+
     /**
      * Scrolling speed multiplier when ALT key is pressed (for mouse wheel only).
      * <p>
@@ -303,15 +320,18 @@ public class DirectAccessProps implements Serializable {
      */
     @FloatRange(from = 1f)
     public float fastScrollSensitivity = 5f;
+
     /**
      * Enable/disable sticky scroll mode
      */
     public boolean stickyScroll = false;
+
     /**
      * Control the count of lines that can be stuck to the top of the editor
      */
     @IntRange(from = 1)
     public int stickyScrollMaxLines = 3;
+
     /**
      * Prefer inner scopes if true.
      * When set to false, editor abandons inner scopes if {@link #stickyScrollMaxLines} is exceeded.
@@ -319,22 +339,27 @@ public class DirectAccessProps implements Serializable {
      * if {@link #stickyScrollMaxLines} is exceeded.
      */
     public boolean stickyScrollPreferInnerScope = false;
+
     /**
      * Limit for sticky scroll dataset size
      */
     public int stickyScrollIterationLimit = 1000;
+
     /**
      * Hide partially or all of the stuck lines when text is selected
      */
     public boolean stickyScrollAutoCollapse = true;
+
     /**
      * Fling scroll in single direction (vertical or horizontal)
      */
     public boolean singleDirectionFling = true;
+
     /**
      * Dragging scroll in single direction (vertical or horizontal)
      */
     public boolean singleDirectionDragging = true;
+
     /**
      * Report cursor anchor info to system.
      * <p>
@@ -342,10 +367,26 @@ public class DirectAccessProps implements Serializable {
      * IME dialog follows our insert marker (selection).
      */
     public boolean reportCursorAnchor = true;
+
     /**
      * Place selection on previous line after cutting line
      */
     public boolean placeSelOnPreviousLineAfterCut = false;
+    /**
+     * Always use mouse mode
+     */
+    public final static int MOUSE_MODE_ALWAYS = 1;
+    /**
+     * Do not use mouse mode
+     */
+    public final static int MOUSE_MODE_NEVER = 2;
+    /**
+     * Specify the marker text size factor, such as hardwrap markers.
+     * not available for setting now
+     */
+    @FloatRange(from = 0.0f, to = 1.0f)
+    public final float miniMarkerSizeFactor = 0.85f;
+
     /**
      * When to enable mouse mode. This affects editor windows and selection handles.
      *

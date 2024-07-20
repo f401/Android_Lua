@@ -7,8 +7,8 @@ import io.github.rosemoe.sora.widget.CodeEditor;
 /**
  * This event is triggered after format result is available and is applied to the editor
  */
-public class EditorFormatEvent extends Event {
-
+public final class EditorFormatEvent extends Event {
+    @NonNull
     private final boolean isSuccess;
 
     public EditorFormatEvent(@NonNull CodeEditor editor, boolean isSuccess) {

@@ -28,9 +28,11 @@ import android.util.SparseIntArray;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterators;
+
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
@@ -39,8 +41,8 @@ import io.github.rosemoe.sora.widget.CodeEditor;
 /**
  * This class manages the colors of editor.
  * You can use color IDs that are not in pre-defined id pool for custom languages. We recommend
- * adding a base offset for your custom color IDs. For example, first custom color ID is 256. This
- * leaves enough space for editor's future built-in colors.
+ *  adding a base offset for your custom color IDs. For example, first custom color ID is 256. This
+ *   leaves enough space for editor's future built-in colors.
  * <p>
  * This is also the default color scheme of editor.
  * Be careful to change this class, because this can cause its
@@ -166,12 +168,8 @@ public class EditorColorScheme {
      * Max pre-defined color id
      */
     protected static final int END_COLOR_ID = 64;
-    private final static int PRIMARY_TEXT_COLOR_DEFAULT_LIGHT = 0xff424242;
-    private final static int PRIMARY_TEXT_COLOR_DEFAULT_DARK = 0xfff5f5f5;
-    private final static int BACKGROUND_COLOR_LIGHT = 0xfffefefe;
-    private final static int BACKGROUND_COLOR_DARK = 0xff212121;
-    private final static int SECONDARY_TEXT_COLOR_LIGHT = 0xff616161;
-    private final static int SECONDARY_TEXT_COLOR_DARK = 0xffeeeeee;
+
+
     private static EditorColorScheme globalDefault = new EditorColorScheme();
     /**
      * Real color saver
@@ -181,7 +179,13 @@ public class EditorColorScheme {
      * Host editor object
      */
     private final List<WeakReference<CodeEditor>> editors;
-    private final boolean dark;
+
+    private final static int PRIMARY_TEXT_COLOR_DEFAULT_LIGHT = 0xff424242;
+    private final static int PRIMARY_TEXT_COLOR_DEFAULT_DARK = 0xfff5f5f5;
+    private final static int BACKGROUND_COLOR_LIGHT = 0xfffefefe;
+    private final static int BACKGROUND_COLOR_DARK = 0xff212121;
+    private final static int SECONDARY_TEXT_COLOR_LIGHT = 0xff616161;
+    private final static int SECONDARY_TEXT_COLOR_DARK = 0xffeeeeee;
 
     /**
      * Create a new ColorScheme for the given editor
@@ -213,46 +217,6 @@ public class EditorColorScheme {
     }
 
     /**
-     * Get global default color scheme.
-     */
-    @NonNull
-    public static EditorColorScheme getDefault() {
-        return globalDefault;
-    }
-
-    /**
-     * Set global default color scheme. Newly created editor will use the new default color scheme.
-     *
-     * @param colorScheme new global color scheme, or null for restoring to built-in default
-     */
-    public static void setDefault(@Nullable EditorColorScheme colorScheme) {
-        setDefault(colorScheme, false);
-    }
-
-    /**
-     * Set global default color scheme and optionally update existing editors that are using default
-     * color scheme.
-     *
-     * @param colorScheme   new global color scheme, or null for restoring to built-in default
-     * @param updateEditors update existing editors that are using default color scheme
-     */
-    public static void setDefault(@Nullable EditorColorScheme colorScheme, boolean updateEditors) {
-        if (colorScheme == null) {
-            colorScheme = new EditorColorScheme();
-        }
-        if (updateEditors) {
-            WeakReference<?>[] editors = globalDefault.editors.toArray(new WeakReference[0]);
-            for (WeakReference<?> ref : editors) {
-                CodeEditor editor = (CodeEditor) ref.get();
-                if (editor != null) {
-                    editor.setColorScheme(colorScheme);
-                }
-            }
-        }
-        globalDefault = colorScheme;
-    }
-
-    /**
      * Subscribe changes
      * <p>
      * Called by editor
@@ -267,19 +231,7 @@ public class EditorColorScheme {
         editors.add(new WeakReference<>(editor));
         editor.onColorFullUpdate();
     }
-
-    /**
-     * Unsubscribe changes
-     */
-    public void detachEditor(@NonNull CodeEditor editor) {
-        Iterator<WeakReference<CodeEditor>> itr = editors.iterator();
-        while (itr.hasNext()) {
-            if (itr.next().get() == editor) {
-                itr.remove();
-                break;
-            }
-        }
-    }
+    private final boolean dark;
 
     /**
      * Apply default colors
@@ -448,31 +400,11 @@ public class EditorColorScheme {
     }
 
     /**
-     * Apply a new color for the given type
-     *
-     * @param type  The type
-     * @param color New color
+     * Get global default color scheme.
      */
-    public void setColor(int type, int color) {
-        //Do not change if the old value is the same as new value
-        //due to avoid unnecessary invalidate() calls
-        int old = getColor(type);
-        if (old == color) {
-            return;
-        }
-
-        colors.put(type, color);
-
-        //Notify the editor
-        Iterator<WeakReference<CodeEditor>> itr = editors.iterator();
-        while (itr.hasNext()) {
-            CodeEditor editor = itr.next().get();
-            if (editor == null) {
-                itr.remove();
-            } else {
-                editor.onColorUpdated(type);
-            }
-        }
+    @NonNull
+    public static EditorColorScheme getDefault() {
+        return globalDefault;
     }
 
     /**
@@ -490,6 +422,80 @@ public class EditorColorScheme {
      */
     public boolean isDark() {
         return dark;
+    }
+
+    /**
+     * Set global default color scheme. Newly created editor will use the new default color scheme.
+     *
+     * @param colorScheme new global color scheme, or null for restoring to built-in default
+     */
+    public static void setDefault(@Nullable EditorColorScheme colorScheme) {
+        setDefault(colorScheme, false);
+    }
+
+    /**
+     * Set global default color scheme and optionally update existing editors that are using default
+     * color scheme.
+     *
+     * @param colorScheme   new global color scheme, or null for restoring to built-in default
+     * @param updateEditors update existing editors that are using default color scheme
+     */
+    public static void setDefault(@Nullable EditorColorScheme colorScheme, boolean updateEditors) {
+        if (colorScheme == null) {
+            colorScheme = new EditorColorScheme();
+        }
+        if (updateEditors) {
+            WeakReference<?>[] editors = globalDefault.editors.toArray(new WeakReference[0]);
+            for (WeakReference<?> ref : editors) {
+                CodeEditor editor = (CodeEditor) ref.get();
+                if (editor != null) {
+                    editor.setColorScheme(colorScheme);
+                }
+            }
+        }
+        globalDefault = colorScheme;
+    }
+
+    /**
+     * Unsubscribe changes
+     */
+    public void detachEditor(@NonNull CodeEditor editor) {
+        Iterators.removeIf(editors.iterator(), new Predicate<WeakReference<CodeEditor>>() {
+            @Override
+            public boolean apply(WeakReference<CodeEditor> input) {
+                return input.get() == editor;
+            }
+        });
+    }
+
+    /**
+     * Apply a new color for the given type
+     *
+     * @param type  The type
+     * @param color New color
+     */
+    public void setColor(int type, int color) {
+        //Do not change if the old value is the same as new value
+        //due to avoid unnecessary invalidate() calls
+        int old = getColor(type);
+        if (old == color) {
+            return;
+        }
+
+        colors.put(type, color);
+
+        //Notify the editor
+        Iterators.removeIf(editors.iterator(), new Predicate<WeakReference<CodeEditor>>() {
+            @Override
+            public boolean apply(WeakReference<CodeEditor> input) {
+                CodeEditor editor = input.get();
+                if (editor == null) {
+                    return true;
+                }
+                editor.onColorUpdated(type);
+                return false;
+            }
+        });
     }
 
 }

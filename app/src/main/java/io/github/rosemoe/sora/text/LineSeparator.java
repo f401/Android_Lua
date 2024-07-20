@@ -18,40 +18,59 @@
  *     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *     USA
  *
+ *     Please contact Rosemoe by email 2073412493@qq.com if you need
+ *     additional information or have any questions
  */
 package io.github.rosemoe.sora.text;
 
 import androidx.annotation.NonNull;
 
-import com.google.common.base.Preconditions;
+import java.util.Objects;
 
-import net.fred.lua.common.utils.StringUtils;
-
+/**
+ * Line separator types
+ *
+ * @author Rosemoe
+ */
 public enum LineSeparator {
-    /** Used for Linux. */
+
+    /**
+     * No separator. Used internally
+     */
+    NONE(""),
     LF("\n"),
-    /** Used for Windows. DOS format.*/
-    CRLF("\r\n"),
-    /** Used for Classic Mac Os. */
-    CR("\r");
+    CR("\r"),
+    CRLF("\r\n");
+
+    private final String str;
+    private final int length;
+    private final char[] chars;
+
+    LineSeparator(String str) {
+        this.str = str;
+        this.length = str.length();
+        chars = str.toCharArray();
+    }
 
     /**
      * Get target line separator from a line separator string.
      *
-     * @param src line separator string
+     * @param str line separator string
      * @throws IllegalArgumentException if the given str is not a line separator
      */
-    public static LineSeparator fromString(String src) {
-        Preconditions.checkArgument(!StringUtils.isEmpty(src));
-        switch (src) {
-            case "\n":
-                return LF;
+    public static LineSeparator fromSeparatorString(String str) {
+        Objects.requireNonNull(str, "text must not be null");
+        switch (str) {
             case "\r":
                 return CR;
+            case "\n":
+                return LF;
             case "\r\n":
                 return CRLF;
+            case "":
+                return NONE;
             default:
-                return null;
+                throw new IllegalArgumentException("unknown line separator type");
         }
     }
 
@@ -63,10 +82,10 @@ public enum LineSeparator {
      * @param end   end index of the line separator
      * @throws IllegalArgumentException if the given str is not a line separator
      */
-    public static LineSeparator fromString(@NonNull CharSequence text, int start, int end) {
-        Preconditions.checkNotNull(text, "text must not be null");
+    public static LineSeparator fromSeparatorString(@NonNull CharSequence text, int start, int end) {
+        Objects.requireNonNull(text, "text must not be null");
         if (end == start) {
-            return null;
+            return NONE;
         }
         if (end - start == 1) {
             char ch = text.charAt(start);
@@ -79,18 +98,25 @@ public enum LineSeparator {
         throw new IllegalArgumentException("unknown line separator type");
     }
 
-    private final String _char;
-
-    LineSeparator(String c) {
-        this._char = c;
+    /**
+     * Get the text of this separator
+     */
+    public String getContent() {
+        return str;
     }
 
-    @NonNull
-    public String getChar() {
-        return _char;
+    /**
+     * Get text length of this separator
+     */
+    public int getLength() {
+        return length;
     }
 
-    public int length() {
-        return _char.length();
+    /**
+     * Get a char array containing the line separator. The char array should not be modified.
+     */
+    public char[] getChars() {
+        return chars;
     }
+
 }

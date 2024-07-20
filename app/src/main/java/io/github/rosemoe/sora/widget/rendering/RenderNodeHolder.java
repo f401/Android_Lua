@@ -18,7 +18,7 @@ import java.util.Stack;
 
 import io.github.rosemoe.sora.lang.analysis.StyleUpdateRange;
 import io.github.rosemoe.sora.lang.styling.EmptyReader;
-import io.github.rosemoe.sora.lang.styling.ISpans;
+import io.github.rosemoe.sora.lang.styling.Spans;
 import io.github.rosemoe.sora.lang.styling.Styles;
 import io.github.rosemoe.sora.widget.CodeEditor;
 
@@ -107,8 +107,8 @@ public class RenderNodeHolder {
         TextRenderNode node = getNode(line);
         // It's safe to use row directly because the mode is non-wordwrap
         if (node.needsRecord()) {
-            ISpans spans = styles != null ? styles.getSpans() : null;
-            ISpans.Reader reader = spans != null ? spans.read() : EmptyReader.getInstance();
+            Spans spans = styles != null ? styles.getSpans() : null;
+            Spans.Reader reader = spans != null ? spans.read() : EmptyReader.getInstance();
             try {
                 reader.moveToLine(line);
             } catch (Exception e) {

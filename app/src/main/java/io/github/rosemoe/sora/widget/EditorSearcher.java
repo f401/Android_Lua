@@ -45,6 +45,7 @@ import io.github.rosemoe.sora.text.Cursor;
 import io.github.rosemoe.sora.text.TextUtils;
 import io.github.rosemoe.sora.util.IntPair;
 import io.github.rosemoe.sora.util.LongArrayList;
+import io.github.rosemoe.sora.widget.rendering.RenderContext;
 
 /**
  * Search text in editor.
@@ -55,9 +56,9 @@ import io.github.rosemoe.sora.util.LongArrayList;
  * is invoked. So be careful that the search result is changing and {@link PublishSearchResultEvent} is
  * re-triggered when search result is available for changed text.
  *
- * @author Rosemoe
  * @see PublishSearchResultEvent
  * @see SearchOptions
+ * @author Rosemoe
  */
 public class EditorSearcher {
 
@@ -82,19 +83,18 @@ public class EditorSearcher {
     }
 
     /**
-     * @see #setCyclicJumping(boolean)
-     */
-    public boolean isCyclicJumping() {
-        return cyclicJumping;
-    }
-
-    /**
      * Jump cyclically when calling {@link #gotoNext()} and {@link #gotoPrevious()}
-     *
      * @see #isCyclicJumping()
      */
     public void setCyclicJumping(boolean cyclicJumping) {
         this.cyclicJumping = cyclicJumping;
+    }
+
+    /**
+     * @see #setCyclicJumping(boolean)
+     */
+    public boolean isCyclicJumping() {
+        return cyclicJumping;
     }
 
     /**
@@ -107,8 +107,7 @@ public class EditorSearcher {
      * avoid lags in main thread. If you want to be notified when the results is available, refer to
      * {@link PublishSearchResultEvent}. Also be careful that, the event is also triggered when {@link #stopSearch()}
      * is called.
-     *
-     * @throws IllegalArgumentException               if pattern length is zero
+     * @throws IllegalArgumentException if pattern length is zero
      * @throws java.util.regex.PatternSyntaxException if pattern is invalid when regex is enabled.
      */
     public void search(@NonNull String pattern, @NonNull SearchOptions options) {
@@ -168,7 +167,6 @@ public class EditorSearcher {
     /**
      * Find current selected region in search results and return the index in search result.
      * Or {@code -1} if result is not available or the current selected region is not in result.
-     *
      * @throws IllegalStateException if no search is in progress
      */
     public int getCurrentMatchedPositionIndex() {
@@ -196,7 +194,6 @@ public class EditorSearcher {
 
     /**
      * Get item count of search result. Or {@code 0} if result is not available or no item is found.
-     *
      * @throws IllegalStateException if no search is in progress
      */
     public int getMatchedPositionCount() {
@@ -210,10 +207,9 @@ public class EditorSearcher {
 
     /**
      * Goto next matched position based on cursor position.
-     *
+     * @see #setCyclicJumping(boolean)
      * @return if any jumping action is performed
      * @throws IllegalStateException if no search is in progress
-     * @see #setCyclicJumping(boolean)
      */
     public boolean gotoNext() {
         checkState();
@@ -232,8 +228,7 @@ public class EditorSearcher {
                 int start = IntPair.getFirst(data);
                 CharPosition pos1 = editor.getText().getIndexer().getCharPosition(start);
                 CharPosition pos2 = editor.getText().getIndexer().getCharPosition(IntPair.getSecond(data));
-                editor.setSelectionRegion(pos1.getLine(), pos1.getColumn(),
-                        pos2.getLine(), pos2.getColumn(), SelectionChangeEvent.CAUSE_SEARCH);
+                editor.setSelectionRegion(pos1.line, pos1.column, pos2.line, pos2.column, SelectionChangeEvent.CAUSE_SEARCH);
                 return true;
             }
         }
@@ -242,10 +237,9 @@ public class EditorSearcher {
 
     /**
      * Goto last matched position based on cursor position.
-     *
+     * @see #setCyclicJumping(boolean)
      * @return if any jumping action is performed
      * @throws IllegalStateException if no search is in progress
-     * @see #setCyclicJumping(boolean)
      */
     public boolean gotoPrevious() {
         checkState();
@@ -267,8 +261,7 @@ public class EditorSearcher {
                 int end = IntPair.getSecond(data);
                 CharPosition pos1 = editor.getText().getIndexer().getCharPosition(IntPair.getFirst(data));
                 CharPosition pos2 = editor.getText().getIndexer().getCharPosition(end);
-                editor.setSelectionRegion(pos1.getLine(), pos1.getColumn(),
-                        pos2.getLine(), pos2.getColumn(), SelectionChangeEvent.CAUSE_SEARCH);
+                editor.setSelectionRegion(pos1.line, pos1.column, pos2.line, pos2.column, SelectionChangeEvent.CAUSE_SEARCH);
                 return true;
             }
         }
@@ -277,7 +270,6 @@ public class EditorSearcher {
 
     /**
      * Check if selected region is exactly a search result
-     *
      * @throws IllegalStateException if no search is in progress
      */
     public boolean isMatchedPositionSelected() {
@@ -322,7 +314,6 @@ public class EditorSearcher {
     /**
      * Replace all matched position. Note that after invoking this, a blocking {@link ProgressDialog}
      * is shown until the action is done (either succeeded or failed).
-     *
      * @param replacement The text for replacement
      * @throws IllegalStateException if no search is in progress
      */
@@ -335,7 +326,7 @@ public class EditorSearcher {
      * is shown until the action is done (either succeeded or failed). The given callback will be executed
      * on success.
      *
-     * @param replacement   The text for replacement
+     * @param replacement The text for replacement
      * @param whenSucceeded Callback when action is succeeded
      * @throws IllegalStateException if no search is in progress
      */
@@ -349,7 +340,10 @@ public class EditorSearcher {
             return;
         }
         Context context = editor.getContext();
-        final ProgressDialog dialog = ProgressDialog.show(context, I18nConfig.getString(context, R.string.sora_editor_replaceAll), I18nConfig.getString(context, R.string.sora_editor_editor_search_replacing), true, false);
+        final ProgressDialog dialog = ProgressDialog.show(context,
+                I18nConfig.getString(context, R.string.sora_editor_replaceAll),
+                I18nConfig.getString(context, R.string.sora_editor_editor_search_replacing),
+                true, false);
         final LongArrayList res = lastResults;
         new Thread(() -> {
             try {
@@ -367,7 +361,7 @@ public class EditorSearcher {
                 editor.postInLifecycle(() -> {
                     CharPosition pos = editor.getCursor().left();
                     editor.getText().replace(0, 0, editor.getLineCount() - 1, editor.getText().getColumnCount(editor.getLineCount() - 1), sb);
-                    editor.setSelectionAround(pos.getLine(), pos.getColumn());
+                    editor.setSelectionAround(pos.line, pos.column);
                     dialog.dismiss();
 
                     if (whenSucceeded != null) {
@@ -392,6 +386,9 @@ public class EditorSearcher {
      */
     public static class SearchOptions {
 
+        public final boolean caseInsensitive;
+        @IntRange(from = 1, to = 3)
+        public final int type;
         /**
          * Normal text searching
          */
@@ -404,9 +401,6 @@ public class EditorSearcher {
          * Use regular expression for text searching
          */
         public final static int TYPE_REGULAR_EXPRESSION = 3;
-        public final boolean caseInsensitive;
-        @IntRange(from = 1, to = 3)
-        public final int type;
 
         public SearchOptions(boolean caseInsensitive, boolean useRegex) {
             this(useRegex ? TYPE_REGULAR_EXPRESSION : TYPE_NORMAL, caseInsensitive);
@@ -414,8 +408,7 @@ public class EditorSearcher {
 
         /**
          * Create a new searching option with the given attributes.
-         *
-         * @param type            type of searching method
+         * @param type type of searching method
          * @param caseInsensitive Case insensitive
          * @see #TYPE_NORMAL
          * @see #TYPE_WHOLE_WORD

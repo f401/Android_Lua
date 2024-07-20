@@ -29,7 +29,7 @@ import android.view.MotionEvent;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import io.github.rosemoe.sora.lang.styling.ISpan;
+import io.github.rosemoe.sora.lang.styling.Span;
 import io.github.rosemoe.sora.text.CharPosition;
 import io.github.rosemoe.sora.text.TextRange;
 import io.github.rosemoe.sora.widget.CodeEditor;
@@ -46,11 +46,11 @@ public abstract class EditorMotionEvent extends Event {
 
     private final CharPosition pos;
     private final MotionEvent event;
-    private final ISpan span;
+    private final Span span;
     private final TextRange spanRange;
 
     public EditorMotionEvent(@NonNull CodeEditor editor, @NonNull CharPosition position,
-                             @NonNull MotionEvent event, @Nullable ISpan span, @Nullable TextRange spanRange) {
+                             @NonNull MotionEvent event, @Nullable Span span, @Nullable TextRange spanRange) {
         super(editor);
         this.pos = position;
         this.event = event;
@@ -68,19 +68,19 @@ public abstract class EditorMotionEvent extends Event {
     }
 
     public int getLine() {
-        return pos.getLine();
+        return pos.line;
     }
 
     public int getColumn() {
-        return pos.getColumn();
+        return pos.column;
     }
 
     public int getIndex() {
-        return pos.getIndex();
+        return pos.index;
     }
 
     public CharPosition getCharPosition() {
-        return pos.copy();
+        return pos.fromThis();
     }
 
     public float getX() {
@@ -103,7 +103,7 @@ public abstract class EditorMotionEvent extends Event {
      * Get span at event character position, maybe null.
      */
     @Nullable
-    public ISpan getSpan() {
+    public Span getSpan() {
         return span;
     }
 

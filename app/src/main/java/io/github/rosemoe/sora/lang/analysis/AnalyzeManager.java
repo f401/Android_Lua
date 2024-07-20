@@ -44,7 +44,7 @@ public interface AnalyzeManager {
     /**
      * Set the span receiver of the manager.
      * <p>
-     * This is called when the {@link io.github.rosemoe.sora.lang.ILanguage} is going to be used by
+     * This is called when the {@link io.github.rosemoe.sora.lang.Language} is going to be used by
      * an editor. It will also be called when the instance is no longer used.
      * Make sure you check the exact receiver at the time you send results to it.
      * Thus, you should save the instance at your side.

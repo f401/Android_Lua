@@ -16,13 +16,15 @@ import io.github.rosemoe.sora.widget.CodeEditor;
  * @author Rosemoe
  */
 public class BuildEditorInfoEvent extends Event {
+    @NonNull
     private final EditorInfo editorInfo;
 
-    public BuildEditorInfoEvent(@NonNull CodeEditor editor, EditorInfo editorInfo) {
+    public BuildEditorInfoEvent(@NonNull CodeEditor editor, @NonNull EditorInfo editorInfo) {
         super(editor);
         this.editorInfo = editorInfo;
     }
 
+    @NonNull
     public EditorInfo getEditorInfo() {
         return editorInfo;
     }

@@ -7,12 +7,6 @@ import androidx.annotation.NonNull;
 import io.github.rosemoe.sora.text.CharPosition;
 import io.github.rosemoe.sora.widget.CodeEditor;
 
-/**
- * Trigger when the editor needs to create context menu
- *
- * @property menu [ContextMenu] for adding menu items
- * @property position Target text position of the menu
- */
 public class CreateContextMenuEvent extends Event {
     @NonNull
     private final ContextMenu menu;

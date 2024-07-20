@@ -28,7 +28,7 @@ import androidx.annotation.Nullable;
 
 import java.util.List;
 
-import io.github.rosemoe.sora.lang.styling.ISpan;
+import io.github.rosemoe.sora.lang.styling.Span;
 
 /**
  * Interface for line based analyze managers
@@ -64,7 +64,7 @@ public interface IncrementalAnalyzeManager<S, T> extends AnalyzeManager {
     /**
      * Generate spans for the line
      */
-    List<ISpan> generateSpansForLine(LineTokenizeResult<S, T> tokens);
+    List<Span> generateSpansForLine(LineTokenizeResult<S, T> tokens);
 
     /**
      * Called when a State object is to be abandoned
@@ -95,14 +95,14 @@ public interface IncrementalAnalyzeManager<S, T> extends AnalyzeManager {
          * Spans. If spans are generated as well you can directly return them here to avoid
          * {@link #generateSpansForLine(LineTokenizeResult)} calls.
          */
-        public List<ISpan> spans;
+        public List<Span> spans;
 
         public LineTokenizeResult(@NonNull S_ state, @Nullable List<T_> tokens) {
             this.state = state;
             this.tokens = tokens;
         }
 
-        public LineTokenizeResult(@NonNull S_ state, @Nullable List<T_> tokens, @Nullable List<ISpan> spans) {
+        public LineTokenizeResult(@NonNull S_ state, @Nullable List<T_> tokens, @Nullable List<Span> spans) {
             this.state = state;
             this.tokens = tokens;
             this.spans = spans;

@@ -23,8 +23,6 @@
  */
 package io.github.rosemoe.sora.lang.diagnostic;
 
-import com.google.common.collect.Lists;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -108,7 +106,7 @@ public class DiagnosticsContainer {
             return;
         }
         int length = deleteEnd - deleteStart;
-        ArrayList<DiagnosticRegion> garbage = Lists.newArrayList();
+        ArrayList<DiagnosticRegion> garbage = new ArrayList<DiagnosticRegion>();
         for (DiagnosticRegion region : regions) {
             // Compute cross length
             int sharedStart = Math.max(deleteStart, region.startIndex);

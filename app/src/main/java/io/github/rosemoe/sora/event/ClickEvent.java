@@ -28,7 +28,7 @@ import android.view.MotionEvent;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import io.github.rosemoe.sora.lang.styling.ISpan;
+import io.github.rosemoe.sora.lang.styling.Span;
 import io.github.rosemoe.sora.text.CharPosition;
 import io.github.rosemoe.sora.text.TextRange;
 import io.github.rosemoe.sora.widget.CodeEditor;
@@ -41,7 +41,7 @@ import io.github.rosemoe.sora.widget.CodeEditor;
 public class ClickEvent extends EditorMotionEvent {
 
     public ClickEvent(@NonNull CodeEditor editor, @NonNull CharPosition position, @NonNull MotionEvent event,
-                      @Nullable ISpan span, @Nullable TextRange spanRange) {
+                      @Nullable Span span, @Nullable TextRange spanRange) {
         super(editor, position, event, span, spanRange);
     }
 

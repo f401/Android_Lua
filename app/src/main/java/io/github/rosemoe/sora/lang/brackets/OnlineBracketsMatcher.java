@@ -62,9 +62,9 @@ public class OnlineBracketsMatcher implements BracketsProvider {
         char a = text.charAt(index);
         int symbolIndex = findIndex(a);
         if (symbolIndex != -1) {
-            char b = pairs[symbolIndex ^ 1];// Back to even number
+            char b = pairs[symbolIndex ^ 1];
             int stack = 0;
-            if ((symbolIndex & 1) == 0) {// Even number
+            if ((symbolIndex & 1) == 0) {
                 // Find forward
                 for (int i = index + 1; i < text.length() && i - index < limit; i++) {
                     char ch = text.charAt(i);

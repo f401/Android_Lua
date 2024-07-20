@@ -18,19 +18,21 @@
  *     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *     USA
  *
+ *     Please contact Rosemoe by email 2073412493@qq.com if you need
+ *     additional information or have any questions
  */
-
 package io.github.rosemoe.sora.text;
 
 import androidx.annotation.NonNull;
 
 class InsertTextHelper {
+
     private static final InsertTextHelper[] sCached = new InsertTextHelper[8];
     static int TYPE_LINE_CONTENT = 0;
     static int TYPE_NEWLINE = 1;
     static int TYPE_EOF = 2;
-    private CharSequence mText;
-    private int mIndex, mIndexNext, mLength;
+    private CharSequence text;
+    private int index, indexNext, length;
 
     private synchronized static InsertTextHelper obtain() {
         for (int i = 0; i < sCached.length; i++) {
@@ -62,52 +64,53 @@ class InsertTextHelper {
     }
 
     private void init(@NonNull CharSequence text) {
-        this.mText = text;
-        mIndex = -1;
-        mIndexNext = 0;
-        mLength = text.length();
+        this.text = text;
+        index = -1;
+        indexNext = 0;
+        length = text.length();
     }
 
     public int getIndex() {
-        return mIndex;
+        return index;
     }
 
     public int getIndexNext() {
-        return mIndexNext;
+        return indexNext;
     }
 
     public int forward() {
-        mIndex = mIndexNext;
-        if (mIndex == mLength) {
+        index = indexNext;
+        if (index == length) {
             return TYPE_EOF;
         }
-        char ch = mText.charAt(mIndex);
+        char ch = text.charAt(index);
         switch (ch) {
             case '\n':
-                mIndexNext = mIndex + 1;
+                indexNext = index + 1;
                 return TYPE_NEWLINE;
             case '\r':
-                if (mIndex + 1 < mLength && mText.charAt(mIndex + 1) == '\n') {
-                    mIndexNext = mIndex + 2;
+                if (index + 1 < length && text.charAt(index + 1) == '\n') {
+                    indexNext = index + 2;
                 } else {
-                    mIndexNext = mIndex + 1;
+                    indexNext = index + 1;
                 }
                 return TYPE_NEWLINE;
             default:
-                mIndexNext = mIndex + 1;
-                while (mIndexNext < mLength) {
-                    ch = mText.charAt(mIndexNext);
+                indexNext = index + 1;
+                while (indexNext < length) {
+                    ch = text.charAt(indexNext);
                     if (ch == '\n' || ch == '\r') {
                         break;
                     }
-                    mIndexNext++;
+                    indexNext++;
                 }
                 return TYPE_LINE_CONTENT;
         }
     }
 
     public void reset() {
-        mText = null;
-        mLength = mIndex = 0;
+        text = null;
+        length = index = 0;
     }
+
 }

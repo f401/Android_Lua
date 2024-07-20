@@ -58,10 +58,22 @@ public interface StyleReceiver {
      *
      * @param sourceManager Source AnalyzeManager. The receiver may ignore the request if some checks on
      *                      the sourceManager fail
-     * @param action        Sometimes you may need to synchronize your action in main thread. This ensures the given action is executed
-     *                      on main thread before the style updates.
+     * @param action Sometimes you may need to synchronize your action in main thread. This ensures the given action is executed
+     *               on main thread before the style updates.
      */
     void setStyles(@NonNull AnalyzeManager sourceManager, @Nullable Styles styles, @Nullable Runnable action);
+
+    /**
+     * Notify the receiver the given styles object is updated, and line range is given by {@code range}
+     *
+     * @param sourceManager Source AnalyzeManager. The receiver may ignore the request if some checks on
+     *                      the sourceManager fail
+     * @param styles        The Styles object previously set by {@link #setStyles(AnalyzeManager, Styles)}
+     * @param range         The line range of this update
+     */
+    default void updateStyles(@NonNull AnalyzeManager sourceManager, @NonNull Styles styles, @NonNull StyleUpdateRange range) {
+        setStyles(sourceManager, styles);
+    }
 
     /**
      * Specify new diagnostics. You can call it in any thread.
@@ -74,13 +86,4 @@ public interface StyleReceiver {
      */
     void updateBracketProvider(@NonNull AnalyzeManager sourceManager, @Nullable BracketsProvider provider);
 
-    /**
-     * Notify the receiver the given styles object is updated, and line range is given by {@code range}
-     *
-     * @param sourceManager Source AnalyzeManager. The receiver may ignore the request if some checks on
-     *                      the sourceManager fail
-     * @param styles        The Styles object previously set by {@link #setStyles(AnalyzeManager, Styles)}
-     * @param range         The line range of this update
-     */
-    void updateStyles(@NonNull AnalyzeManager sourceManager, @NonNull Styles styles, @NonNull StyleUpdateRange range);
 }

@@ -33,7 +33,6 @@ import java.util.Objects;
 
 import io.github.rosemoe.sora.event.EventReceiver;
 import io.github.rosemoe.sora.event.ScrollEvent;
-import io.github.rosemoe.sora.event.Unsubscribe;
 import io.github.rosemoe.sora.widget.CodeEditor;
 
 /**
@@ -83,34 +82,31 @@ public class EditorPopupWindow {
         parentView = editor;
         window = new PopupWindow();
         window.setElevation(editor.getDpUnit() * 8);
-        scrollListener = new EventReceiver<ScrollEvent>() {
-            @Override
-            public void onReceive(@NonNull ScrollEvent event, @NonNull Unsubscribe unsubscribe) {
-                if (!registerFlag) {
-                    unsubscribe.unsubscribe();
-                    registered = false;
-                    return;
-                }
-                switch (event.getCause()) {
-                    case ScrollEvent.CAUSE_MAKE_POSITION_VISIBLE:
-                    case ScrollEvent.CAUSE_TEXT_SELECTING:
-                    case ScrollEvent.CAUSE_USER_FLING:
-                    case ScrollEvent.CAUSE_SCALE_TEXT:
-                        if (isFeatureEnabled(FEATURE_HIDE_WHEN_FAST_SCROLL) &&
-                                (Math.abs(event.getEndX() - event.getStartX()) > 80 ||
-                                        Math.abs(event.getEndY() - event.getStartY()) > 80)) {
-                            if (isShowing()) {
-                                dismiss();
-                                return;
-                            }
-                        }
-                        break;
-                }
-                if (isFeatureEnabled(FEATURE_SCROLL_AS_CONTENT)) {
-                    applyWindowAttributes(false);
-                }
+        scrollListener = ((event, unsubscribe) -> {
+            if (!registerFlag) {
+                unsubscribe.unsubscribe();
+                registered = false;
+                return;
             }
-        };
+            switch (event.getCause()) {
+                case ScrollEvent.CAUSE_MAKE_POSITION_VISIBLE:
+                case ScrollEvent.CAUSE_TEXT_SELECTING:
+                case ScrollEvent.CAUSE_USER_FLING:
+                case ScrollEvent.CAUSE_SCALE_TEXT:
+                    if (isFeatureEnabled(FEATURE_HIDE_WHEN_FAST_SCROLL) &&
+                            (Math.abs(event.getEndX() - event.getStartX()) > 80 ||
+                                    Math.abs(event.getEndY() - event.getStartY()) > 80)) {
+                        if (isShowing()) {
+                            dismiss();
+                            return;
+                        }
+                    }
+                    break;
+            }
+            if (isFeatureEnabled(FEATURE_SCROLL_AS_CONTENT)) {
+                applyWindowAttributes(false);
+            }
+        });
         register();
     }
 

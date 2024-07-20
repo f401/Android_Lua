@@ -11,7 +11,7 @@ import io.github.rosemoe.sora.widget.EditorSearcher;
  *
  * @author Rosemoe
  */
-public class PublishSearchResultEvent extends Event {
+public final class PublishSearchResultEvent extends Event {
     public PublishSearchResultEvent(@NonNull CodeEditor editor) {
         super(editor);
     }

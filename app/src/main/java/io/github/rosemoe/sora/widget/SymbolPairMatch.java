@@ -82,7 +82,7 @@ public class SymbolPairMatch {
      */
     public void putPair(char[] charArray, SymbolPair symbolPair) {
         char endChar = charArray[charArray.length - 1];
-        List<SymbolPairMatch.SymbolPair> list = multipleCharByEndPairMaps.get(endChar);
+        List<SymbolPair> list = multipleCharByEndPairMaps.get(endChar);
 
         if (list == null) {
             list = new ArrayList<>();
@@ -106,7 +106,7 @@ public class SymbolPairMatch {
 
     @Nullable
     public final SymbolPair matchBestPairBySingleChar(char editChar) {
-        SymbolPairMatch.SymbolPair pair = singleCharPairMaps.get(editChar);
+        SymbolPair pair = singleCharPairMaps.get(editChar);
         if (pair == null && parent != null) {
             return parent.matchBestPairBySingleChar(editChar);
         }
@@ -114,10 +114,10 @@ public class SymbolPairMatch {
     }
 
     public final List<SymbolPair> matchBestPairList(char editChar) {
-        List<SymbolPairMatch.SymbolPair> result = multipleCharByEndPairMaps.get(editChar);
+        List<SymbolPair> result = multipleCharByEndPairMaps.get(editChar);
 
         if (result == null && parent != null) {
-            List<SymbolPairMatch.SymbolPair> parentResult = parent.matchBestPairList(editChar);
+            List<SymbolPair> parentResult = parent.matchBestPairList(editChar);
             result = new ArrayList<>(parentResult);
         }
 
@@ -131,20 +131,20 @@ public class SymbolPairMatch {
 
         // matches single character symbol pair first
         if (singleCharPair != null) {
-            singleCharPair.measureCursorPosition(cursorPosition.getIndex());
+            singleCharPair.measureCursorPosition(cursorPosition.index);
             return singleCharPair;
         }
 
         // find all possible lists, with a single character for fast search
-        List<SymbolPairMatch.SymbolPair> matchList = matchBestPairList(firstChar);
+        List<SymbolPair> matchList = matchBestPairList(firstChar);
 
         SymbolPair matchPair = null;
-        for (SymbolPairMatch.SymbolPair pair : matchList) {
+        for (SymbolPair pair : matchList) {
             char[] openCharArray = pair.open.toCharArray();
 
             // if flag is not 1, no match
             int matchFlag = 1;
-            int insertIndex = cursorPosition.getIndex();
+            int insertIndex = cursorPosition.index;
 
             // the size = 1
             if (inputCharArray == null) {

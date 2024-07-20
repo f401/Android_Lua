@@ -46,16 +46,16 @@ public class SingleCharacterWidths {
         this.tabWidth = tabWidth;
     }
 
+    public void setHandleFunctionCharacters(boolean handleFunctionCharacters) {
+        this.handleFunctionCharacters = handleFunctionCharacters;
+    }
+
     public static boolean isEmoji(char ch) {
         return ch == 0xd83c || ch == 0xd83d || ch == 0xd83e;
     }
 
     public boolean isHandleFunctionCharacters() {
         return handleFunctionCharacters;
-    }
-
-    public void setHandleFunctionCharacters(boolean handleFunctionCharacters) {
-        this.handleFunctionCharacters = handleFunctionCharacters;
     }
 
     /**

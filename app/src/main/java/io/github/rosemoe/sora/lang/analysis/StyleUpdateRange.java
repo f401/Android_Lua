@@ -13,5 +13,8 @@ public interface StyleUpdateRange {
      */
     boolean isInRange(int line);
 
+    /**
+     * Get a new iterator for line indices in range
+     */
     Iterator<Integer> lineIndexIterator(int maxLineIndex);
 }

@@ -28,13 +28,9 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.util.Consumer;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -43,10 +39,11 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import io.github.rosemoe.sora.lang.styling.CodeBlock;
-import io.github.rosemoe.sora.lang.styling.ISpan;
-import io.github.rosemoe.sora.lang.styling.ISpans;
+import io.github.rosemoe.sora.lang.styling.Span;
 import io.github.rosemoe.sora.lang.styling.SpanFactory;
+import io.github.rosemoe.sora.lang.styling.Spans;
 import io.github.rosemoe.sora.lang.styling.Styles;
+import io.github.rosemoe.sora.lang.util.BaseAnalyzeManager;
 import io.github.rosemoe.sora.text.CharPosition;
 import io.github.rosemoe.sora.text.Content;
 import io.github.rosemoe.sora.text.ContentLine;
@@ -89,8 +86,7 @@ public abstract class AsyncIncrementalAnalyzeManager<S, T> extends BaseAnalyzeMa
     public void insert(@NonNull CharPosition start, @NonNull CharPosition end, @NonNull CharSequence insertedText) {
         if (thread != null) {
             increaseRunCount();
-            thread.offerMessage(MSG_MOD, new TextModification(IntPair.pack(start.getLine(), start.getColumn()),
-                    IntPair.pack(end.getLine(), end.getColumn()), insertedText));
+            thread.offerMessage(MSG_MOD, new TextModification(IntPair.pack(start.line, start.column), IntPair.pack(end.line, end.column), insertedText));
         }
     }
 
@@ -98,8 +94,7 @@ public abstract class AsyncIncrementalAnalyzeManager<S, T> extends BaseAnalyzeMa
     public void delete(@NonNull CharPosition start, @NonNull CharPosition end, @NonNull CharSequence deletedText) {
         if (thread != null) {
             increaseRunCount();
-            thread.offerMessage(MSG_MOD, new TextModification(IntPair.pack(start.getLine(), start.getColumn()),
-                    IntPair.pack(end.getLine(), end.getColumn()), null));
+            thread.offerMessage(MSG_MOD, new TextModification(IntPair.pack(start.line, start.column), IntPair.pack(end.line, end.column), null));
         }
     }
 
@@ -186,201 +181,15 @@ public abstract class AsyncIncrementalAnalyzeManager<S, T> extends BaseAnalyzeMa
 
     public Styles getManagedStyles() {
         Thread thread = Thread.currentThread();
-        Preconditions.checkState(thread.getClass() == AsyncIncrementalAnalyzeManager.LooperThread.class);
+        if (thread.getClass() != AsyncIncrementalAnalyzeManager.LooperThread.class) {
+            throw new IllegalThreadStateException();
+        }
         return ((AsyncIncrementalAnalyzeManager<?, ?>.LooperThread) thread).styles;
     }
 
-    public interface ReceiverConsumer extends Consumer<StyleReceiver> {
+    public interface ReceiverConsumer {
 
         void accept(@NonNull StyleReceiver receiver);
-
-    }
-
-    private static class LockedSpans implements ISpans {
-
-        private static final String LOG_TAG = "LockedSpans";
-
-        private final Lock lock;
-        private final List<Line> lines;
-
-        public LockedSpans() {
-            lines = new ArrayList<>(128);
-            lock = new ReentrantLock();
-        }
-
-        @Override
-        public void adjustOnDelete(CharPosition start, CharPosition end) {
-
-        }
-
-        @Override
-        public void adjustOnInsert(CharPosition start, CharPosition end) {
-
-        }
-
-        @Override
-        public int getLineCount() {
-            return lines.size();
-        }
-
-        @Override
-        public Reader read() {
-            return new ReaderImpl();
-        }
-
-        @Override
-        public Modifier modify() {
-            return new ModifierImpl();
-        }
-
-        @Override
-        public boolean supportsModify() {
-            return true;
-        }
-
-        private static class Line {
-
-            public Lock lock = new ReentrantLock();
-
-            public List<ISpan> spans;
-
-            public Line(List<ISpan> s) {
-                spans = s;
-            }
-
-        }
-
-        private class ReaderImpl implements ISpans.Reader {
-
-            private Line line;
-
-            public void moveToLine(int line) {
-                if (line < 0 || line >= lines.size()) {
-                    if (this.line != null) {
-                        this.line.lock.unlock();
-                    }
-                    this.line = null;
-                } else {
-                    if (this.line != null) {
-                        this.line.lock.unlock();
-                    }
-                    boolean locked = false;
-                    try {
-                        locked = lock.tryLock(100, TimeUnit.MICROSECONDS);
-                    } catch (InterruptedException e) {
-                        Log.w(LOG_TAG, "failed to acquire the lock", e);
-                        Thread.currentThread().interrupt();
-                    }
-                    if (locked) {
-                        try {
-                            Line obj = lines.get(line);
-                            if (obj.lock.tryLock()) {
-                                this.line = obj;
-                            } else {
-                                this.line = null;
-                            }
-                        } finally {
-                            lock.unlock();
-                        }
-                    } else {
-                        this.line = null;
-                    }
-                }
-            }
-
-            @Override
-            public int getSpanCount() {
-                return line == null ? 1 : line.spans.size();
-            }
-
-            @Override
-            public ISpan getSpanAt(int index) {
-                return line == null ? SpanFactory.obtain(0, EditorColorScheme.TEXT_NORMAL) : line.spans.get(index);
-            }
-
-            @Override
-            public List<ISpan> getSpansOnLine(int line) {
-                ArrayList<ISpan> spans = Lists.newArrayList();
-                boolean locked = false;
-                try {
-                    locked = lock.tryLock(1, TimeUnit.MILLISECONDS);
-                } catch (InterruptedException e) {
-                    Log.w(LOG_TAG, "failed to acquire the lock", e);
-                }
-                if (locked) {
-                    Line obj = null;
-                    try {
-                        if (line < lines.size()) {
-                            obj = lines.get(line);
-                        }
-                    } finally {
-                        lock.unlock();
-                    }
-                    if (obj != null && obj.lock.tryLock()) {
-                        try {
-                            return ImmutableList.copyOf(obj.spans);
-                        } finally {
-                            obj.lock.unlock();
-                        }
-                    } else {
-                        spans.add(getSpanAt(0));
-                    }
-                } else {
-                    spans.add(getSpanAt(0));
-                }
-                return spans;
-            }
-        }
-
-        private class ModifierImpl implements Modifier {
-
-            @Override
-            public void setSpansOnLine(int line, List<ISpan> spans) {
-                lock.lock();
-                try {
-                    while (lines.size() <= line) {
-                        ArrayList<ISpan> list = Lists.newArrayList();
-                        list.add(SpanFactory.obtain(0, EditorColorScheme.TEXT_NORMAL));
-                        lines.add(new Line(list));
-                    }
-                    Line obj = lines.get(line);
-                    obj.lock.lock();
-                    try {
-                        obj.spans = spans;
-                    } finally {
-                        obj.lock.unlock();
-                    }
-                } finally {
-                    lock.unlock();
-                }
-            }
-
-            @Override
-            public void addLineAt(int line, List<ISpan> spans) {
-                lock.lock();
-                try {
-                    lines.add(line, new Line(spans));
-                } finally {
-                    lock.unlock();
-                }
-            }
-
-            @Override
-            public void deleteLineAt(int line) {
-                lock.lock();
-                try {
-                    Line obj = lines.get(line);
-                    obj.lock.lock();
-                    try {
-                        lines.remove(line);
-                    } finally {
-                        obj.lock.unlock();
-                    }
-                } finally {
-                    lock.unlock();
-                }
-            }
-        }
 
     }
 
@@ -430,6 +239,194 @@ public abstract class AsyncIncrementalAnalyzeManager<S, T> extends BaseAnalyzeMa
 
     }
 
+    private static class LockedSpans implements Spans {
+
+        private static final String LOG_TAG = "LockedSpans";
+
+        private final Lock lock;
+        private final List<Line> lines;
+
+        public LockedSpans() {
+            lines = new ArrayList<>(128);
+            lock = new ReentrantLock();
+        }
+
+        @Override
+        public void adjustOnDelete(CharPosition start, CharPosition end) {
+
+        }
+
+        @Override
+        public void adjustOnInsert(CharPosition start, CharPosition end) {
+
+        }
+
+        @Override
+        public int getLineCount() {
+            return lines.size();
+        }
+
+        @Override
+        public Reader read() {
+            return new ReaderImpl();
+        }
+
+        @Override
+        public Modifier modify() {
+            return new ModifierImpl();
+        }
+
+        @Override
+        public boolean supportsModify() {
+            return true;
+        }
+
+        private static class Line {
+
+            public Lock lock = new ReentrantLock();
+
+            public List<Span> spans;
+
+            public Line(List<Span> s) {
+                spans = s;
+            }
+
+        }
+
+        private class ReaderImpl implements Spans.Reader {
+
+            private Line line;
+
+            public void moveToLine(int line) {
+                if (line < 0 || line >= lines.size()) {
+                    if (this.line != null) {
+                        this.line.lock.unlock();
+                    }
+                    this.line = null;
+                } else {
+                    if (this.line != null) {
+                        this.line.lock.unlock();
+                    }
+                    boolean locked = false;
+                    try {
+                        locked = lock.tryLock(100, TimeUnit.MICROSECONDS);
+                    } catch (InterruptedException e) {
+                        Log.w(LOG_TAG, "failed to acquire the lock", e);
+                        Thread.currentThread().interrupt();
+                    }
+                    if (locked) {
+                        try {
+                            Line obj = lines.get(line);
+                            if (obj.lock.tryLock()) {
+                                this.line = obj;
+                            } else {
+                                this.line = null;
+                            }
+                        } finally {
+                            lock.unlock();
+                        }
+                    } else {
+                        this.line = null;
+                    }
+                }
+            }
+
+            @Override
+            public int getSpanCount() {
+                return line == null ? 1 : line.spans.size();
+            }
+
+            @Override
+            public Span getSpanAt(int index) {
+                return line == null ? SpanFactory.obtain(0, EditorColorScheme.TEXT_NORMAL) : line.spans.get(index);
+            }
+
+            @Override
+            public List<Span> getSpansOnLine(int line) {
+                ArrayList<Span> spans = new ArrayList<Span>();
+                boolean locked = false;
+                try {
+                    locked = lock.tryLock(1, TimeUnit.MILLISECONDS);
+                } catch (InterruptedException e) {
+                    Log.w(LOG_TAG, "failed to acquire the lock", e);
+                }
+                if (locked) {
+                    Line obj = null;
+                    try {
+                        if (line < lines.size()) {
+                            obj = lines.get(line);
+                        }
+                    } finally {
+                        lock.unlock();
+                    }
+                    if (obj != null && obj.lock.tryLock()) {
+                        try {
+                            return Collections.unmodifiableList(obj.spans);
+                        } finally {
+                            obj.lock.unlock();
+                        }
+                    } else {
+                        spans.add(getSpanAt(0));
+                    }
+                } else {
+                    spans.add(getSpanAt(0));
+                }
+                return spans;
+            }
+        }
+
+        private class ModifierImpl implements Modifier {
+
+            @Override
+            public void setSpansOnLine(int line, List<Span> spans) {
+                lock.lock();
+                try {
+                    while (lines.size() <= line) {
+                        ArrayList<Span> list = new ArrayList<Span>();
+                        list.add(SpanFactory.obtain(0, EditorColorScheme.TEXT_NORMAL));
+                        lines.add(new Line(list));
+                    }
+                    Line obj = lines.get(line);
+                    obj.lock.lock();
+                    try {
+                        obj.spans = spans;
+                    } finally {
+                        obj.lock.unlock();
+                    }
+                } finally {
+                    lock.unlock();
+                }
+            }
+
+            @Override
+            public void addLineAt(int line, List<Span> spans) {
+                lock.lock();
+                try {
+                    lines.add(line, new Line(spans));
+                } finally {
+                    lock.unlock();
+                }
+            }
+
+            @Override
+            public void deleteLineAt(int line) {
+                lock.lock();
+                try {
+                    Line obj = lines.get(line);
+                    obj.lock.lock();
+                    try {
+                        lines.remove(line);
+                    } finally {
+                        obj.lock.unlock();
+                    }
+                } finally {
+                    lock.unlock();
+                }
+            }
+        }
+
+    }
+
     private final class LooperThread extends Thread {
 
         private final BlockingQueue<Message> messageQueue = new LinkedBlockingQueue<>();
@@ -458,12 +455,12 @@ public abstract class AsyncIncrementalAnalyzeManager<S, T> extends BaseAnalyzeMa
         private void initialize() {
             styles = new Styles(spans = new LockedSpans());
             S state = getInitialState();
-            ISpans.Modifier mdf = spans.modify();
+            Spans.Modifier mdf = spans.modify();
             for (int i = 0; i < shadowed.getLineCount() && !abort && !isInterrupted(); i++) {
                 ContentLine line = shadowed.getLine(i);
                 LineTokenizeResult<S, T> result = tokenizeLine(line, state, i);
                 state = result.state;
-                List<ISpan> spans = result.spans != null ? result.spans : generateSpansForLine(result);
+                List<Span> spans = result.spans != null ? result.spans : generateSpansForLine(result);
                 states.add(result.clearSpans());
                 onAddState(result.state);
                 mdf.addLineAt(i, spans);
@@ -506,7 +503,7 @@ public abstract class AsyncIncrementalAnalyzeManager<S, T> extends BaseAnalyzeMa
                                     }
                                     subList.clear();
                                 }
-                                ISpans.Modifier mdf = spans.modify();
+                                Spans.Modifier mdf = spans.modify();
                                 for (int i = startLine + 1; i <= endLine; i++) {
                                     mdf.deleteLineAt(startLine + 1);
                                 }
@@ -530,7 +527,7 @@ public abstract class AsyncIncrementalAnalyzeManager<S, T> extends BaseAnalyzeMa
                                 shadowed.insert(IntPair.getFirst(mod.start), IntPair.getSecond(mod.start), mod.changedText);
                                 S state = startLine == 0 ? getInitialState() : states.get(startLine - 1).state;
                                 int line = startLine;
-                                ISpans.Modifier spans = styles.spans.modify();
+                                Spans.Modifier spans = styles.spans.modify();
                                 // Add Lines
                                 while (line <= endLine) {
                                     LineTokenizeResult<S, T> res = tokenizeLine(shadowed.getLine(line), state, line);

@@ -1,6 +1,6 @@
 /*
  *    sora-editor - the awesome code editor for Android
- *    https://kkgithub.com/Rosemoe/sora-editor
+ *    https://github.com/Rosemoe/sora-editor
  *    Copyright (C) 2020-2024  Rosemoe
  *
  *     This library is free software; you can redistribute it and/or
@@ -31,6 +31,7 @@ import java.io.Reader;
 /**
  * Reference of a content due to be accessed in read-only mode.
  * Access can be validated during accesses.
+ * {@link io.github.rosemoe.sora.text.TextReference.ValidateFailedException} may be thrown if the check is failed.
  * The result of methods may be dirty when the content is modified.
  *
  * @author Rosemoe
@@ -57,7 +58,7 @@ public class ContentReference extends TextReference {
 
     public int getCharIndex(int line, int column) {
         validateAccess();
-        return content.getIndexer().getCharIndex(line, column);
+        return content.getCharIndex(line, column);
     }
 
     public CharPosition getCharPosition(int line, int column) {
@@ -87,20 +88,19 @@ public class ContentReference extends TextReference {
     }
 
     /**
-     * @see Content#getLineSeparator(int)
+     * @see Content#getLineSeparatorUnsafe(int)
      */
     public String getLineSeparator(int line) {
         validateAccess();
-        return content.getLineSeparator(line).getChar();
+        return content.getLineSeparatorUnsafe(line).getContent();
     }
 
     /**
-     * @see Content#getLine(int)
-     * @see Content#toString()
+     * @see Content#getLineString(int)
      */
     public String getLine(int line) {
         validateAccess();
-        return content.getLine(line).toString();
+        return content.getLineString(line);
     }
 
     /**
@@ -160,7 +160,7 @@ public class ContentReference extends TextReference {
             int read = 0;
             while (read < length && line < getLineCount()) {
                 ContentLine targetLine = content.getLine(line);
-                int separatorLength = targetLine.getLineSeparator().length();
+                int separatorLength = targetLine.getLineSeparator().getLength();
                 int columnCount = targetLine.length();
                 int toRead = Math.min(columnCount - column, length - read);
                 toRead = Math.max(0, toRead);
@@ -170,7 +170,7 @@ public class ContentReference extends TextReference {
                 column += toRead;
                 read += toRead;
                 while (read < length && columnCount <= column && column < columnCount + separatorLength) {
-                    chars[offset + read] = targetLine.getLineSeparator().getChar().charAt(column - columnCount);
+                    chars[offset + read] = targetLine.getLineSeparator().getContent().charAt(column - columnCount);
                     read++;
                     column++;
                 }

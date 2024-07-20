@@ -1,6 +1,6 @@
 /*
  *    sora-editor - the awesome code editor for Android
- *    https://kkgithub.com/Rosemoe/sora-editor
+ *    https://github.com/Rosemoe/sora-editor
  *    Copyright (C) 2020-2024  Rosemoe
  *
  *     This library is free software; you can redistribute it and/or
@@ -28,8 +28,7 @@ import android.os.Handler;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.google.common.collect.Lists;
-
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -37,7 +36,7 @@ import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import io.github.rosemoe.sora.lang.ILanguage;
+import io.github.rosemoe.sora.lang.Language;
 
 /**
  * CompletionPublisher manages completion items to be added in one completion analyzing process.
@@ -81,8 +80,8 @@ public class CompletionPublisher {
 
     public CompletionPublisher(@NonNull Handler handler, @NonNull Runnable callback, int languageInterruptionLevel) {
         this.handler = handler;
-        this.items = Lists.newArrayList();
-        this.candidates = Lists.newArrayList();
+        this.items = new ArrayList<>();
+        this.candidates = new ArrayList<>();
         lock = new ReentrantLock(true);
         updateThreshold = DEFAULT_UPDATE_THRESHOLD;
         this.callback = callback;
@@ -200,62 +199,59 @@ public class CompletionPublisher {
         if (invalid) {
             return;
         }
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                // Lock the candidate list accordingly
-                if (invalid) {
-                    callback.run();
-                    return;
-                }
-                boolean locked = false;
-                if (forced) {
-                    lock.lock();
-                    locked = true;
-                } else {
-                    locked = lock.tryLock();
-                }
+        handler.post(() -> {
+            // Lock the candidate list accordingly
+            if (invalid) {
+                callback.run();
+                return;
+            }
+            boolean locked = false;
+            if (forced) {
+                lock.lock();
+                locked = true;
+            } else {
+                locked = lock.tryLock();
+            }
 
-                if (locked) {
-                    try {
-                        if (candidates.isEmpty()) {
-                            callback.run();
-                            return;
-                        }
-                        final Comparator<CompletionItem> comparator = CompletionPublisher.this.comparator;
-                        if (comparator != null) {
-                            while (!candidates.isEmpty()) {
-                                CompletionItem candidate = candidates.remove(0);
-                                // Insert the value by binary search
-                                int left = 0, right = items.size();
-                                int size = right;
-                                while (left <= right) {
-                                    int mid = (left + right) / 2;
-                                    if (mid < 0 || mid >= size) {
-                                        left = mid;
-                                        break;
-                                    }
-                                    int cmp = comparator.compare(items.get(mid), candidate);
-                                    if (cmp < 0) {
-                                        left = mid + 1;
-                                    } else if (cmp > 0) {
-                                        right = mid - 1;
-                                    } else {
-                                        left = mid;
-                                        break;
-                                    }
-                                }
-                                left = Math.max(0, Math.min(size, left));
-                                items.add(left, candidate);
-                            }
-                        } else {
-                            items.addAll(candidates);
-                            candidates.clear();
-                        }
+            if (locked) {
+                try {
+                    if (candidates.isEmpty()) {
                         callback.run();
-                    } finally {
-                        lock.unlock();
+                        return;
                     }
+                    final Comparator<CompletionItem> comparator = this.comparator;
+                    if (comparator != null) {
+                        while (!candidates.isEmpty()) {
+                            CompletionItem candidate = candidates.remove(0);
+                            // Insert the value by binary search
+                            int left = 0, right = items.size();
+                            int size = right;
+                            while (left <= right) {
+                                int mid = (left + right) / 2;
+                                if (mid < 0 || mid >= size) {
+                                    left = mid;
+                                    break;
+                                }
+                                int cmp = comparator.compare(items.get(mid), candidate);
+                                if (cmp < 0) {
+                                    left = mid + 1;
+                                } else if (cmp > 0) {
+                                    right = mid - 1;
+                                } else {
+                                    left = mid;
+                                    break;
+                                }
+                            }
+                            left = Math.max(0, Math.min(size, left));
+                            items.add(left, candidate);
+                        }
+                    } else {
+                        items.addAll(candidates);
+                        candidates.clear();
+                    }
+                    callback.run();
+                } finally {
+                    lock.unlock();
                 }
             }
         });
@@ -276,7 +272,7 @@ public class CompletionPublisher {
     public void checkCancelled() {
         if (Thread.interrupted() || invalid) {
             invalid = true;
-            if (languageInterruptionLevel <= ILanguage.InterruptionLevel.INTERRUPTION_LEVEL_SLIGHT) {
+            if (languageInterruptionLevel <= Language.INTERRUPTION_LEVEL_SLIGHT) {
                 throw new CompletionCancelledException();
             }
         }

@@ -1,6 +1,6 @@
 /*
  *    sora-editor - the awesome code editor for Android
- *    https://kkgithub.com/Rosemoe/sora-editor
+ *    https://github.com/Rosemoe/sora-editor
  *    Copyright (C) 2020-2024  Rosemoe
  *
  *     This library is free software; you can redistribute it and/or
@@ -23,39 +23,43 @@
  */
 package io.github.rosemoe.sora.lang.styling.span;
 
-import io.github.rosemoe.sora.lang.styling.color.IResolvableColor;
+import io.github.rosemoe.sora.lang.styling.color.ResolvableColor;
 
 public class SpanExtAttrs {
     /**
-     * @see ISpanColorResolver
+     * @see SpanColorResolver
      */
     public final static int EXT_COLOR_RESOLVER = 0;
     /**
-     * @see ISpanExternalRenderer
+     * @see SpanExternalRenderer
      */
     public final static int EXT_EXTERNAL_RENDERER = 1;
     /**
-     * @see ISpanInteractionInfo
+     * @see SpanInteractionInfo
      */
     public final static int EXT_INTERACTION_INFO = 2;
     /**
-     * Set a {@link IResolvableColor} object for underline color resolving
+     * Set a {@link ResolvableColor} object for underline color resolving
      */
     public final static int EXT_UNDERLINE_COLOR = 3;
 
-    public static boolean checkType(int extType, ISpanExt ext) {
+    public static boolean checkType(int extType, SpanExt ext) {
         if (ext == null) {
             return true;
         }
         switch (extType) {
-            case EXT_COLOR_RESOLVER:
-                return ext instanceof ISpanColorResolver;
-            case EXT_EXTERNAL_RENDERER:
-                return ext instanceof ISpanExternalRenderer;
-            case EXT_INTERACTION_INFO:
-                return ext instanceof ISpanInteractionInfo;
-            case EXT_UNDERLINE_COLOR:
-                return ext instanceof IResolvableColor;
+            case EXT_COLOR_RESOLVER -> {
+                return ext instanceof SpanColorResolver;
+            }
+            case EXT_EXTERNAL_RENDERER -> {
+                return ext instanceof SpanExternalRenderer;
+            }
+            case EXT_INTERACTION_INFO -> {
+                return ext instanceof SpanInteractionInfo;
+            }
+            case EXT_UNDERLINE_COLOR -> {
+                return ext instanceof ResolvableColor;
+            }
         }
         return true;
     }

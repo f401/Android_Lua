@@ -37,14 +37,20 @@ import io.github.rosemoe.sora.widget.schemes.EditorColorScheme;
  */
 public interface SelectionHandleStyle {
 
+    int HANDLE_TYPE_UNDEFINED = -1;
+    int HANDLE_TYPE_INSERT = 0;
+    int HANDLE_TYPE_LEFT = 1;
+    int HANDLE_TYPE_RIGHT = 2;
+
+    int ALIGN_CENTER = 0;
+    int ALIGN_LEFT = 1;
+    int ALIGN_RIGHT = 2;
+
     /**
      * Draw a handle to the given canvas and return descriptor of handle.
      *
      * @param canvas     Canvas to draw
-     * @param handleType Type of handle being drawn at this position.
-     *                   Value can be {@link Constants#HANDLE_TYPE_INSERT},
-     *                   {@link Constants#HANDLE_TYPE_LEFT}, {@link Constants#HANDLE_TYPE_RIGHT} or
-     *                   {@link Constants#HANDLE_TYPE_UNDEFINED}
+     * @param handleType Type of handle being drawn at this position. Value can be {@link #HANDLE_TYPE_INSERT}, {@link #HANDLE_TYPE_LEFT}, {@link #HANDLE_TYPE_RIGHT} or {@link #HANDLE_TYPE_UNDEFINED}
      * @param x          The x of text position on canvas
      * @param y          The y of row bottom position on canvas
      * @param rowHeight  The height of a single row
@@ -56,17 +62,6 @@ public interface SelectionHandleStyle {
     void setAlpha(int alpha);
 
     void setScale(float factor);
-
-    class Constants {
-        public static final int HANDLE_TYPE_UNDEFINED = -1;
-        public static final int HANDLE_TYPE_INSERT = 0;
-        public static final int HANDLE_TYPE_LEFT = 1;
-        public static final int HANDLE_TYPE_RIGHT = 2;
-
-        public static final int ALIGN_CENTER = 0;
-        public static final int ALIGN_LEFT = 1;
-        public static final int ALIGN_RIGHT = 2;
-    }
 
     /**
      * The descriptor of a drawn handle on canvas
@@ -81,11 +76,11 @@ public interface SelectionHandleStyle {
          * The alignment of the handle (of the x coordinate)
          * For example, you can draw handle with align right of the x when you draw the left handle
          *
-         * @see Constants#ALIGN_CENTER
-         * @see Constants#ALIGN_LEFT
-         * @see Constants#ALIGN_RIGHT
+         * @see #ALIGN_CENTER
+         * @see #ALIGN_LEFT
+         * @see #ALIGN_RIGHT
          */
-        public int alignment = Constants.ALIGN_CENTER;
+        public int alignment = ALIGN_CENTER;
 
         public void set(float left, float top, float right, float bottom, int alignment) {
             this.alignment = alignment;
@@ -94,7 +89,7 @@ public interface SelectionHandleStyle {
 
         public void setEmpty() {
             position.setEmpty();
-            this.alignment = Constants.ALIGN_CENTER;
+            this.alignment = ALIGN_CENTER;
         }
 
     }

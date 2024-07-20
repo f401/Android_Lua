@@ -27,8 +27,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import io.github.rosemoe.sora.text.CharPosition;
-import io.github.rosemoe.sora.text.Cursor;
 import io.github.rosemoe.sora.widget.CodeEditor;
+import io.github.rosemoe.sora.widget.EditorSearcher;
 
 /**
  * This event happens when text is edited by the user, or the user click the view to change the
@@ -87,7 +87,7 @@ public class SelectionChangeEvent extends Event {
         super(editor);
         this.oldLeft = oldLeft;
         this.oldRight = oldRight;
-        Cursor cursor = editor.getText().getCursor();
+        var cursor = editor.getText().getCursor();
         left = cursor.left();
         right = cursor.right();
         this.cause = cause;
@@ -144,7 +144,7 @@ public class SelectionChangeEvent extends Event {
      * Checks whether text is selected
      */
     public boolean isSelected() {
-        return left.getIndex() != right.getIndex();
+        return left.index != right.index;
     }
 
 }

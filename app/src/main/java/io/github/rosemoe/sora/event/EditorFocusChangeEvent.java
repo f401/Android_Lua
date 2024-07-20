@@ -7,9 +7,8 @@ import io.github.rosemoe.sora.widget.CodeEditor;
 /**
  * Triggered when focus state is changed
  */
-public class EditorFocusChangeEvent extends Event {
+public final class EditorFocusChangeEvent extends Event {
     private final boolean isGainFocus;
-
     public EditorFocusChangeEvent(@NonNull CodeEditor editor, boolean isGainFocus) {
         super(editor);
         this.isGainFocus = isGainFocus;

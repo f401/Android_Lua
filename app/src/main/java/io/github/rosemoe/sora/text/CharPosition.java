@@ -17,88 +17,133 @@
  *     License along with this library; if not, write to the Free Software
  *     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *     USA
+ *
+ *     Please contact Rosemoe by email 2073412493@qq.com if you need
+ *     additional information or have any questions
  */
 package io.github.rosemoe.sora.text;
 
+
 import androidx.annotation.NonNull;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
+import java.util.Objects;
 
+import io.github.rosemoe.sora.util.IntPair;
+
+/**
+ * This a data class of a character position in {@link Content}
+ *
+ * @author Rosemoe
+ */
 public final class CharPosition {
-    private int mLine;
-    private int mColumn;
-    private int mIndex;
 
-    public CharPosition(int line, int column, int index) {
-        this.mLine = line;
-        this.mColumn = column;
-        this.mIndex = index;
-    }
+    public int index;
+
+    public int line;
+
+    public int column;
 
     public CharPosition() {
-        this(0, 0, 0);
     }
 
-    public int getLine() {
-        return mLine;
+    public CharPosition(int line, int column) {
+        this(line, column, -1);
     }
 
-    public void setLine(int line) {
-        this.mLine = line;
+    public CharPosition(int line, int column, int index) {
+        this.index = index;
+        this.line = line;
+        this.column = column;
     }
 
-    public int getColumn() {
-        return mColumn;
-    }
-
-    public void setColumn(int column) {
-        this.mColumn = column;
-    }
-
+    /**
+     * Get the index
+     *
+     * @return index
+     */
     public int getIndex() {
-        return mIndex;
+        return index;
     }
 
-    public void setIndex(int index) {
-        this.mIndex = index;
+    /**
+     * Get column
+     *
+     * @return column
+     */
+    public int getColumn() {
+        return column;
     }
 
-    public void set(CharPosition src) {
-        this.mLine = src.mLine;
-        this.mColumn = src.mColumn;
-        this.mIndex = src.mIndex;
+    /**
+     * Get line
+     *
+     * @return line
+     */
+    public int getLine() {
+        return line;
     }
 
-    public CharPosition copy() {
-        return new CharPosition(mLine, mColumn, mIndex);
+    /**
+     * Make this CharPosition zero and return self
+     *
+     * @return self
+     */
+    public CharPosition toBOF() {
+        index = line = column = 0;
+        return this;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == this)
-            return true;
-        if (obj instanceof CharPosition) {
-            CharPosition other = (CharPosition) obj;
-            return Objects.equal(other.mLine, this.mLine) &&
-                    Objects.equal(other.mColumn, this.mColumn) &&
-                    Objects.equal(other.mIndex, this.mIndex);
+    public boolean equals(Object another) {
+        if (another instanceof CharPosition pos) {
+            return pos.column == column &&
+                    pos.line == line &&
+                    pos.index == index;
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(mLine, mColumn, mIndex);
+        return Objects.hash(index, line, column);
+    }
+
+    /**
+     * Convert {@link CharPosition#line} and {@link CharPosition#column} to a Long number
+     * <p>
+     * First integer is line and second integer is column
+     *
+     * @return A Long integer describing the position
+     */
+    public long toIntPair() {
+        return IntPair.pack(line, column);
+    }
+
+    /**
+     * Make a copy of this CharPosition and return the copy
+     *
+     * @return New CharPosition including info of this CharPosition
+     */
+    @NonNull
+    public CharPosition fromThis() {
+        CharPosition pos = new CharPosition();
+        pos.set(this);
+        return pos;
+    }
+
+    /**
+     * Set this {@link CharPosition} object's data the same as {@code another}
+     */
+    public void set(@NonNull CharPosition another) {
+        index = another.index;
+        line = another.line;
+        column = another.column;
     }
 
     @NonNull
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper(this)
-                .add("line", mLine)
-                .add("column", mColumn)
-                .add("index", mIndex).toString();
+        return "CharPosition(line = " + line + ",column = " + column + ",index = " + index + ")";
     }
-   
+
 }

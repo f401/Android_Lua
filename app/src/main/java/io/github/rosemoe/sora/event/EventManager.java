@@ -26,8 +26,6 @@ package io.github.rosemoe.sora.event;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.google.common.base.Preconditions;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -136,7 +134,9 @@ public final class EventManager {
     }
 
     private void checkDetached() {
-        Preconditions.checkState(!detached, "already detached");
+        if (detached) {
+            throw new IllegalStateException("already detached");
+        }
     }
 
     /**
@@ -179,14 +179,8 @@ public final class EventManager {
      * Subscribe a event and never unsubscribe from event receiver
      */
     @NonNull
-    public <T extends Event> SubscriptionReceipt<T> subscribeAlways(@NonNull Class<T> eventType,
-                                                                    @NonNull final NoUnsubscribeReceiver<T> receiver) {
-        return subscribeEvent(eventType, new EventReceiver<T>() {
-            @Override
-            public void onReceive(@NonNull T event, @NonNull Unsubscribe unsubscribe) {
-                receiver.onEvent(event);
-            }
-        });
+    public <T extends Event> SubscriptionReceipt<T> subscribeAlways(@NonNull Class<T> eventType, @NonNull NoUnsubscribeReceiver<T> receiver) {
+        return subscribeEvent(eventType, ((event, unsubscribe) -> receiver.onEvent(event)));
     }
 
     /**
@@ -198,10 +192,10 @@ public final class EventManager {
      */
     @NonNull
     public <T extends Event> SubscriptionReceipt<T> subscribeEvent(@NonNull Class<T> eventType, @NonNull EventReceiver<T> receiver) {
-        EventManager.Receivers<?> receivers = getReceivers(eventType);
+        var receivers = getReceivers(eventType);
         receivers.lock.writeLock().lock();
         try {
-            List<EventReceiver<? extends Event>> list = receivers.receivers;
+            var list = receivers.receivers;
             if (list.contains(receiver)) {
                 // Simply detect if the event receiver has been added and return the SubscriptionReceipt directly.
                 // Even if add multiple subscription, actually send an event, the event receiver will only receive an event once.
@@ -229,7 +223,7 @@ public final class EventManager {
             return event.getInterceptTargets();
         }
         // Safe cast
-        EventManager.Receivers<T> receivers = getReceivers((Class<T>) event.getClass());
+        var receivers = getReceivers((Class<T>) event.getClass());
         receivers.lock.readLock().lock();
         EventReceiver<T>[] receiverArr;
         int count;
@@ -244,7 +238,7 @@ public final class EventManager {
         try {
             Unsubscribe unsubscribe = new Unsubscribe();
             for (int i = 0; i < count && (event.getInterceptTargets() & InterceptTarget.TARGET_RECEIVERS) == 0; i++) {
-                EventReceiver<T> receiver = receiverArr[i];
+                var receiver = receiverArr[i];
                 receiver.onReceive(event, unsubscribe);
                 if (unsubscribe.isUnsubscribed()) {
                     if (unsubscribedReceivers == null) {
@@ -319,12 +313,14 @@ public final class EventManager {
 
     /**
      * Internal class for saving receivers of each type
+     *
+     * @param <T> Event type
      */
     static class Receivers<T extends Event> {
 
         ReadWriteLock lock = new ReentrantReadWriteLock();
 
-        List<EventReceiver<? extends Event>> receivers = new ArrayList<EventReceiver<? extends Event>>();
+        List<EventReceiver<T>> receivers = new ArrayList<>();
 
     }
 

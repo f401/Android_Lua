@@ -28,8 +28,8 @@ import android.util.SparseArray;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import io.github.rosemoe.sora.text.Content;
 import io.github.rosemoe.sora.text.ContentLine;
+import io.github.rosemoe.sora.text.ContentListener;
 
 /**
  * Layout is a manager class for editor to display text
@@ -38,7 +38,7 @@ import io.github.rosemoe.sora.text.ContentLine;
  *
  * @author Rose
  */
-public interface Layout extends Content.OnContentChangeListener {
+public interface Layout extends ContentListener {
 
     /**
      * Called by editor to destroy this layout
@@ -68,7 +68,7 @@ public interface Layout extends Content.OnContentChangeListener {
     /**
      * Return a {@link RowIterator} object for editor to draw text rows
      *
-     * @param initialRow     The first row in result iterator
+     * @param initialRow The first row in result iterator
      * @param preloadedLines Lines that are already loaded in editor
      * @return Iterator contains rows
      */

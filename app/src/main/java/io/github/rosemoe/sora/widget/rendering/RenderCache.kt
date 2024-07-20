@@ -1,16 +1,32 @@
-package io.github.rosemoe.sora.widget.rendering;
+/*******************************************************************************
+ *    sora-editor - the awesome code editor for Android
+ *    https://github.com/Rosemoe/sora-editor
+ *    Copyright (C) 2020-2024  Rosemoe
+ *
+ *     This library is free software; you can redistribute it and/or
+ *     modify it under the terms of the GNU Lesser General Public
+ *     License as published by the Free Software Foundation; either
+ *     version 2.1 of the License, or (at your option) any later version.
+ *
+ *     This library is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *     Lesser General Public License for more details.
+ *
+ *     You should have received a copy of the GNU Lesser General Public
+ *     License along with this library; if not, write to the Free Software
+ *     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+ *     USA
+ *
+ *     Please contact Rosemoe by email 2073412493@qq.com if you need
+ *     additional information or have any questions
+ ******************************************************************************/
 
-import androidx.annotation.Nullable;
+package io.github.rosemoe.sora.widget.rendering
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Range;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
+import androidx.collection.MutableIntList
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 /**
  * Cache for editor rendering, including line-based data and measure
@@ -18,116 +34,85 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  * @author Rosemoe
  */
-public class RenderCache {
-    private final ReentrantLock lock;
-    private final ArrayList<Integer> lines;
-    private final List<MeasureCacheItem> cache;
-    private final int maxCacheCount = 75;
+class RenderCache {
 
-    public RenderCache() {
-        this.lock = new ReentrantLock();
-        this.lines = Lists.newArrayList();
-        this.cache = Lists.newArrayList();
-    }
+    private val lock = ReentrantLock()
+    private val lines = MutableIntList()
+    private val cache = mutableListOf<MeasureCacheItem>()
+    private var maxCacheCount = 75
 
-    public MeasureCacheItem getOrCreateMeasureCache(int line) {
-        MeasureCacheItem result = queryMeasureCache(line);
-        if (result == null) {
-            lock.lock();
-            try {
-                result = new MeasureCacheItem(line, null, 0);
-                cache.add(result);
-                // Clear cache
-                while (cache.size() > maxCacheCount && !cache.isEmpty()) {
-                    cache.remove(0);
-                }
-            } finally {
-                lock.unlock();
-            }
-        }
-        return result;
-    }
-
-    @Nullable
-    public MeasureCacheItem queryMeasureCache(int line) {
-        lock.lock();
-        try {
-            for (int i = 0; i < cache.size(); i++) {
-                MeasureCacheItem curr = cache.get(i);
-                if (curr != null && curr.getLine() == line) {
-                    cache.remove(i);
-                    cache.add(curr);// Move to last
-                    return curr;
+    fun getOrCreateMeasureCache(line: Int): MeasureCacheItem {
+        return queryMeasureCache(line) ?: run {
+            lock.withLock {
+                MeasureCacheItem(line, null, 0L).also {
+                    cache.add(it)
+                    while (cache.size > maxCacheCount && cache.isNotEmpty()) {
+                        cache.removeFirst()
+                    }
                 }
             }
-            return null;
-        } finally {
-            lock.unlock();
         }
     }
 
-    public int getStyleHash(int line) {
-        return lines.get(line);
+    fun queryMeasureCache(line: Int) =
+        lock.withLock {
+            cache.firstOrNull { it.line == line }.also {
+                if (it != null) {
+                    cache.remove(it)
+                    cache.add(it)
+                }
+            }
+        }
+
+    fun getStyleHash(line: Int) = lines[line]
+
+    fun setStyleHash(line: Int, hash: Int) {
+        lines[line] = hash
     }
 
-    public void setStyleHash(int line, int hash) {
-        lines.set(line, hash);
-    }
-
-    public void updateForInsertion(int startLine, int endLine) {
+    fun updateForInsertion(startLine: Int, endLine: Int) {
         if (startLine != endLine) {
             if (endLine - startLine == 1) {
-                lines.add(startLine, 0);
+                lines.add(startLine, 0)
             } else {
-                lines.addAll(startLine, Collections.nCopies(endLine - startLine, 0));
+                lines.addAll(startLine, IntArray(endLine - startLine) { 0 })
             }
-
-            lock.lock();
-            try {
-                for (MeasureCacheItem item : cache) {
-                    if (item.getLine() > startLine) {
-                        item.setLine(item.getLine() + (endLine - startLine));
+            lock.withLock {
+                cache.forEach {
+                    if (it.line > startLine) {
+                        it.line += endLine - startLine
                     }
                 }
-            } finally {
-                lock.unlock();
             }
         }
     }
 
-    public void updateForDeletion(int startLine, int endLine) {
+    fun updateForDeletion(startLine: Int, endLine: Int) {
         if (startLine != endLine) {
-            lines.subList(startLine, endLine).clear();
-            final Range<Integer> range = Range.closed(startLine, endLine);
-            lock.lock();
-            try {
-                Iterables.removeIf(cache, new Predicate<MeasureCacheItem>() {
-                    @Override
-                    public boolean apply(@Nullable MeasureCacheItem input) {
-                        return range.contains(input.getLine());
-                    }
-                });
-                for (MeasureCacheItem item : cache) {
-                    if (item.getLine() > endLine) {
-                        item.setLine(item.getLine() - (endLine - startLine));
+            lines.removeRange(startLine, endLine)
+            lock.withLock {
+                cache.removeAll { it.line in startLine..endLine }
+                cache.forEach {
+                    if (it.line > endLine) {
+                        it.line -= endLine - startLine
                     }
                 }
-            } finally {
-                lock.unlock();
             }
         }
     }
 
-    public void reset(int lineCount) {
-        if (lines.size() >= lineCount) {
-            lines.subList(lineCount, lines.size() - 1).clear();
+    fun reset(lineCount: Int) {
+        if (lines.size > lineCount) {
+            lines.removeRange(lineCount, lines.size)
+        } else if (lines.size < lineCount) {
+            repeat(lineCount - lines.size) {
+                lines.add(0)
+            }
         }
-        Collections.fill(lines, 0);
-        lock.lock();
-        try {
-            cache.clear();
-        } finally {
-            lock.unlock();
+        lines.indices.forEach { lines[it] = 0 }
+        lock.withLock {
+            cache.clear()
         }
     }
+
 }

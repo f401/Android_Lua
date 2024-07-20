@@ -39,35 +39,35 @@ public class StylesUtils {
      * If {@link io.github.rosemoe.sora.lang.styling.TextStyle#NO_COMPLETION_BIT} is set, true is returned.
      */
     public static boolean checkNoCompletion(@Nullable Styles styles, @NonNull CharPosition pos) {
-        ISpan span = getSpanForPosition(styles, pos);
+        Span span = getSpanForPosition(styles, pos);
         return span == null || TextStyle.isNoCompletion(span.getStyle());
     }
 
     /**
-     * Get {@link ISpan} for the given position.
+     * Get {@link Span} for the given position.
      */
-    public static ISpan getSpanForPosition(@Nullable Styles styles, @NonNull CharPosition pos) {
+    public static Span getSpanForPosition(@Nullable Styles styles, @NonNull CharPosition pos) {
         return getSpanForPositionImpl(styles, pos, 0);
     }
 
     /**
-     * Get following {@link ISpan} for the given position.
+     * Get following {@link Span} for the given position.
      */
-    public static ISpan getFollowingSpanForPosition(@Nullable Styles styles, @NonNull CharPosition pos) {
+    public static Span getFollowingSpanForPosition(@Nullable Styles styles, @NonNull CharPosition pos) {
         return getSpanForPositionImpl(styles, pos, 1);
     }
 
     @Nullable
-    private static ISpan getSpanForPositionImpl(@Nullable Styles styles, @NonNull CharPosition pos, int spanIndexOffset) {
-        int line = pos.getLine();
-        int column = pos.getColumn();
-        ISpans spans;
+    private static Span getSpanForPositionImpl(@Nullable Styles styles, @NonNull CharPosition pos, int spanIndexOffset) {
+        int line = pos.line;
+        int column = pos.column;
+        Spans spans;
         // Do not make completion without styles. The language may be empty or busy analyzing spans
         if (styles == null || (spans = styles.spans) == null) {
             return null;
         }
         Exception ex = null;
-        ISpans.Reader reader = spans.read();
+        Spans.Reader reader = spans.read();
         try {
             reader.moveToLine(line);
             int index = reader.getSpanCount() - 1;

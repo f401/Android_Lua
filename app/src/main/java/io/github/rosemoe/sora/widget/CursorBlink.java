@@ -1,6 +1,6 @@
 /*
  *    sora-editor - the awesome code editor for Android
- *    https://sgithub.com/Rosemoe/sora-editor
+ *    https://github.com/Rosemoe/sora-editor
  *    Copyright (C) 2020-2024  Rosemoe
  *
  *     This library is free software; you can redistribute it and/or
@@ -82,7 +82,7 @@ final class CursorBlink implements Runnable, EventReceiver<SelectionChangeEvent>
             if (System.currentTimeMillis() - lastSelectionModificationTime >= period * 2L) {
                 visibility = !visibility;
                 CharPosition left = editor.getCursor().left();
-                buffer = editor.getLayout().getCharLayoutOffset(left.getLine(), left.getColumn(), buffer);
+                buffer = editor.getLayout().getCharLayoutOffset(left.line, left.column, buffer);
                 if (!editor.getCursor().isSelected() && isSelectionVisible()) {
                     editor.postInvalidate();
                 }
