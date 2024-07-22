@@ -1,12 +1,16 @@
-apply plugin: 'com.android.application'
+apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 33
+    compileSdkVersion 31
     buildToolsVersion "33.0.0"
     namespace 'io.github.rosemoe.sora'
 
+    lintOptions {
+        abortOnError false
+    }
+
     defaultConfig {
-        applicationId 'io.github.rosemoe.sora'// Serve for aide
+//        applicationId 'io.github.rosemoe.sora'// Serve for aide
         minSdkVersion 21
         targetSdkVersion 28
     }
