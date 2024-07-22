@@ -23,6 +23,8 @@
  */
 package io.github.rosemoe.sora.lang.completion.snippet.parser;
 
+import androidx.annotation.NonNull;
+
 public class Token {
 
     public int index;
@@ -35,6 +37,7 @@ public class Token {
         this.type = type;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "Token{" +

@@ -549,11 +549,21 @@ public class EditorRenderer {
                 cachedGutterWidth = gutterWidth;
             } else if (cachedGutterWidth != gutterWidth && !editor.getEventHandler().isScaling) {
                 cachedGutterWidth = gutterWidth;
-                editor.postInLifecycle(editor::requestLayoutIfNeeded);
+                editor.postInLifecycle(new Runnable() {
+                    @Override
+                    public void run() {
+                        editor.requestLayoutIfNeeded();
+                    }
+                });
                 editor.createLayout(false);
             } else if (forcedRecreateLayout) {
                 editor.createLayout();
-                editor.postInLifecycle(editor::requestLayoutIfNeeded);
+                editor.postInLifecycle(new Runnable() {
+                    @Override
+                    public void run() {
+                        editor.requestLayoutIfNeeded();
+                    }
+                });
             }
         } else {
             cachedGutterWidth = 0;
@@ -1011,9 +1021,12 @@ public class EditorRenderer {
 
     private void prepareLines(int start, int end) {
         releasePreloadedData();
-        content.runReadActionsOnLines(Math.max(0, start - 5), Math.min(content.getLineCount() - 1, end + 5), (int i, ContentLine line, Directions dirs) -> {
-            preloadedLines.put(i, line);
-            preloadedDirections.put(i, dirs);
+        content.runReadActionsOnLines(Math.max(0, start - 5), Math.min(content.getLineCount() - 1, end + 5), new Content.ContentLineConsumer() {
+            @Override
+            public void accept(int i, @NonNull ContentLine line, @NonNull Directions dirs) {
+                preloadedLines.put(i, line);
+                preloadedDirections.put(i, dirs);
+            }
         });
     }
 
@@ -2335,36 +2348,40 @@ public class EditorRenderer {
         return (index < 0 || length < 0 || index + length > content.length());
     }
 
-    protected void patchTextRegionWithColor(Canvas canvas, float textOffset, int start, int end, int color, int backgroundColor, int underlineColor) {
+    protected void patchTextRegionWithColor(final Canvas canvas, float textOffset, int start, int end, final int color, final int backgroundColor, final int underlineColor) {
         paintGeneral.setColor(color);
         paintOther.setStrokeWidth(editor.getRowHeightOfText() * RenderingConstants.MATCHING_DELIMITERS_UNDERLINE_WIDTH_FACTOR);
         paintGeneral.setStyle(android.graphics.Paint.Style.FILL_AND_STROKE);
         paintGeneral.setFakeBoldText(editor.getProps().boldMatchingDelimiters);
         List<EditorRenderer.TextDisplayPosition> positions = getTextRegionPositions(start, end);
-        patchTextRegions(canvas, textOffset, positions, (canvasLocal, horizontalOffset, row, line, startCol, endCol, style) -> {
-            if (backgroundColor != 0) {
-                tmpRect.top = getRowTopForBackground(row) - editor.getOffsetY();
-                tmpRect.bottom = getRowBottomForBackground(row) - editor.getOffsetY();
-                tmpRect.left = 0;
-                tmpRect.right = editor.getWidth();
-                paintOther.setColor(backgroundColor);
-                if (editor.getProps().enableRoundTextBackground) {
-                    canvas.drawRoundRect(tmpRect, editor.getRowHeight() * editor.getProps().roundTextBackgroundFactor, editor.getRowHeight() * editor.getProps().roundTextBackgroundFactor, paintOther);
-                } else {
-                    canvas.drawRect(tmpRect, paintOther);
+        patchTextRegions(canvas, textOffset, positions, new PatchDraw() {
+            @Override
+            public void draw(Canvas canvasLocal, float horizontalOffset, int row, int line, int startCol, int endCol, long style) {
+                if (backgroundColor != 0) {
+                    tmpRect.top = getRowTopForBackground(row) - editor.getOffsetY();
+                    tmpRect.bottom = getRowBottomForBackground(row) - editor.getOffsetY();
+                    tmpRect.left = 0;
+                    tmpRect.right = editor.getWidth();
+                    paintOther.setColor(backgroundColor);
+                    if (editor.getProps().enableRoundTextBackground) {
+                        canvas.drawRoundRect(tmpRect, editor.getRowHeight() * editor.getProps().roundTextBackgroundFactor, editor.getRowHeight() * editor.getProps().roundTextBackgroundFactor, paintOther);
+                    } else {
+                        canvas.drawRect(tmpRect, paintOther);
+                    }
+                }
+                if (color != 0) {
+                    paintGeneral.setTextSkewX(TextStyle.isItalics(style) ? RenderingConstants.TEXT_SKEW_X : 0f);
+                    paintGeneral.setStrikeThruText(TextStyle.isStrikeThrough(style));
+                    drawText(canvas, getLine(line), startCol, endCol - startCol, startCol, endCol - startCol, false, horizontalOffset, editor.getRowBaseline(row) - editor.getOffsetY(), line);
+                }
+                if (underlineColor != 0) {
+                    paintOther.setColor(underlineColor);
+                    float bottom = editor.getRowBottomOfText(row) - editor.getOffsetY() - editor.getRowHeightOfText() * 0.05f;
+                    canvas.drawLine(0, bottom, editor.getWidth(), bottom, paintOther);
                 }
             }
-            if (color != 0) {
-                paintGeneral.setTextSkewX(TextStyle.isItalics(style) ? RenderingConstants.TEXT_SKEW_X : 0f);
-                paintGeneral.setStrikeThruText(TextStyle.isStrikeThrough(style));
-                drawText(canvas, getLine(line), startCol, endCol - startCol, startCol, endCol - startCol, false, horizontalOffset, editor.getRowBaseline(row) - editor.getOffsetY(), line);
-            }
-            if (underlineColor != 0) {
-                paintOther.setColor(underlineColor);
-                float bottom = editor.getRowBottomOfText(row) - editor.getOffsetY() - editor.getRowHeightOfText() * 0.05f;
-                canvas.drawLine(0, bottom, editor.getWidth(), bottom, paintOther);
-            }
         });
+
         paintGeneral.setStyle(android.graphics.Paint.Style.FILL);
         paintGeneral.setFakeBoldText(false);
         paintGeneral.setTextSkewX(0f);

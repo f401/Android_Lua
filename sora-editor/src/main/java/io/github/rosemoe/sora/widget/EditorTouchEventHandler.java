@@ -449,7 +449,12 @@ public final class EditorTouchEventHandler implements GestureDetector.OnGestureL
      */
     public void onContextClick(MotionEvent event) {
         lastContextClickPosition = new PointF(event.getX(), event.getY());
-        if ((dispatchEditorMotionEvent(ContextClickEvent::new, null, event) & InterceptTarget.TARGET_EDITOR) != 0) {
+        if ((dispatchEditorMotionEvent(new EventConstrcutor() {
+            @Override
+            public EditorMotionEvent construct(CodeEditor editor, CharPosition pos, MotionEvent event, Span span, TextRange range) {
+                return new ContextClickEvent(editor, pos, event, span, range);
+            }
+        }, null, event) & InterceptTarget.TARGET_EDITOR) != 0) {
             return;
         }
 
@@ -717,7 +722,12 @@ public final class EditorTouchEventHandler implements GestureDetector.OnGestureL
         long res = editor.getPointPositionOnScreen(e.getX(), e.getY());
         int line = IntPair.getFirst(res);
         int column = IntPair.getSecond(res);
-        if ((dispatchEditorMotionEvent(LongPressEvent::new, editor.getText().getIndexer().getCharPosition(line, column), e) & InterceptTarget.TARGET_EDITOR) != 0) {
+        if ((dispatchEditorMotionEvent(new EventConstrcutor() {
+            @Override
+            public EditorMotionEvent construct(CodeEditor editor, CharPosition pos, MotionEvent event, Span span, TextRange range) {
+                return new LongPressEvent(editor, pos, event, span, range);
+            }
+        }, editor.getText().getIndexer().getCharPosition(line, column), e) & InterceptTarget.TARGET_EDITOR) != 0) {
             return;
         }
         if ((!editor.getProps().reselectOnLongPress && editor.getCursor().isSelected()) || e.getPointerCount() != 1) {
@@ -925,7 +935,12 @@ public final class EditorTouchEventHandler implements GestureDetector.OnGestureL
             }
         }
         CharPosition position = editor.getText().getIndexer().getCharPosition(line, column);
-        if ((dispatchEditorMotionEvent(ClickEvent::new, position, e) & InterceptTarget.TARGET_EDITOR) != 0) {
+        if ((dispatchEditorMotionEvent(new EventConstrcutor() {
+            @Override
+            public EditorMotionEvent construct(CodeEditor editor, CharPosition pos, MotionEvent event, Span span, TextRange range) {
+                return new ClickEvent(editor, pos, event, span, range);
+            }
+        }, position, e) & InterceptTarget.TARGET_EDITOR) != 0) {
             return true;
         }
         editor.showSoftInput();
@@ -996,7 +1011,12 @@ public final class EditorTouchEventHandler implements GestureDetector.OnGestureL
         long res = editor.getPointPositionOnScreen(e.getX(), e.getY());
         int line = IntPair.getFirst(res);
         int column = IntPair.getSecond(res);
-        if ((dispatchEditorMotionEvent(DoubleClickEvent::new, editor.getText().getIndexer().getCharPosition(line, column), e) & InterceptTarget.TARGET_EDITOR) != 0) {
+        if ((dispatchEditorMotionEvent(new EventConstrcutor() {
+            @Override
+            public EditorMotionEvent construct(CodeEditor editor, CharPosition pos, MotionEvent event, Span span, TextRange range) {
+                return new DoubleClickEvent(editor, pos, event, span, range);
+            }
+        }, editor.getText().getIndexer().getCharPosition(line, column), e) & InterceptTarget.TARGET_EDITOR) != 0) {
             return true;
         }
         if (editor.getCursor().isSelected() || e.getPointerCount() != 1) {

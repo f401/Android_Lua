@@ -76,9 +76,10 @@ public interface Formatter {
     /**
      * Cancel last task if it is still running. Do not send success/failure to editor for last task.
      */
-    default void cancel() {
-
-    }
+    void cancel();
+//    default void cancel() {
+//
+//    }
 
 
     interface FormatResultReceiver {

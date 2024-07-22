@@ -49,7 +49,7 @@ public abstract class AbstractLayout implements Layout {
     static {
         int maximumPoolSize = Math.max(2, Runtime.getRuntime().availableProcessors()); // available processor count changes during runtime
         final int corePoolSize = 2;
-        executor = new ThreadPoolExecutor(corePoolSize, maximumPoolSize, 1, TimeUnit.MINUTES, new LinkedBlockingQueue<>(128));
+        executor = new ThreadPoolExecutor(corePoolSize, maximumPoolSize, 1, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>(128));
     }
 
     protected CodeEditor editor;

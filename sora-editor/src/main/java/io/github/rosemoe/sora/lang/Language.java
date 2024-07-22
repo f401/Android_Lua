@@ -142,7 +142,14 @@ public interface Language {
      * @return Delta count of indent spaces. It can be a negative/positive number or zero.
      */
     @UiThread
-    default int getIndentAdvance(
+    int getIndentAdvance(
+            @NonNull ContentReference content,
+            int line,
+            int column,
+            int spaceCountOnLine,
+            int tabCountOnLine
+    );
+   /* default int getIndentAdvance(
             @NonNull ContentReference content,
             int line,
             int column,
@@ -150,7 +157,7 @@ public interface Language {
             int tabCountOnLine
     ) {
         return getIndentAdvance(content, line, column);
-    }
+    }*/
 
     /**
      * Use tab to format
@@ -199,9 +206,10 @@ public interface Language {
      */
     @UiThread
     @Nullable
-    default QuickQuoteHandler getQuickQuoteHandler() {
+    QuickQuoteHandler getQuickQuoteHandler();
+    /*default QuickQuoteHandler getQuickQuoteHandler() {
         return null;
-    }
+    }*/
 
     /**
      * Destroy this {@link Language} object.

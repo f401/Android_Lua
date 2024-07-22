@@ -82,7 +82,5 @@ public interface CompletionLayout {
      * Some layout may support to display more animations,
      * this method provides control over the animation of the layout.
      */
-    default void setEnabledAnimation(boolean enabledAnimation) {
-        //ignore
-    }
+    void setEnabledAnimation(boolean enabledAnimation);
 }

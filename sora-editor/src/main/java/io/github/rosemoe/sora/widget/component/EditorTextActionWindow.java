@@ -106,12 +106,42 @@ public class EditorTextActionWindow extends EditorPopupWindow implements View.On
     }
 
     protected void subscribeEvents() {
-        eventManager.subscribeAlways(SelectionChangeEvent.class, this::onSelectionChange);
-        eventManager.subscribeAlways(ScrollEvent.class, this::onEditorScroll);
-        eventManager.subscribeAlways(HandleStateChangeEvent.class, this::onHandleStateChange);
-        eventManager.subscribeAlways(LongPressEvent.class, this::onEditorLongPress);
-        eventManager.subscribeAlways(EditorFocusChangeEvent.class, this::onEditorFocusChange);
-        eventManager.subscribeAlways(EditorReleaseEvent.class, this::onEditorRelease);
+        eventManager.subscribeAlways(SelectionChangeEvent.class, new EventManager.NoUnsubscribeReceiver<SelectionChangeEvent>() {
+            @Override
+            public void onEvent(SelectionChangeEvent event) {
+                onSelectionChange(event);
+            }
+        });
+        eventManager.subscribeAlways(ScrollEvent.class, new EventManager.NoUnsubscribeReceiver<ScrollEvent>() {
+            @Override
+            public void onEvent(ScrollEvent event) {
+                onEditorScroll(event);
+            }
+        });
+        eventManager.subscribeAlways(HandleStateChangeEvent.class, new EventManager.NoUnsubscribeReceiver<HandleStateChangeEvent>() {
+            @Override
+            public void onEvent(HandleStateChangeEvent event) {
+                onHandleStateChange(event);
+            }
+        });
+        eventManager.subscribeAlways(LongPressEvent.class, new EventManager.NoUnsubscribeReceiver<LongPressEvent>() {
+            @Override
+            public void onEvent(LongPressEvent event) {
+                onEditorLongPress(event);
+            }
+        });
+        eventManager.subscribeAlways(EditorFocusChangeEvent.class, new EventManager.NoUnsubscribeReceiver<EditorFocusChangeEvent>() {
+            @Override
+            public void onEvent(EditorFocusChangeEvent event) {
+                onEditorFocusChange(event);
+            }
+        });
+        eventManager.subscribeAlways(EditorReleaseEvent.class, new EventManager.NoUnsubscribeReceiver<EditorReleaseEvent>() {
+            @Override
+            public void onEvent(EditorReleaseEvent event) {
+                onEditorRelease(event);
+            }
+        });
     }
 
     protected void onEditorFocusChange(@NonNull EditorFocusChangeEvent event) {
@@ -174,7 +204,12 @@ public class EditorTextActionWindow extends EditorPopupWindow implements View.On
         if (event.isSelected()) {
             // Always post show. See #193
             if (event.getCause() != SelectionChangeEvent.CAUSE_SEARCH) {
-                editor.postInLifecycle(this::displayWindow);
+                editor.postInLifecycle(new Runnable() {
+                    @Override
+                    public void run() {
+                        displayWindow();
+                    }
+                });
             } else {
                 dismiss();
             }
@@ -182,7 +217,12 @@ public class EditorTextActionWindow extends EditorPopupWindow implements View.On
         } else {
             boolean show = false;
             if (event.getCause() == SelectionChangeEvent.CAUSE_TAP && event.getLeft().index == lastPosition && !isShowing() && !editor.getText().isInBatchEdit() && editor.isEditable()) {
-                editor.postInLifecycle(this::displayWindow);
+                editor.postInLifecycle(new Runnable() {
+                    @Override
+                    public void run() {
+                        displayWindow();
+                    }
+                });
                 show = true;
             } else {
                 dismiss();

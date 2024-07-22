@@ -2,8 +2,7 @@ package io.github.rosemoe.sora.lang.completion;
 
 import androidx.annotation.Nullable;
 
-import com.google.common.collect.Lists;
-
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,7 +27,7 @@ public final class FuzzyScore {
     }
 
     public FuzzyScore(int score, int wordStart) {
-        this(score, wordStart, Lists.newArrayList());
+        this(score, wordStart, new ArrayList<Integer>());
     }
 
     public static boolean isDefault(@Nullable FuzzyScore score) {

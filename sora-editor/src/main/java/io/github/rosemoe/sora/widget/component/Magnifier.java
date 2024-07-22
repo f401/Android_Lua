@@ -258,31 +258,34 @@ public class Magnifier implements EditorBuiltinComponent {
         view.getLocationInWindow(pos);
         final long requestTime = System.currentTimeMillis();
         expectedRequestTime = requestTime;
-        Bitmap clip = Bitmap.createBitmap(right - left, bottom - top, Bitmap.Config.ARGB_8888);
+        final Bitmap clip = Bitmap.createBitmap(right - left, bottom - top, Bitmap.Config.ARGB_8888);
         try {
             PixelCopy.request(activity.getWindow(), new Rect(pos[0] + left, pos[1] + top, pos[0] + right, pos[1] + bottom), clip,
-                    (statusCode) -> {
-                        if (requestTime != expectedRequestTime) {
-                            return;
-                        }
-                        if (statusCode == PixelCopy.SUCCESS) {
-                            Bitmap dest = Bitmap.createBitmap(popup.getWidth(), popup.getHeight(), Bitmap.Config.ARGB_8888);
-                            Bitmap scaled = Bitmap.createScaledBitmap(clip, popup.getWidth(), popup.getHeight(), true);
-                            clip.recycle();
+                    new PixelCopy.OnPixelCopyFinishedListener() {
+                        @Override
+                        public void onPixelCopyFinished(int statusCode) {
+                            if (requestTime != expectedRequestTime) {
+                                return;
+                            }
+                            if (statusCode == PixelCopy.SUCCESS) {
+                                Bitmap dest = Bitmap.createBitmap(popup.getWidth(), popup.getHeight(), Bitmap.Config.ARGB_8888);
+                                Bitmap scaled = Bitmap.createScaledBitmap(clip, popup.getWidth(), popup.getHeight(), true);
+                                clip.recycle();
 
-                            Canvas canvas = new Canvas(dest);
-                            paint.reset();
-                            paint.setAntiAlias(true);
-                            canvas.drawARGB(0, 0, 0, 0);
-                            final int roundFactor = 6;
-                            canvas.drawRoundRect(0, 0, popup.getWidth(), popup.getHeight(), view.getDpUnit() * roundFactor, view.getDpUnit() * roundFactor, paint);
-                            paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
-                            canvas.drawBitmap(scaled, 0, 0, paint);
-                            scaled.recycle();
+                                Canvas canvas = new Canvas(dest);
+                                paint.reset();
+                                paint.setAntiAlias(true);
+                                canvas.drawARGB(0, 0, 0, 0);
+                                final int roundFactor = 6;
+                                canvas.drawRoundRect(0, 0, popup.getWidth(), popup.getHeight(), view.getDpUnit() * roundFactor, view.getDpUnit() * roundFactor, paint);
+                                paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+                                canvas.drawBitmap(scaled, 0, 0, paint);
+                                scaled.recycle();
 
-                            image.setImageBitmap(dest);
-                        } else {
-                            Log.w("Magnifier", "Failed to copy pixels, error = " + statusCode);
+                                image.setImageBitmap(dest);
+                            } else {
+                                Log.w("Magnifier", "Failed to copy pixels, error = " + statusCode);
+                            }
                         }
                     }, view.getHandler());
         } catch (IllegalArgumentException e) {

@@ -100,11 +100,11 @@ public class CodeSnippet implements Cloneable {
     public static class Builder {
 
         private final List<PlaceholderDefinition> definitions;
-        private List<SnippetItem> items = new ArrayList<>();
+        private final List<SnippetItem> items = new ArrayList<>();
         private int index;
 
         public Builder() {
-            this(new ArrayList<>());
+            this(new ArrayList<PlaceholderDefinition>());
         }
 
         public Builder(@NonNull List<PlaceholderDefinition> definitions) {

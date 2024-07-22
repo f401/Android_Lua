@@ -437,5 +437,10 @@ public class CachedIndexer implements Indexer, ContentListener {
         updateEnd();
     }
 
+    @Override
+    public void beforeModification(@NonNull Content content) {
+
+    }
+
 }
 

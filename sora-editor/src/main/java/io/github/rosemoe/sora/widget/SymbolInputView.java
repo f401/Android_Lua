@@ -27,6 +27,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.util.AttributeSet;
+import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
@@ -119,20 +120,23 @@ public class SymbolInputView extends LinearLayout {
             btn.setBackground(new ColorDrawable(Color.TRANSPARENT));
             btn.setTextColor(textColor);
             addView(btn, new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT));
-            int finalI = i;
-            btn.setOnClickListener((view) -> {
-                if (editor == null || !editor.isEditable()) {
-                    return;
-                }
-
-                if ("\t".equals(insertText[finalI])) {
-                    if (editor.getSnippetController().isInSnippet()) {
-                        editor.getSnippetController().shiftToNextTabStop();
-                    } else {
-                        editor.indentOrCommitTab();
+            final int finalI = i;
+            btn.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (editor == null || !editor.isEditable()) {
+                        return;
                     }
-                } else {
-                    editor.insertText(insertText[finalI], 1);
+
+                    if ("\t".equals(insertText[finalI])) {
+                        if (editor.getSnippetController().isInSnippet()) {
+                            editor.getSnippetController().shiftToNextTabStop();
+                        } else {
+                            editor.indentOrCommitTab();
+                        }
+                    } else {
+                        editor.insertText(insertText[finalI], 1);
+                    }
                 }
             });
         }

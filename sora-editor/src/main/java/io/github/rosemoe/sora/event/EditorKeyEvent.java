@@ -120,7 +120,7 @@ public class EditorKeyEvent extends ResultedEvent<Boolean> {
     }
 
     public final boolean result(boolean editorResult) {
-        boolean userResult = isResultSet() ? getResult() : false;
+        boolean userResult = isResultSet() && Boolean.TRUE.equals(getResult());
         if (isIntercepted()) {
             return userResult;
         } else {

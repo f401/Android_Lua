@@ -36,21 +36,27 @@ import java.util.Objects;
  */
 public class CodeBlock {
 
-    public static final Comparator<CodeBlock> COMPARATOR_END = (a, b) -> {
-        int res = Integer.compare(a.endLine, b.endLine);
-        if (res == 0) {
-            return Integer.compare(a.endColumn, b.endColumn);
-        } else {
-            return res;
+    public static final Comparator<CodeBlock> COMPARATOR_END = new Comparator<CodeBlock>() {
+        @Override
+        public int compare(CodeBlock a, CodeBlock b) {
+            int res = Integer.compare(a.endLine, b.endLine);
+            if (res == 0) {
+                return Integer.compare(a.endColumn, b.endColumn);
+            } else {
+                return res;
+            }
         }
     };
 
-    public static final Comparator<CodeBlock> COMPARATOR_START = (a, b) -> {
-        int res = Integer.compare(a.startLine, b.startLine);
-        if (res == 0) {
-            return Integer.compare(a.startColumn, b.startColumn);
-        } else {
-            return res;
+    public static final Comparator<CodeBlock> COMPARATOR_START = new Comparator<CodeBlock>() {
+        @Override
+        public int compare(CodeBlock a, CodeBlock b) {
+            int res = Integer.compare(a.startLine, b.startLine);
+            if (res == 0) {
+                return Integer.compare(a.startColumn, b.startColumn);
+            } else {
+                return res;
+            }
         }
     };
     /**

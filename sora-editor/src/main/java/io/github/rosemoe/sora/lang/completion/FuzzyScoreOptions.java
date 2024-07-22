@@ -1,5 +1,7 @@
 package io.github.rosemoe.sora.lang.completion;
 
+import androidx.annotation.NonNull;
+
 import com.google.common.base.Objects;
 
 public final class FuzzyScoreOptions {
@@ -15,13 +17,12 @@ public final class FuzzyScoreOptions {
         return DEFAULT;
     }
 
+    @NonNull
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("FuzzyScoreOptions{");
-        sb.append("firstMatchCanBeWeak=").append(firstMatchCanBeWeak);
-        sb.append(", boostFullMatch=").append(boostFullMatch);
-        sb.append('}');
-        return sb.toString();
+        return "FuzzyScoreOptions{firstMatchCanBeWeak=" + firstMatchCanBeWeak +
+                ", boostFullMatch=" + boostFullMatch +
+                '}';
     }
 
     public boolean isFirstMatchCanBeWeak() {

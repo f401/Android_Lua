@@ -41,8 +41,10 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import io.github.rosemoe.sora.event.ContentChangeEvent;
+import io.github.rosemoe.sora.event.EventReceiver;
 import io.github.rosemoe.sora.event.ImePrivateCommandEvent;
 import io.github.rosemoe.sora.event.SelectionChangeEvent;
+import io.github.rosemoe.sora.event.Unsubscribe;
 import io.github.rosemoe.sora.text.CharPosition;
 import io.github.rosemoe.sora.text.ComposingText;
 import io.github.rosemoe.sora.text.Content;
@@ -72,11 +74,14 @@ class EditorInputConnection extends BaseInputConnection {
         super(targetView, true);
         editor = targetView;
         connectionInvalid = false;
-        targetView.subscribeEvent(ContentChangeEvent.class, (event, __) -> {
-            if (event.getAction() == ContentChangeEvent.ACTION_INSERT) {
-                composingText.shiftOnInsert(event.getChangeStart().index, event.getChangeEnd().index);
-            } else if (event.getAction() == ContentChangeEvent.ACTION_DELETE) {
-                composingText.shiftOnDelete(event.getChangeStart().index, event.getChangeEnd().index);
+        targetView.subscribeEvent(ContentChangeEvent.class, new EventReceiver<ContentChangeEvent>() {
+            @Override
+            public void onReceive(@NonNull ContentChangeEvent event, @NonNull Unsubscribe unsubscribe) {
+                if (event.getAction() == ContentChangeEvent.ACTION_INSERT) {
+                    composingText.shiftOnInsert(event.getChangeStart().index, event.getChangeEnd().index);
+                } else if (event.getAction() == ContentChangeEvent.ACTION_DELETE) {
+                    composingText.shiftOnDelete(event.getChangeStart().index, event.getChangeEnd().index);
+                }
             }
         });
     }

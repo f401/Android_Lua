@@ -61,7 +61,7 @@ public class WordwrapLayout extends AbstractLayout {
     public WordwrapLayout(CodeEditor editor, Content text, boolean antiWordBreaking, List<RowRegion> extended, boolean clearCache) {
         super(editor, text);
         this.antiWordBreaking = antiWordBreaking;
-        rowTable = extended != null ? extended : new ArrayList<>();
+        rowTable = extended != null ? extended : new ArrayList<RowRegion>();
         if (clearCache) {
             rowTable.clear();
         }
@@ -76,31 +76,37 @@ public class WordwrapLayout extends AbstractLayout {
     private void breakAllLines() {
         int taskCount = Math.min(SUBTASK_COUNT, (int) Math.ceil((float) text.getLineCount() / MIN_LINE_COUNT_FOR_SUBTASK));
         int sizeEachTask = text.getLineCount() / taskCount;
-        TaskMonitor monitor = new TaskMonitor(taskCount, (results, cancelledCount) -> {
-            final CodeEditor editor = this.editor;
-            if (editor != null) {
-                List<WordwrapResult> r2 = new ArrayList<>();
-                for (Object result : results) {
-                    r2.add((WordwrapResult) result);
+        TaskMonitor monitor = new TaskMonitor(taskCount, new TaskMonitor.Callback() {
+            @Override
+            public void onCompleted(Object[] results, int cancelledCount) {
+                final CodeEditor editor = WordwrapLayout.this.editor;
+                if (editor != null) {
+                    final List<WordwrapResult> r2 = new ArrayList<>();
+                    for (Object result : results) {
+                        r2.add((WordwrapResult) result);
+                    }
+                    Collections.sort(r2);
+                    editor.postInLifecycle(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (WordwrapLayout.this.editor != editor) {
+                                // This layout could have been abandoned when waiting for Runnable execution
+                                // See #307
+                                return;
+                            }
+                            if (rowTable != null) {
+                                rowTable.clear();
+                            } else {
+                                rowTable = new ArrayList<>();
+                            }
+                            for (WordwrapResult wordwrapResult : r2) {
+                                rowTable.addAll(wordwrapResult.regions);
+                            }
+                            editor.setLayoutBusy(false);
+                            editor.getEventHandler().scrollBy(0, 0);
+                        }
+                    });
                 }
-                Collections.sort(r2);
-                editor.postInLifecycle(() -> {
-                    if (WordwrapLayout.this.editor != editor) {
-                        // This layout could have been abandoned when waiting for Runnable execution
-                        // See #307
-                        return;
-                    }
-                    if (rowTable != null) {
-                        rowTable.clear();
-                    } else {
-                        rowTable = new ArrayList<>();
-                    }
-                    for (WordwrapResult wordwrapResult : r2) {
-                        rowTable.addAll(wordwrapResult.regions);
-                    }
-                    editor.setLayoutBusy(false);
-                    editor.getEventHandler().scrollBy(0, 0);
-                });
             }
         });
         for (int i = 0; i < taskCount; i++) {
@@ -247,6 +253,11 @@ public class WordwrapLayout extends AbstractLayout {
     }
 
     @Override
+    public void beforeModification(@NonNull Content content) {
+
+    }
+
+    @Override
     public void destroyLayout() {
         super.destroyLayout();
         rowTable = null;
@@ -272,6 +283,12 @@ public class WordwrapLayout extends AbstractLayout {
             return Math.max(0, Math.min(row, text.getLineCount() - 1));
         }
         return row >= rowTable.size() ? rowTable.get(rowTable.size() - 1).line : rowTable.get(row).line;
+    }
+
+    @NonNull
+    @Override
+    public RowIterator obtainRowIterator(int initialRow) {
+        return obtainRowIterator(initialRow, null);
     }
 
     @NonNull
@@ -382,6 +399,12 @@ public class WordwrapLayout extends AbstractLayout {
         RowRegion region = rowTable.get(row);
         int column = BidiLayoutHelper.horizontalIndex(editor, this, text, region.line, region.startColumn, region.endColumn, xOffset);
         return IntPair.pack(region.line, column);
+    }
+
+    @NonNull
+    @Override
+    public float[] getCharLayoutOffset(int line, int column) {
+        return getCharLayoutOffset(line, column, new float[2]);
     }
 
     @NonNull
@@ -563,19 +586,22 @@ public class WordwrapLayout extends AbstractLayout {
         @Override
         protected WordwrapResult compute() {
             editor.setLayoutBusy(true);
-            ArrayList<RowRegion> list = new ArrayList<RowRegion>();
-            ArrayList<Integer> breakpoints = new ArrayList<Integer>();
-            text.runReadActionsOnLines(start, end, (int index, ContentLine line, Content.ContentLineConsumer2.AbortFlag abortFlag) -> {
-                breakLine(index, line, breakpoints, paint);
-                for (int j = -1; j < breakpoints.size(); j++) {
-                    int start = j == -1 ? 0 : breakpoints.get(j);
-                    int end = j + 1 < breakpoints.size() ? breakpoints.get(j + 1) : line.length();
-                    list.add(new RowRegion(index, start, end));
+            final ArrayList<RowRegion> list = new ArrayList<RowRegion>();
+            final ArrayList<Integer> breakpoints = new ArrayList<Integer>();
+            text.runReadActionsOnLines(start, end, new Content.ContentLineConsumer2() {
+                @Override
+                public void accept(int lineIndex, @NonNull ContentLine line, @NonNull AbortFlag flag) {
+                    breakLine(lineIndex, line, breakpoints, paint);
+                    for (int j = -1; j < breakpoints.size(); j++) {
+                        int start = j == -1 ? 0 : breakpoints.get(j);
+                        int end = j + 1 < breakpoints.size() ? breakpoints.get(j + 1) : line.length();
+                        list.add(new RowRegion(lineIndex, start, end));
+                    }
+                    if (!shouldRun()) {
+                        flag.set = true;
+                    }
+                    breakpoints.clear();
                 }
-                if (!shouldRun()) {
-                    abortFlag.set = true;
-                }
-                breakpoints.clear();
             });
             return new WordwrapResult(id, list);
         }

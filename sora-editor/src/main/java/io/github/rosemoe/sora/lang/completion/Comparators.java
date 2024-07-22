@@ -83,7 +83,7 @@ public class Comparators {
                                                                          CharPosition cursorPosition,
                                                                          List<CompletionItem> completionItemList) {
         source.validateAccess();
-        ContentLine sourceLine = source.getReference().getLine(cursorPosition.line);
+        final ContentLine sourceLine = source.getReference().getLine(cursorPosition.line);
         String word = "";
         String wordLow = "";
 

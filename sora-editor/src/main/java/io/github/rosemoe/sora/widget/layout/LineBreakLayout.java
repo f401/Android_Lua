@@ -60,42 +60,52 @@ public class LineBreakLayout extends AbstractLayout {
         measureAllLines(widthMaintainer);
     }
 
-    private void measureAllLines(BlockIntList widthMaintainer) {
+    private void measureAllLines(final BlockIntList widthMaintainer) {
         if (text == null) {
             return;
         }
-        Paint shadowPaint = new Paint(editor.isRenderFunctionCharacters());
+        final Paint shadowPaint = new Paint(editor.isRenderFunctionCharacters());
         shadowPaint.set(editor.getTextPaint());
         shadowPaint.onAttributeUpdate();
-        int reuseCountLocal = reuseCount.get();
-        SingleCharacterWidths measurerLocal = measurer;
-        final TaskMonitor monitor = new TaskMonitor(1, (results, cancelledCount) -> {
-            final CodeEditor editor = this.editor;
-            if (editor == null || cancelledCount > 0) {
-                return;
-            }
-            editor.postInLifecycle(() -> {
-                if (LineBreakLayout.this.editor != editor || reuseCountLocal != reuseCount.get()) {
+        final int reuseCountLocal = reuseCount.get();
+        final SingleCharacterWidths measurerLocal = measurer;
+        final TaskMonitor monitor = new TaskMonitor(1, new TaskMonitor.Callback() {
+            @Override
+            public void onCompleted(Object[] results, int cancelledCount) {
+                final CodeEditor editor = LineBreakLayout.this.editor;
+                if (editor == null || cancelledCount > 0) {
+                    return;
+                }
+
+                editor.postInLifecycle(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (LineBreakLayout.this.editor != editor || reuseCountLocal != reuseCount.get()) {
                     // This layout could have been abandoned when waiting for Runnable execution
                     // See #307
                     return;
                 }
                 editor.setLayoutBusy(false);
                 editor.getEventHandler().scrollBy(0, 0);
+                    }
             });
+            }
         });
-        LayoutTask task = new LayoutTask<Void>(monitor) {
+        LayoutTask<Void> task = new LayoutTask<Void>(monitor) {
             @Override
             protected Void compute() {
                 widthMaintainer.lock.lock();
                 try {
                     editor.setLayoutBusy(true);
-                    text.runReadActionsOnLines(0, text.getLineCount() - 1, (int index, ContentLine line, Content.ContentLineConsumer2.AbortFlag abortFlag) -> {
-                        int width = (int) measurerLocal.measureText(line, 0, line.length(), shadowPaint);
-                        if (shouldRun()) {
-                            widthMaintainer.add(width);
-                        } else {
-                            abortFlag.set = true;
+                    text.runReadActionsOnLines(0, text.getLineCount() - 1, new Content.ContentLineConsumer2() {
+                        @Override
+                        public void accept(int lineIndex, @NonNull ContentLine line, @NonNull AbortFlag flag) {
+                            int width = (int) measurerLocal.measureText(line, 0, line.length(), shadowPaint);
+                            if (shouldRun()) {
+                                widthMaintainer.add(width);
+                            } else {
+                                flag.set = true;
+                            }
                         }
                     });
                 } finally {
@@ -167,6 +177,11 @@ public class LineBreakLayout extends AbstractLayout {
         }
     }
 
+    @Override
+    public void beforeModification(@NonNull Content content) {
+
+    }
+
     @NonNull
     @Override
     public Row getRowAt(int rowIndex) {
@@ -194,6 +209,12 @@ public class LineBreakLayout extends AbstractLayout {
         return Math.max(0, Math.min(row, text.getLineCount() - 1));
     }
 
+    @NonNull
+    @Override
+    public RowIterator obtainRowIterator(int initialRow) {
+        return obtainRowIterator(initialRow, null);
+    }
+
     @Override
     public int getLayoutWidth() {
         return widthMaintainer.size() == 0 ? Integer.MAX_VALUE / 10 : widthMaintainer.getMax();
@@ -210,6 +231,12 @@ public class LineBreakLayout extends AbstractLayout {
         int line = Math.min(lineCount - 1, Math.max((int) (yOffset / editor.getRowHeight()), 0));
         int res = BidiLayoutHelper.horizontalIndex(editor, this, text, line, 0, text.getColumnCount(line), xOffset);
         return IntPair.pack(line, res);
+    }
+
+    @NonNull
+    @Override
+    public float[] getCharLayoutOffset(int line, int column) {
+        return getCharLayoutOffset(line, column, new float[2]);
     }
 
     @NonNull

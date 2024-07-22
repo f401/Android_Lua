@@ -451,7 +451,7 @@ public class EditorColorScheme {
     /**
      * Unsubscribe changes
      */
-    public void detachEditor(@NonNull CodeEditor editor) {
+    public void detachEditor(@NonNull final CodeEditor editor) {
         Iterators.removeIf(editors.iterator(), new Predicate<WeakReference<CodeEditor>>() {
             @Override
             public boolean apply(WeakReference<CodeEditor> input) {
@@ -466,7 +466,7 @@ public class EditorColorScheme {
      * @param type  The type
      * @param color New color
      */
-    public void setColor(int type, int color) {
+    public void setColor(final int type, int color) {
         //Do not change if the old value is the same as new value
         //due to avoid unnecessary invalidate() calls
         int old = getColor(type);

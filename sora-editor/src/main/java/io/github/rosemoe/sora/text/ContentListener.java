@@ -67,11 +67,6 @@ public interface ContentListener {
      */
     void afterDelete(@NonNull Content content, int startLine, int startColumn, int endLine, int endColumn, @NonNull CharSequence deletedContent);
 
-    /**
-     * Internal API
-     */
-    default void beforeModification(@NonNull Content content) {
-
-    }
+    void beforeModification(@NonNull Content content);
 
 }

@@ -71,9 +71,10 @@ public interface StyleReceiver {
      * @param styles        The Styles object previously set by {@link #setStyles(AnalyzeManager, Styles)}
      * @param range         The line range of this update
      */
-    default void updateStyles(@NonNull AnalyzeManager sourceManager, @NonNull Styles styles, @NonNull StyleUpdateRange range) {
+    void updateStyles(@NonNull AnalyzeManager sourceManager, @NonNull Styles styles, @NonNull StyleUpdateRange range);
+    /*default void updateStyles(@NonNull AnalyzeManager sourceManager, @NonNull Styles styles, @NonNull StyleUpdateRange range) {
         setStyles(sourceManager, styles);
-    }
+    }*/
 
     /**
      * Specify new diagnostics. You can call it in any thread.

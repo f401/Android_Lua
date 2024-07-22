@@ -31,12 +31,20 @@ import java.util.Objects;
 
 import io.github.rosemoe.sora.lang.styling.Span;
 import io.github.rosemoe.sora.lang.styling.SpanPool;
+import io.github.rosemoe.sora.lang.styling.TextStyle;
+import io.github.rosemoe.sora.lang.styling.color.ConstColor;
 import io.github.rosemoe.sora.lang.styling.color.ResolvableColor;
 import io.github.rosemoe.sora.lang.styling.span.SpanExt;
 import io.github.rosemoe.sora.lang.styling.span.SpanExtAttrs;
 
 public class SpanImpl implements Span {
-    private final static SpanPool<SpanImpl> pool = new SpanPool<>(SpanImpl::new);
+    private final static SpanPool<SpanImpl> pool = new SpanPool<>(new SpanPool.Factory<SpanImpl>() {
+        @NonNull
+        @Override
+        public SpanImpl create(int column, long style) {
+            return new SpanImpl(column, style);
+        }
+    });
 
     private int column;
     private long style;
@@ -76,10 +84,39 @@ public class SpanImpl implements Span {
         this.style = style;
     }
 
+    @Override
+    public void shiftColumnBy(int deltaColumn) {
+        setColumn(getColumn() + deltaColumn);
+    }
+
+    @Override
+    public int getForegroundColorId() {
+        return TextStyle.getForegroundColorId(getStyle());
+    }
+
+    @Override
+    public int getBackgroundColorId() {
+        return TextStyle.getBackgroundColorId(getStyle());
+    }
+
+    @Override
+    public long getStyleBits() {
+        return TextStyle.getStyleBits(getStyle());
+    }
+
     @Nullable
     @Override
     public ResolvableColor getUnderlineColor() {
         return getSpanExt(SpanExtAttrs.EXT_UNDERLINE_COLOR);
+    }
+
+    @Override
+    public void setUnderlineColor(int color) {
+        if (color == 0) {
+            setUnderlineColor(null);
+            return;
+        }
+        setUnderlineColor(new ConstColor(color));
     }
 
     @Override

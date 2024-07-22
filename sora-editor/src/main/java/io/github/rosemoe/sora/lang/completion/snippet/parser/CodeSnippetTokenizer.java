@@ -29,7 +29,7 @@ import java.util.Objects;
 
 public class CodeSnippetTokenizer {
 
-    private static SparseArray<TokenType> staticTypes = new SparseArray<>();
+    private static final SparseArray<TokenType> staticTypes = new SparseArray<>();
 
     static {
         for (TokenType value : TokenType.values()) {

@@ -28,7 +28,6 @@ import androidx.annotation.Nullable;
 
 import java.util.Collection;
 
-import io.github.rosemoe.sora.lang.styling.color.ConstColor;
 import io.github.rosemoe.sora.lang.styling.color.ResolvableColor;
 import io.github.rosemoe.sora.lang.styling.span.SpanExt;
 import io.github.rosemoe.sora.lang.styling.span.SpanExtAttrs;
@@ -40,22 +39,10 @@ import io.github.rosemoe.sora.lang.styling.span.SpanExtAttrs;
  */
 public interface Span {
 
-    /**
-     * Get an available {@link Span} object from either cache or new instance.
-     * The result object will be initialized with the given arguments.
-     */
-    @NonNull
-    static Span obtain(int column, long style) {
-        return SpanFactory.obtain(column, style);
-    }
-
-    /**
-     * Recycle all spans in the given collection
-     */
-    static void recycleAll(@NonNull Collection<Span> spans) {
-        SpanFactory.recycleAll(spans);
-    }
-
+    //    default void shiftColumnBy(int deltaColumn) {
+//        setColumn(getColumn() + deltaColumn);
+//    }
+    void shiftColumnBy(int deltaColumn);
     /**
      * Get column of this span
      *
@@ -86,30 +73,35 @@ public interface Span {
      */
     void setStyle(long style);
 
-    default void shiftColumnBy(int deltaColumn) {
-        setColumn(getColumn() + deltaColumn);
-    }
-
     /**
      * Get foreground color ID from style
      */
-    default int getForegroundColorId() {
-        return TextStyle.getForegroundColorId(getStyle());
-    }
+    int getForegroundColorId();
 
     /**
      * Get background color ID from style
      */
-    default int getBackgroundColorId() {
-        return TextStyle.getBackgroundColorId(getStyle());
-    }
+    int getBackgroundColorId();
+//    default int getForegroundColorId() {
+//        return TextStyle.getForegroundColorId(getStyle());
+//    }
 
     /**
      * Get bits of other text styles that affects measuring
      */
-    default long getStyleBits() {
-        return TextStyle.getStyleBits(getStyle());
-    }
+    long getStyleBits();
+//    default int getBackgroundColorId() {
+//        return TextStyle.getBackgroundColorId(getStyle());
+//    }
+
+    /**
+     * Set underline color of span. {@code 0} for no underline.
+     * <strong>This is not color ID</strong>
+     */
+    void setUnderlineColor(int color);
+//    default long getStyleBits() {
+//        return TextStyle.getStyleBits(getStyle());
+//    }
 
     /**
      * Get the {@link ResolvableColor} instance for resolving underline color of this span
@@ -117,17 +109,30 @@ public interface Span {
     @Nullable
     ResolvableColor getUnderlineColor();
 
-    /**
-     * Set underline color of span. {@code 0} for no underline.
-     * <strong>This is not color ID</strong>
-     */
-    default void setUnderlineColor(int color) {
-        if (color == 0) {
-            setUnderlineColor(null);
-            return;
+    class Helper {
+        /**
+         * Get an available {@link Span} object from either cache or new instance.
+         * The result object will be initialized with the given arguments.
+         */
+        @NonNull
+        public static Span obtain(int column, long style) {
+            return SpanFactory.obtain(column, style);
         }
-        setUnderlineColor(new ConstColor(color));
+
+        /**
+         * Recycle all spans in the given collection
+         */
+        public static void recycleAll(@NonNull Collection<Span> spans) {
+            SpanFactory.recycleAll(spans);
+        }
     }
+//    default void setUnderlineColor(int color) {
+//        if (color == 0) {
+//            setUnderlineColor(null);
+//            return;
+//        }
+//        setUnderlineColor(new ConstColor(color));
+//    }
 
     /**
      * Set underline color with a {@link ResolvableColor} to resolve colors when the span is rendered.
@@ -170,7 +175,7 @@ public interface Span {
      * Get extended attribute of given type. If it is unset, null is returned.
      */
     @Nullable
-    public <T> T getSpanExt(int extType);
+    <T> T getSpanExt(int extType);
 
     /**
      * Remove all {@link SpanExt}s

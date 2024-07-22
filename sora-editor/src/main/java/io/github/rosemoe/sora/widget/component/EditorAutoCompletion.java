@@ -46,6 +46,7 @@ import io.github.rosemoe.sora.event.EditorLanguageChangeEvent;
 import io.github.rosemoe.sora.event.EditorReleaseEvent;
 import io.github.rosemoe.sora.event.Event;
 import io.github.rosemoe.sora.event.EventManager;
+import io.github.rosemoe.sora.event.EventReceiver;
 import io.github.rosemoe.sora.event.ScrollEvent;
 import io.github.rosemoe.sora.event.SelectionChangeEvent;
 import io.github.rosemoe.sora.event.SnippetEvent;
@@ -116,23 +117,72 @@ public class EditorAutoCompletion extends EditorPopupWindow implements EditorBui
         adapter = new DefaultCompletionItemAdapter();
         setLayout(new DefaultCompletionLayout());
         eventManager = editor.createSubEventManager();
-        eventManager.subscribeEvent(ColorSchemeUpdateEvent.class, this::onColorSchemeUpdate);
-        eventManager.subscribeEvent(ContentChangeEvent.class, this::onContentChange);
-        eventManager.subscribeEvent(ScrollEvent.class, this::onEditorScroll);
-        eventManager.subscribeEvent(EditorKeyEvent.class, this::onKeyEvent);
-        eventManager.subscribeEvent(SelectionChangeEvent.class, this::onSelectionChange);
-        eventManager.subscribeEvent(EditorReleaseEvent.class, (event, unsubscribe) -> setEnabled(false));
-        subscribeEventForHide(EditorFormatEvent.class, EditorFormatEvent::isSuccess);
+        eventManager.subscribeEvent(ColorSchemeUpdateEvent.class, new EventReceiver<ColorSchemeUpdateEvent>() {
+            @Override
+            public void onReceive(@NonNull ColorSchemeUpdateEvent event, @NonNull Unsubscribe unsubscribe) {
+                onColorSchemeUpdate(event, unsubscribe);
+            }
+        });
+
+        eventManager.subscribeEvent(ContentChangeEvent.class, new EventReceiver<ContentChangeEvent>() {
+            @Override
+            public void onReceive(@NonNull ContentChangeEvent event, @NonNull Unsubscribe unsubscribe) {
+                onContentChange(event, unsubscribe);
+            }
+        });
+        eventManager.subscribeEvent(ScrollEvent.class, new EventReceiver<ScrollEvent>() {
+            @Override
+            public void onReceive(@NonNull ScrollEvent event, @NonNull Unsubscribe unsubscribe) {
+                onEditorScroll(event, unsubscribe);
+            }
+        });
+        eventManager.subscribeEvent(EditorKeyEvent.class, new EventReceiver<EditorKeyEvent>() {
+            @Override
+            public void onReceive(@NonNull EditorKeyEvent event, @NonNull Unsubscribe unsubscribe) {
+                onKeyEvent(event, unsubscribe);
+            }
+        });
+        eventManager.subscribeEvent(SelectionChangeEvent.class, new EventReceiver<SelectionChangeEvent>() {
+            @Override
+            public void onReceive(@NonNull SelectionChangeEvent event, @NonNull Unsubscribe unsubscribe) {
+                onSelectionChange(event, unsubscribe);
+            }
+        });
+        eventManager.subscribeEvent(EditorReleaseEvent.class, new EventReceiver<EditorReleaseEvent>() {
+            @Override
+            public void onReceive(@NonNull EditorReleaseEvent event, @NonNull Unsubscribe unsubscribe) {
+                setEnabled(false);
+            }
+        });
+        subscribeEventForHide(EditorFormatEvent.class, new Function<EditorFormatEvent, Boolean>() {
+            @Override
+            public Boolean apply(EditorFormatEvent input) {
+                return input.isSuccess();
+            }
+        });
         subscribeEventForHide(ClickEvent.class, null);
         subscribeEventForHide(EditorLanguageChangeEvent.class, null);
-        subscribeEventForHide(EditorFocusChangeEvent.class, e -> !e.isGainFocus());
-        subscribeEventForHide(SnippetEvent.class, e -> e.getAction() == SnippetEvent.ACTION_SHIFT);
+        subscribeEventForHide(EditorFocusChangeEvent.class, new Function<EditorFocusChangeEvent, Boolean>() {
+            @Override
+            public Boolean apply(EditorFocusChangeEvent input) {
+                return !input.isGainFocus();
+            }
+        });
+        subscribeEventForHide(SnippetEvent.class, new Function<SnippetEvent, Boolean>() {
+            @Override
+            public Boolean apply(SnippetEvent e) {
+                return e.getAction() == SnippetEvent.ACTION_SHIFT;
+            }
+        });
     }
 
-    protected <T extends Event> void subscribeEventForHide(Class<T> clazz, Function<T, Boolean> predicate) {
-        eventManager.subscribeEvent(clazz, (event, unsubscribe) -> {
-            if (predicate == null || predicate.apply(event)) {
-                hide();
+    protected <T extends Event> void subscribeEventForHide(Class<T> clazz, final Function<T, Boolean> predicate) {
+        eventManager.subscribeEvent(clazz, new EventReceiver<T>() {
+            @Override
+            public void onReceive(@NonNull T event, @NonNull Unsubscribe unsubscribe) {
+                if (predicate == null || predicate.apply(event)) {
+                    hide();
+                }
             }
         });
     }
@@ -381,9 +431,12 @@ public class EditorAutoCompletion extends EditorPopupWindow implements EditorBui
         }
         requestShow = System.currentTimeMillis();
         final long requireRequest = requestTime;
-        editor.postDelayedInLifecycle(() -> {
-            if (requestHide < requestShow && requestTime == requireRequest) {
-                super.show();
+        editor.postDelayedInLifecycle(new Runnable() {
+            @Override
+            public void run() {
+                if (requestHide < requestShow && requestTime == requireRequest) {
+                    EditorAutoCompletion.super.show();
+                }
             }
         }, 70);
     }
@@ -421,9 +474,12 @@ public class EditorAutoCompletion extends EditorPopupWindow implements EditorBui
     public void setLoading(boolean state) {
         loading = state;
         if (state) {
-            editor.postDelayedInLifecycle(() -> {
-                if (loading) {
-                    layout.setLoading(true);
+            editor.postDelayedInLifecycle(new Runnable() {
+                @Override
+                public void run() {
+                    if (loading) {
+                        layout.setLoading(true);
+                    }
                 }
             }, SHOW_PROGRESS_BAR_DELAY);
         } else {
@@ -436,7 +492,7 @@ public class EditorAutoCompletion extends EditorPopupWindow implements EditorBui
      * Move selection down
      */
     public void moveDown() {
-        AdapterView adpView = layout.getCompletionList();
+        AdapterView<?> adpView = layout.getCompletionList();
         if (currentSelection + 1 >= adpView.getAdapter().getCount()) {
             return;
         }
@@ -550,23 +606,26 @@ public class EditorAutoCompletion extends EditorPopupWindow implements EditorBui
         cancelCompletion();
         requestTime = System.nanoTime();
         currentSelection = -1;
-        publisher = new CompletionPublisher(editor.getHandler(), () -> {
-            List<CompletionItem> items = publisher.getItems();
-            if (lastAttachedItems == null || lastAttachedItems.get() != items) {
-                adapter.attachValues(this, items);
-                adapter.notifyDataSetInvalidated();
-                lastAttachedItems = new WeakReference<>(items);
-            } else {
-                adapter.notifyDataSetChanged();
-            }
-            float newHeight = adapter.getItemHeight() * adapter.getCount();
-            if (newHeight == 0) {
-                hide();
-            }
-            updateCompletionWindowPosition();
-            setSize(getWidth(), (int) Math.min(newHeight, maxHeight));
-            if (!isShowing()) {
-                show();
+        publisher = new CompletionPublisher(editor.getHandler(), new Runnable() {
+            @Override
+            public void run() {
+                List<CompletionItem> items = publisher.getItems();
+                if (lastAttachedItems == null || lastAttachedItems.get() != items) {
+                    adapter.attachValues(EditorAutoCompletion.this, items);
+                    adapter.notifyDataSetInvalidated();
+                    lastAttachedItems = new WeakReference<>(items);
+                } else {
+                    adapter.notifyDataSetChanged();
+                }
+                float newHeight = adapter.getItemHeight() * adapter.getCount();
+                if (newHeight == 0) {
+                    hide();
+                }
+                updateCompletionWindowPosition();
+                setSize(getWidth(), (int) Math.min(newHeight, maxHeight));
+                if (!isShowing()) {
+                    show();
+                }
             }
         }, editor.getEditorLanguage().getInterruptionLevel());
         completionThread = new CompletionThread(requestTime, publisher);
@@ -636,9 +695,19 @@ public class EditorAutoCompletion extends EditorPopupWindow implements EditorBui
                         localPublisher.updateList(true);
                     }
                 } else {
-                    editor.postInLifecycle(EditorAutoCompletion.this::hide);
+                    editor.postInLifecycle(new Runnable() {
+                        @Override
+                        public void run() {
+                            EditorAutoCompletion.this.hide();
+                        }
+                    });
                 }
-                editor.postInLifecycle(() -> setLoading(false));
+                editor.postInLifecycle(new Runnable() {
+                    @Override
+                    public void run() {
+                        setLoading(false);
+                    }
+                });
             } catch (Exception e) {
                 if (e instanceof CompletionCancelledException) {
                     Log.v("CompletionThread", "Completion is cancelled");

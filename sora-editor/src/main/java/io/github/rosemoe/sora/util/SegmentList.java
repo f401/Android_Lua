@@ -38,7 +38,7 @@ public class SegmentList<T> extends AbstractList<T> {
     private final int segmentCapacity;
 
     private int length;
-    private FindResult<T> result = new FindResult<>();
+    private final FindResult<T> result = new FindResult<>();
 
     public SegmentList() {
         this(DEFAULT_SEGMENT_CAPACITY);
@@ -73,7 +73,7 @@ public class SegmentList<T> extends AbstractList<T> {
 
     private FindResult<T> getSegment(int index) {
         if (segments.isEmpty()) {
-            segments.add(new Segment<>(segmentCapacity));
+            segments.add(new Segment<T>(segmentCapacity));
         }
         int offset = 0;
         Segment<T> backBlock = segments.get(segments.size() - 1);

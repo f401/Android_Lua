@@ -61,9 +61,10 @@ public interface Layout extends ContentListener {
      * @return Iterator contains rows
      */
     @NonNull
-    default RowIterator obtainRowIterator(int initialRow) {
-        return obtainRowIterator(initialRow, null);
-    }
+    RowIterator obtainRowIterator(int initialRow);
+//    default RowIterator obtainRowIterator(int initialRow) {
+//        return obtainRowIterator(initialRow, null);
+//    }
 
     /**
      * Return a {@link RowIterator} object for editor to draw text rows
@@ -120,9 +121,10 @@ public interface Layout extends ContentListener {
      * @return An array containing layout offset, first element is the bottom of character and second element is the left of character
      */
     @NonNull
-    default float[] getCharLayoutOffset(int line, int column) {
-        return getCharLayoutOffset(line, column, new float[2]);
-    }
+    float[] getCharLayoutOffset(int line, int column);
+//    default float[] getCharLayoutOffset(int line, int column) {
+//        return getCharLayoutOffset(line, column, new float[2]);
+//    }
 
     /**
      * Get layout offset of a position in text

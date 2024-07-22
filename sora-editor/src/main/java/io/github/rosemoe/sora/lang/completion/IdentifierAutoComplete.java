@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Function;
 
 import io.github.rosemoe.sora.lang.Language;
 import io.github.rosemoe.sora.text.CharPosition;
@@ -63,14 +64,17 @@ public class IdentifierAutoComplete {
      * @deprecated Use {@link Comparators}
      */
     @Deprecated
-    private final static Comparator<CompletionItem> COMPARATOR = (p1, p2) -> {
-        int cmp1 = asString(p1.desc).compareTo(asString(p2.desc));
-        if (cmp1 < 0) {
-            return 1;
-        } else if (cmp1 > 0) {
-            return -1;
+    private final static Comparator<CompletionItem> COMPARATOR = new Comparator<CompletionItem>() {
+        @Override
+        public int compare(CompletionItem p1, CompletionItem p2) {
+            int cmp1 = asString(p1.desc).compareTo(asString(p2.desc));
+            if (cmp1 < 0) {
+                return 1;
+            } else if (cmp1 > 0) {
+                return -1;
+            }
+            return asString(p1.label).compareTo(asString(p2.label));
         }
-        return asString(p1.label).compareTo(asString(p2.label));
     };
     private String[] keywords;
     private boolean keywordsAreLowCase;
@@ -286,7 +290,12 @@ public class IdentifierAutoComplete {
             lock.lock();
             try {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    identifierMap.computeIfAbsent(identifier, (x) -> new MutableInt(0)).increase();
+                    identifierMap.computeIfAbsent(identifier, new Function<String, MutableInt>() {
+                        @Override
+                        public MutableInt apply(String s) {
+                            return new MutableInt(0);
+                        }
+                    }).increase();
                 } else {
                     MutableInt counter = identifierMap.get(identifier);
                     if (counter == null) {

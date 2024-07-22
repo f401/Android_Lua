@@ -40,7 +40,7 @@ public final class KeyboardUtils {
      * Check if hardware keyboard is connected.
      * Based on default implementation of [InputMethodService.onEvaluateInputViewShown].
      * <p>
-     * https://developer.android.com/guide/topics/resources/providing-resources#ImeQualifier
+     * <a href="https://developer.android.com/guide/topics/resources/providing-resources#ImeQualifier"></a>
      *
      * @param context The Context for operations.
      * @return Returns `true` if device has hardware keys for text input or an external hardware

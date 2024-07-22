@@ -62,7 +62,7 @@ public class EditorDiagnosticTooltipWindow extends EditorPopupWindow implements 
     private CharPosition hoverPosition;
     private boolean menuShown, popupHovered;
 
-    public EditorDiagnosticTooltipWindow(@NonNull CodeEditor editor) {
+    public EditorDiagnosticTooltipWindow(@NonNull final CodeEditor editor) {
         super(editor, FEATURE_HIDE_WHEN_FAST_SCROLL | FEATURE_SHOW_OUTSIDE_VIEW_ALLOWED);
         this.editor = editor;
         this.eventManager = editor.createSubEventManager();
@@ -128,7 +128,7 @@ public class EditorDiagnosticTooltipWindow extends EditorPopupWindow implements 
             @Override
             public void onClick(View v) {
                 if (currentDiagnostic != null) {
-                    List<Quickfix> quickfixes = currentDiagnostic.getQuickfixes();
+                    final List<Quickfix> quickfixes = currentDiagnostic.getQuickfixes();
                     if (quickfixes != null && quickfixes.size() > 1) {
                         Menu menu = popupMenu.getMenu();
                         menu.clear();
@@ -213,7 +213,7 @@ public class EditorDiagnosticTooltipWindow extends EditorPopupWindow implements 
             }
         });
 
-        Runnable callback = new Runnable() {
+        final Runnable callback = new Runnable() {
             @Override
             public void run() {
                 CharPosition pos = hoverPosition;
@@ -334,7 +334,7 @@ public class EditorDiagnosticTooltipWindow extends EditorPopupWindow implements 
                     }
                 }
                 updateDiagnostic(diagnosticList.get(minIndex).detail, pos);
-                if (!editor.<EditorAutoCompletion>getComponent(EditorAutoCompletion.class).isCompletionInProgress())
+                if (!editor.getComponent(EditorAutoCompletion.class).isCompletionInProgress())
                     show();
             } else {
                 updateDiagnostic(null, null);
@@ -419,7 +419,7 @@ public class EditorDiagnosticTooltipWindow extends EditorPopupWindow implements 
         editor.getLocationInWindow(locationBuffer);
         float restAbove = charY + locationBuffer[1];
         float restBottom = editor.getHeight() - charY - editor.getRowHeight();
-        boolean completionShowing = editor.<EditorAutoCompletion>getComponent(EditorAutoCompletion.class).isShowing();
+        boolean completionShowing = editor.getComponent(EditorAutoCompletion.class).isShowing();
         float windowY = restAbove > restBottom || completionShowing ?
                 charY - getHeight() :
                 charY + editor.getRowHeight() * 1.5f;

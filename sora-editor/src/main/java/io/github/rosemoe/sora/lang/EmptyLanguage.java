@@ -86,6 +86,11 @@ public class EmptyLanguage implements Language {
         return 0;
     }
 
+    @Override
+    public int getIndentAdvance(@NonNull ContentReference content, int line, int column, int spaceCountOnLine, int tabCountOnLine) {
+        return getIndentAdvance(content, line, column);
+    }
+
     @Nullable
     @Override
     public QuickQuoteHandler getQuickQuoteHandler() {
@@ -129,6 +134,11 @@ public class EmptyLanguage implements Language {
 
         @Override
         public void destroy() {
+
+        }
+
+        @Override
+        public void cancel() {
 
         }
     }

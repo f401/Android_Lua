@@ -33,6 +33,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewOutlineProvider;
+import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -91,7 +92,7 @@ public class DefaultCompletionLayout implements CompletionLayout {
 
     @NonNull
     @Override
-    public View inflate(@NonNull Context context) {
+    public View inflate(@NonNull final Context context) {
         LinearLayout rootLayout = new LinearLayout(context);
         rootView = rootLayout;
         listView = new ListView(context);
@@ -122,12 +123,15 @@ public class DefaultCompletionLayout implements CompletionLayout {
         listView.setDividerHeight(0);
         setLoading(true);
 
-        listView.setOnItemClickListener((parent, view, position, id) -> {
-            try {
-                editorAutoCompletion.select(position);
-            } catch (Exception e) {
-                e.printStackTrace(System.err);
-                Toast.makeText(context, e.toString(), Toast.LENGTH_SHORT).show();
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                try {
+                    editorAutoCompletion.select(position);
+                } catch (Exception e) {
+                    e.printStackTrace(System.err);
+                    Toast.makeText(context, e.toString(), Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -188,13 +192,16 @@ public class DefaultCompletionLayout implements CompletionLayout {
     }
 
     @Override
-    public void ensureListPositionVisible(int position, int increment) {
-        listView.post(() -> {
-            while (listView.getFirstVisiblePosition() + 1 > position && listView.canScrollList(-1)) {
-                performScrollList(increment / 2);
-            }
-            while (listView.getLastVisiblePosition() - 1 < position && listView.canScrollList(1)) {
-                performScrollList(-increment / 2);
+    public void ensureListPositionVisible(final int position, final int increment) {
+        listView.post(new Runnable() {
+            @Override
+            public void run() {
+                while (listView.getFirstVisiblePosition() + 1 > position && listView.canScrollList(-1)) {
+                    performScrollList(increment / 2);
+                }
+                while (listView.getLastVisiblePosition() - 1 < position && listView.canScrollList(1)) {
+                    performScrollList(-increment / 2);
+                }
             }
         });
     }

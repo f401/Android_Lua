@@ -121,7 +121,7 @@ public class SymbolPairMatch {
             result = new ArrayList<>(parentResult);
         }
 
-        return result == null ? Collections.emptyList() : result;
+        return result == null ? Collections.<SymbolPair>emptyList() : result;
     }
 
     @Nullable
@@ -286,9 +286,10 @@ public class SymbolPairMatch {
              * @param currentLine The current line edit in the editor,quick analysis it to decide whether to replaced
              * @param leftColumn  return current cursor column
              */
-            default boolean shouldReplace(CodeEditor editor, ContentLine currentLine, int leftColumn) {
-                return true;
-            }
+//            default boolean shouldReplace(CodeEditor editor, ContentLine currentLine, int leftColumn) {
+//                return true;
+//            }
+            boolean shouldReplace(CodeEditor editor, ContentLine currentLine, int leftColumn);
 
 
             /**
@@ -296,9 +297,10 @@ public class SymbolPairMatch {
              * If not implemented, always return false
              * also see <a href="https://code.visualstudio.com/api/language-extensions/language-configuration-guide#autosurrounding">this</a>
              */
-            default boolean shouldDoAutoSurround(Content content) {
-                return false;
-            }
+            boolean shouldDoAutoSurround(Content content);
+//            default boolean shouldDoAutoSurround(Content content) {
+//                return false;
+//            }
 
         }
 
@@ -312,11 +314,21 @@ public class SymbolPairMatch {
             super.putPair('[', new SymbolPair("[", "]"));
             super.putPair('"', new SymbolPair("\"", "\"", new SymbolPair.SymbolPairEx() {
                 @Override
+                public boolean shouldReplace(CodeEditor editor, ContentLine currentLine, int leftColumn) {
+                    return true;
+                }
+
+                @Override
                 public boolean shouldDoAutoSurround(Content content) {
                     return content.getCursor().isSelected();
                 }
             }));
             super.putPair('\'', new SymbolPair("'", "'", new SymbolPair.SymbolPairEx() {
+                @Override
+                public boolean shouldReplace(CodeEditor editor, ContentLine currentLine, int leftColumn) {
+                    return true;
+                }
+
                 @Override
                 public boolean shouldDoAutoSurround(Content content) {
                     return content.getCursor().isSelected();

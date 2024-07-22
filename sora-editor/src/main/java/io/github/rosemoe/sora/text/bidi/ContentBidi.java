@@ -62,8 +62,7 @@ public class ContentBidi implements ContentListener {
             return new Directions(new long[]{IntPair.pack(0, 0)}, text.getLine(line).length());
         }
         synchronized (this) {
-            for (int i = 0; i < entries.length; i++) {
-                ContentBidi.DirectionsEntry entry = entries[i];
+            for (DirectionsEntry entry : entries) {
                 if (entry != null && entry.line == line) {
                     return entry.dir;
                 }
@@ -93,6 +92,11 @@ public class ContentBidi implements ContentListener {
                 }
             }
         }
+    }
+
+    @Override
+    public void beforeModification(@NonNull Content content) {
+
     }
 
     @Override

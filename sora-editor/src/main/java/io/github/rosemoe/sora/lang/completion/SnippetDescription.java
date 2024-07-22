@@ -49,10 +49,9 @@ public class SnippetDescription {
     @NonNull
     @Override
     public String toString() {
-        String sb = "SnippetDescription{" + "selectedLength=" + selectedLength +
+        return "SnippetDescription{selectedLength=" + selectedLength +
                 ", snippet=" + snippet +
                 ", deleteSelected=" + deleteSelected +
                 '}';
-        return sb;
     }
 }

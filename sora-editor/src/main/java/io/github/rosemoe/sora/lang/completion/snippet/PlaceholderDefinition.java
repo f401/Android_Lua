@@ -2,8 +2,7 @@ package io.github.rosemoe.sora.lang.completion.snippet;
 
 import androidx.annotation.Nullable;
 
-import com.google.common.collect.Lists;
-
+import java.util.ArrayList;
 import java.util.List;
 
 public final class PlaceholderDefinition {
@@ -26,7 +25,7 @@ public final class PlaceholderDefinition {
     }
 
     public PlaceholderDefinition(int id) {
-        this(id, null, Lists.newArrayList(), null);
+        this(id, null, new ArrayList<PlaceHolderElement>(), null);
     }
 
     public int getId() {

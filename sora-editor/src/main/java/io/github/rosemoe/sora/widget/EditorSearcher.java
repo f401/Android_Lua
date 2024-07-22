@@ -37,15 +37,16 @@ import java.util.regex.Pattern;
 import io.github.rosemoe.sora.I18nConfig;
 import io.github.rosemoe.sora.R;
 import io.github.rosemoe.sora.event.ContentChangeEvent;
+import io.github.rosemoe.sora.event.EventReceiver;
 import io.github.rosemoe.sora.event.PublishSearchResultEvent;
 import io.github.rosemoe.sora.event.SelectionChangeEvent;
+import io.github.rosemoe.sora.event.Unsubscribe;
 import io.github.rosemoe.sora.text.CharPosition;
 import io.github.rosemoe.sora.text.Content;
 import io.github.rosemoe.sora.text.Cursor;
 import io.github.rosemoe.sora.text.TextUtils;
 import io.github.rosemoe.sora.util.IntPair;
 import io.github.rosemoe.sora.util.LongArrayList;
-import io.github.rosemoe.sora.widget.rendering.RenderContext;
 
 /**
  * Search text in editor.
@@ -75,11 +76,14 @@ public class EditorSearcher {
 
     EditorSearcher(@NonNull CodeEditor editor) {
         this.editor = editor;
-        this.editor.subscribeEvent(ContentChangeEvent.class, ((event, unsubscribe) -> {
-            if (hasQuery()) {
-                executeMatch();
+        this.editor.subscribeEvent(ContentChangeEvent.class, new EventReceiver<ContentChangeEvent>() {
+            @Override
+            public void onReceive(@NonNull ContentChangeEvent event, @NonNull Unsubscribe unsubscribe) {
+                if (hasQuery()) {
+                    executeMatch();
+                }
             }
-        }));
+        });
     }
 
     /**
@@ -338,7 +342,7 @@ public class EditorSearcher {
      * @param whenSucceeded Callback when action is succeeded
      * @throws IllegalStateException if no search is in progress
      */
-    public void replaceAll(@NonNull String replacement, @Nullable final Runnable whenSucceeded) {
+    public void replaceAll(@NonNull final String replacement, @Nullable final Runnable whenSucceeded) {
         if (!editor.isEditable()) {
             return;
         }
@@ -353,34 +357,43 @@ public class EditorSearcher {
                 I18nConfig.getString(context, R.string.sora_editor_editor_search_replacing),
                 true, false);
         final LongArrayList res = lastResults;
-        new Thread(() -> {
-            try {
-                StringBuilder sb = editor.getText().toStringBuilder();
-                int newLength = replacement.length();
-                int delta = 0;
-                for (int i = 0; i < res.size(); i++) {
-                    long region = res.get(i);
-                    int start = IntPair.getFirst(region);
-                    int end = IntPair.getSecond(region);
-                    int oldLength = end - start;
-                    sb.replace(start + delta, end + delta, replacement);
-                    delta += newLength - oldLength;
-                }
-                editor.postInLifecycle(() -> {
-                    CharPosition pos = editor.getCursor().left();
-                    editor.getText().replace(0, 0, editor.getLineCount() - 1, editor.getText().getColumnCount(editor.getLineCount() - 1), sb);
-                    editor.setSelectionAround(pos.line, pos.column);
-                    dialog.dismiss();
-
-                    if (whenSucceeded != null) {
-                        whenSucceeded.run();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final StringBuilder sb = editor.getText().toStringBuilder();
+                    int newLength = replacement.length();
+                    int delta = 0;
+                    for (int i = 0; i < res.size(); i++) {
+                        long region = res.get(i);
+                        int start = IntPair.getFirst(region);
+                        int end = IntPair.getSecond(region);
+                        int oldLength = end - start;
+                        sb.replace(start + delta, end + delta, replacement);
+                        delta += newLength - oldLength;
                     }
-                });
-            } catch (Exception e) {
-                editor.postInLifecycle(() -> {
-                    Toast.makeText(editor.getContext(), "Replace failed:" + e, Toast.LENGTH_SHORT).show();
-                    dialog.dismiss();
-                });
+                    editor.postInLifecycle(new Runnable() {
+                        @Override
+                        public void run() {
+                            CharPosition pos = editor.getCursor().left();
+                            editor.getText().replace(0, 0, editor.getLineCount() - 1, editor.getText().getColumnCount(editor.getLineCount() - 1), sb);
+                            editor.setSelectionAround(pos.line, pos.column);
+                            dialog.dismiss();
+
+                            if (whenSucceeded != null) {
+                                whenSucceeded.run();
+                            }
+                        }
+                    });
+                } catch (final Exception e) {
+                    editor.postInLifecycle(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(editor.getContext(), "Replace failed:" + e, Toast.LENGTH_SHORT).show();
+                            dialog.dismiss();
+                        }
+                    });
+                }
             }
         }).start();
     }
@@ -456,7 +469,7 @@ public class EditorSearcher {
         @Override
         public void run() {
             localThread = Thread.currentThread();
-            LongArrayList results = new LongArrayList();
+            final LongArrayList results = new LongArrayList();
             int textLength = text.length();
             boolean ignoreCase = options.caseInsensitive;
             String pattern = this.pattern;
@@ -494,12 +507,15 @@ public class EditorSearcher {
                     }
             }
             if (checkNotCancelled()) {
-                editor.postInLifecycle(() -> {
-                    if (currentThread == localThread) {
-                        lastResults = results;
-                        editor.invalidate();
-                        editor.dispatchEvent(new PublishSearchResultEvent(editor));
-                        currentThread = null;
+                editor.postInLifecycle(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (currentThread == localThread) {
+                            lastResults = results;
+                            editor.invalidate();
+                            editor.dispatchEvent(new PublishSearchResultEvent(editor));
+                            currentThread = null;
+                        }
                     }
                 });
             }

@@ -179,8 +179,14 @@ public final class EventManager {
      * Subscribe a event and never unsubscribe from event receiver
      */
     @NonNull
-    public <T extends Event> SubscriptionReceipt<T> subscribeAlways(@NonNull Class<T> eventType, @NonNull NoUnsubscribeReceiver<T> receiver) {
-        return subscribeEvent(eventType, ((event, unsubscribe) -> receiver.onEvent(event)));
+    public <T extends Event> SubscriptionReceipt<T> subscribeAlways(@NonNull Class<T> eventType, @NonNull final NoUnsubscribeReceiver<T> receiver) {
+//        return subscribeEvent(eventType, ((event, unsubscribe) -> receiver.onEvent(event)));
+        return subscribeEvent(eventType, new EventReceiver<T>() {
+            @Override
+            public void onReceive(@NonNull T event, @NonNull Unsubscribe unsubscribe) {
+                receiver.onEvent(event);
+            }
+        });
     }
 
     /**

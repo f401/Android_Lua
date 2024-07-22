@@ -49,7 +49,7 @@ public final class UndoManager implements ContentListener, Parcelable {
             o.undoEnabled = parcel.readInt() > 0;
             int count = parcel.readInt();
             while (count > 0) {
-                o.actionStack.add(parcel.readParcelable(UndoManager.class.getClassLoader()));
+                o.actionStack.add(parcel.<ContentAction>readParcelable(UndoManager.class.getClassLoader()));
                 count--;
             }
             return o;
@@ -521,7 +521,7 @@ public final class UndoManager implements ContentListener, Parcelable {
                 MultiAction o = new MultiAction();
                 int count = parcel.readInt();
                 while (count > 0) {
-                    o._actions.add(parcel.readParcelable(MultiAction.class.getClassLoader()));
+                    o._actions.add(parcel.<ContentAction>readParcelable(MultiAction.class.getClassLoader()));
                     count--;
                 }
                 return o;

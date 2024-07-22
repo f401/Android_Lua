@@ -115,19 +115,22 @@ public class CompletionPublisher {
      * <p>
      * The comparator is used when publishing the completion to user.
      */
-    public void setComparator(@Nullable Comparator<CompletionItem> comparator) {
+    public void setComparator(@Nullable final Comparator<CompletionItem> comparator) {
         checkCancelled();
         if (invalid) {
             return;
         }
         this.comparator = comparator;
         if (!items.isEmpty() && comparator != null) {
-            handler.post(() -> {
-                if (invalid) {
-                    return;
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (invalid) {
+                        return;
+                    }
+                    Collections.sort(items, comparator);
+                    callback.run();
                 }
-                Collections.sort(items, comparator);
-                callback.run();
             });
         }
     }
@@ -195,63 +198,65 @@ public class CompletionPublisher {
      * @param forced If true, the main thread will wait for the lock. Otherwise, when the lock is
      *               currently available for the thread, the update will be executed.
      */
-    public void updateList(boolean forced) {
+    public void updateList(final boolean forced) {
         if (invalid) {
             return;
         }
-        handler.post(() -> {
-            // Lock the candidate list accordingly
-            if (invalid) {
-                callback.run();
-                return;
-            }
-            boolean locked = false;
-            if (forced) {
-                lock.lock();
-                locked = true;
-            } else {
-                locked = lock.tryLock();
-            }
-
-            if (locked) {
-                try {
-                    if (candidates.isEmpty()) {
-                        callback.run();
-                        return;
-                    }
-                    final Comparator<CompletionItem> comparator = this.comparator;
-                    if (comparator != null) {
-                        while (!candidates.isEmpty()) {
-                            CompletionItem candidate = candidates.remove(0);
-                            // Insert the value by binary search
-                            int left = 0, right = items.size();
-                            int size = right;
-                            while (left <= right) {
-                                int mid = (left + right) / 2;
-                                if (mid < 0 || mid >= size) {
-                                    left = mid;
-                                    break;
-                                }
-                                int cmp = comparator.compare(items.get(mid), candidate);
-                                if (cmp < 0) {
-                                    left = mid + 1;
-                                } else if (cmp > 0) {
-                                    right = mid - 1;
-                                } else {
-                                    left = mid;
-                                    break;
-                                }
-                            }
-                            left = Math.max(0, Math.min(size, left));
-                            items.add(left, candidate);
-                        }
-                    } else {
-                        items.addAll(candidates);
-                        candidates.clear();
-                    }
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                // Lock the candidate list accordingly
+                if (invalid) {
                     callback.run();
-                } finally {
-                    lock.unlock();
+                    return;
+                }
+                boolean locked;
+                if (forced) {
+                    lock.lock();
+                    locked = true;
+                } else {
+                    locked = lock.tryLock();
+                }
+                if (locked) {
+                    try {
+                        if (candidates.isEmpty()) {
+                            callback.run();
+                            return;
+                        }
+                        final Comparator<CompletionItem> comparator = CompletionPublisher.this.comparator;
+                        if (comparator != null) {
+                            while (!candidates.isEmpty()) {
+                                CompletionItem candidate = candidates.remove(0);
+                                // Insert the value by binary search
+                                int left = 0, right = items.size();
+                                int size = right;
+                                while (left <= right) {
+                                    int mid = (left + right) / 2;
+                                    if (mid < 0 || mid >= size) {
+                                        left = mid;
+                                        break;
+                                    }
+                                    int cmp = comparator.compare(items.get(mid), candidate);
+                                    if (cmp < 0) {
+                                        left = mid + 1;
+                                    } else if (cmp > 0) {
+                                        right = mid - 1;
+                                    } else {
+                                        left = mid;
+                                        break;
+                                    }
+                                }
+                                left = Math.max(0, Math.min(size, left));
+                                items.add(left, candidate);
+                            }
+                        } else {
+                            items.addAll(candidates);
+                            candidates.clear();
+                        }
+                        callback.run();
+                    } finally {
+                        lock.unlock();
+                    }
                 }
             }
         });

@@ -20,7 +20,7 @@ public final class SequenceUpdateRange implements StyleUpdateRange {
     }
 
     @Override
-    public Iterator<Integer> lineIndexIterator(int maxLineIndex) {
+    public Iterator<Integer> lineIndexIterator(final int maxLineIndex) {
         return new Iterator<Integer>() {
             private int currLine = startLine;
 

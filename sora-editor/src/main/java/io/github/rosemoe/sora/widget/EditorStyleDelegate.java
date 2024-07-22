@@ -30,7 +30,9 @@ import androidx.annotation.Nullable;
 
 import java.lang.ref.WeakReference;
 
+import io.github.rosemoe.sora.event.EventReceiver;
 import io.github.rosemoe.sora.event.SelectionChangeEvent;
+import io.github.rosemoe.sora.event.Unsubscribe;
 import io.github.rosemoe.sora.lang.analysis.AnalyzeManager;
 import io.github.rosemoe.sora.lang.analysis.StyleReceiver;
 import io.github.rosemoe.sora.lang.analysis.StyleUpdateRange;
@@ -38,7 +40,6 @@ import io.github.rosemoe.sora.lang.brackets.BracketsProvider;
 import io.github.rosemoe.sora.lang.brackets.PairedBracket;
 import io.github.rosemoe.sora.lang.diagnostic.DiagnosticsContainer;
 import io.github.rosemoe.sora.lang.styling.Styles;
-import io.github.rosemoe.sora.text.ContentReference;
 
 public class EditorStyleDelegate implements StyleReceiver {
 
@@ -48,9 +49,12 @@ public class EditorStyleDelegate implements StyleReceiver {
 
     EditorStyleDelegate(@NonNull CodeEditor editor) {
         editorRef = new WeakReference<>(editor);
-        editor.subscribeEvent(SelectionChangeEvent.class, (event, __) -> {
-            if (!event.isSelected()) {
-                postUpdateBracketPair();
+        editor.subscribeEvent(SelectionChangeEvent.class, new EventReceiver<SelectionChangeEvent>() {
+            @Override
+            public void onReceive(@NonNull SelectionChangeEvent event, @NonNull Unsubscribe unsubscribe) {
+                if (!event.isSelected()) {
+                    postUpdateBracketPair();
+                }
             }
         });
     }
@@ -62,12 +66,15 @@ public class EditorStyleDelegate implements StyleReceiver {
     }
 
     void postUpdateBracketPair() {
-        runOnUiThread(() -> {
-            final BracketsProvider provider = bracketsProvider;
-            final CodeEditor editor = editorRef.get();
-            if (provider != null && editor != null && !editor.getCursor().isSelected() && editor.isHighlightBracketPair()) {
-                foundPair = provider.getPairedBracketAt(editor.getText(), editor.getCursor().getLeft());
-                editor.invalidate();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                final BracketsProvider provider = bracketsProvider;
+                final CodeEditor editor = editorRef.get();
+                if (provider != null && editor != null && !editor.getCursor().isSelected() && editor.isHighlightBracketPair()) {
+                    foundPair = provider.getPairedBracketAt(editor.getText(), editor.getCursor().getLeft());
+                    editor.invalidate();
+                }
             }
         });
     }
@@ -100,23 +107,31 @@ public class EditorStyleDelegate implements StyleReceiver {
     }
 
     @Override
-    public void setStyles(@NonNull AnalyzeManager sourceManager, @Nullable Styles styles, @Nullable Runnable action) {
-        CodeEditor editor = editorRef.get();
+    public void setStyles(@NonNull AnalyzeManager sourceManager, @Nullable final Styles styles, @Nullable final Runnable action) {
+        final CodeEditor editor = editorRef.get();
         if (editor != null && sourceManager == editor.getEditorLanguage().getAnalyzeManager()) {
-            runOnUiThread(() -> {
-                if (action != null) {
-                    action.run();
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (action != null) {
+                        action.run();
+                    }
+                    editor.setStyles(styles);
                 }
-                editor.setStyles(styles);
             });
         }
     }
 
     @Override
-    public void setDiagnostics(@NonNull AnalyzeManager sourceManager, @Nullable DiagnosticsContainer diagnostics) {
-        CodeEditor editor = editorRef.get();
+    public void setDiagnostics(@NonNull AnalyzeManager sourceManager, @Nullable final DiagnosticsContainer diagnostics) {
+        final CodeEditor editor = editorRef.get();
         if (editor != null && sourceManager == editor.getEditorLanguage().getAnalyzeManager()) {
-            runOnUiThread(() -> editor.setDiagnostics(diagnostics));
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    editor.setDiagnostics(diagnostics);
+                }
+            });
         }
     }
 
@@ -130,10 +145,15 @@ public class EditorStyleDelegate implements StyleReceiver {
     }
 
     @Override
-    public void updateStyles(@NonNull AnalyzeManager sourceManager, @NonNull Styles styles, @NonNull StyleUpdateRange range) {
-        CodeEditor editor = editorRef.get();
+    public void updateStyles(@NonNull AnalyzeManager sourceManager, @NonNull final Styles styles, @NonNull final StyleUpdateRange range) {
+        final CodeEditor editor = editorRef.get();
         if (editor != null && sourceManager == editor.getEditorLanguage().getAnalyzeManager()) {
-            runOnUiThread(() -> editor.updateStyles(styles, range));
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    editor.updateStyles(styles, range);
+                }
+            });
         }
     }
 

@@ -147,15 +147,18 @@ public class ContentIO {
         final BufferedWriter buffered = (writer instanceof BufferedWriter) ?
                 (BufferedWriter) writer : new BufferedWriter(writer, BUFFER_SIZE);
         try {
-            text.runReadActionsOnLines(0, text.getLineCount() - 1, (Content.ContentLineConsumer2) (index, line, flag) -> {
-                try {
-                    // Write line content
-                    buffered.write(line.getBackingCharArray(), 0, line.length());
-                    // Write line feed (the last line has empty line feed)
-                    buffered.write(line.getLineSeparator().getChars());
-                } catch (IOException e) {
-                    // To be handled by outer code
-                    throw new RuntimeException(e);
+            text.runReadActionsOnLines(0, text.getLineCount() - 1, new Content.ContentLineConsumer2() {
+                @Override
+                public void accept(int lineIndex, @NonNull ContentLine line, @NonNull AbortFlag flag) {
+                    try {
+                        // Write line content
+                        buffered.write(line.getBackingCharArray(), 0, line.length());
+                        // Write line feed (the last line has empty line feed)
+                        buffered.write(line.getLineSeparator().getChars());
+                    } catch (IOException e) {
+                        // To be handled by outer code
+                        throw new RuntimeException(e);
+                    }
                 }
             });
         } catch (RuntimeException e) {

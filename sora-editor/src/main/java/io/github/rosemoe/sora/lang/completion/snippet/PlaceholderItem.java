@@ -28,7 +28,6 @@ import androidx.annotation.NonNull;
 public class PlaceholderItem extends SnippetItem {
 
     private PlaceholderDefinition definition;
-    private String text;
 
     public PlaceholderItem(@NonNull PlaceholderDefinition definition, int index) {
         setIndex(index, index);
@@ -37,7 +36,6 @@ public class PlaceholderItem extends SnippetItem {
 
     private PlaceholderItem(@NonNull PlaceholderDefinition definition, int start, int end) {
         setIndex(start, end);
-        this.text = text;
         this.definition = definition;
     }
 

@@ -31,6 +31,7 @@ import android.text.Layout;
 import android.text.Selection;
 import android.text.TextDirectionHeuristics;
 import android.text.TextPaint;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -64,7 +65,7 @@ public class TextLayoutHelper {
                 field.setAccessible(true);
                 field.set(layout, TextDirectionHeuristics.LTR);
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.e("TextLayoutHelper", "Reflection", e);
             }
         } else {
             layout = DynamicLayout.Builder.obtain(text, new TextPaint(), Integer.MAX_VALUE / 2)

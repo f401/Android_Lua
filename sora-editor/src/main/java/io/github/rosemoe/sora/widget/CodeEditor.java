@@ -28,6 +28,7 @@ import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -92,6 +93,7 @@ import io.github.rosemoe.sora.event.CreateContextMenuEvent;
 import io.github.rosemoe.sora.event.EditorAttachStateChangeEvent;
 import io.github.rosemoe.sora.event.EditorFocusChangeEvent;
 import io.github.rosemoe.sora.event.EditorFormatEvent;
+import io.github.rosemoe.sora.event.EditorMotionEvent;
 import io.github.rosemoe.sora.event.EditorReleaseEvent;
 import io.github.rosemoe.sora.event.Event;
 import io.github.rosemoe.sora.event.EventManager;
@@ -770,7 +772,7 @@ public class CodeEditor extends View implements ContentListener, Formatter.Forma
         }
     }
 
-    protected CursorBlink getCursorBlink() {
+    CursorBlink getCursorBlink() {
         return cursorBlink;
     }
 
@@ -2649,15 +2651,24 @@ public class CodeEditor extends View implements ContentListener, Formatter.Forma
                                 .setTitle(I18nConfig.getResourceId(replaceAll ? R.string.sora_editor_replaceAll : R.string.sora_editor_replace))
                                 .setView(et)
                                 .setNegativeButton(android.R.string.cancel, null)
-                                .setPositiveButton(I18nConfig.getResourceId(R.string.sora_editor_replace), (dialog, which) -> {
-                                    if (replaceAll) {
-                                        getSearcher().replaceAll(et.getText().toString(), am::finish);
-                                    } else {
-                                        getSearcher().replaceCurrentMatch(et.getText().toString());
-                                        am.finish();
-                                    }
-                                    dialog.dismiss();
-                                })
+                                .setPositiveButton(I18nConfig.getResourceId(R.string.sora_editor_replace),
+                                        new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                if (replaceAll) {
+                                                    getSearcher().replaceAll(et.getText().toString(), new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            am.finish();
+                                                        }
+                                                    });
+                                                } else {
+                                                    getSearcher().replaceCurrentMatch(et.getText().toString());
+                                                    am.finish();
+                                                }
+                                                dialog.dismiss();
+                                            }
+                                        })
                                 .show();
                     }
                 }
@@ -4232,7 +4243,7 @@ public class CodeEditor extends View implements ContentListener, Formatter.Forma
             try {
                 candidatesStart = inputConnection.composingText.startIndex;
                 candidatesEnd = inputConnection.composingText.endIndex;
-            } catch (IndexOutOfBoundsException e) {
+            } catch (IndexOutOfBoundsException ignored) {
                 // Ignored
             }
         }
@@ -4463,7 +4474,12 @@ public class CodeEditor extends View implements ContentListener, Formatter.Forma
         // Update magnifier
         if ((lastCursorState != cursorBlink.visibility || !touchHandler.getScroller().isFinished()) && touchHandler.magnifier.isShowing()) {
             lastCursorState = cursorBlink.visibility;
-            postInLifecycle(touchHandler.magnifier::updateDisplay);
+            postInLifecycle(new Runnable() {
+                @Override
+                public void run() {
+                    touchHandler.magnifier.updateDisplay();
+                }
+            });
         }
     }
 
@@ -4797,7 +4813,12 @@ public class CodeEditor extends View implements ContentListener, Formatter.Forma
                 case MotionEvent.ACTION_HOVER_ENTER:
                 case MotionEvent.ACTION_HOVER_MOVE:
                 case MotionEvent.ACTION_HOVER_EXIT:
-                    touchHandler.dispatchEditorMotionEvent(HoverEvent::new, null, event);
+                    touchHandler.dispatchEditorMotionEvent(new EditorTouchEventHandler.EventConstrcutor() {
+                        @Override
+                        public EditorMotionEvent construct(CodeEditor editor, CharPosition pos, MotionEvent event, Span span, TextRange range) {
+                            return new HoverEvent(editor, pos, event, span, range);
+                        }
+                    }, null, event);
                     return true;
             }
         }
@@ -4953,12 +4974,15 @@ public class CodeEditor extends View implements ContentListener, Formatter.Forma
      * Returns false on failure, usually because the looper processing the message queue is exiting.
      * @see View#post(Runnable)
      */
-    public boolean postInLifecycle(Runnable action) {
-        return EditorHandler.INSTANCE.post(() -> {
-            if (released) {
-                return;
+    public boolean postInLifecycle(final Runnable action) {
+        return EditorHandler.INSTANCE.post(new Runnable() {
+            @Override
+            public void run() {
+                if (released) {
+                    return;
+                }
+                action.run();
             }
-            action.run();
         });
     }
 
@@ -4971,12 +4995,15 @@ public class CodeEditor extends View implements ContentListener, Formatter.Forma
      * Returns false on failure, usually because the looper processing the message queue is exiting.
      * @see View#postDelayed(Runnable, long)
      */
-    public boolean postDelayedInLifecycle(Runnable action, long delayMillis) {
-        return EditorHandler.INSTANCE.postDelayed(() -> {
-            if (released) {
-                return;
+    public boolean postDelayedInLifecycle(final Runnable action, long delayMillis) {
+        return EditorHandler.INSTANCE.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (released) {
+                    return;
+                }
+                action.run();
             }
-            action.run();
         }, delayMillis);
     }
 
@@ -5081,48 +5108,54 @@ public class CodeEditor extends View implements ContentListener, Formatter.Forma
     }
 
     @Override
-    public void onFormatSucceed(@NonNull CharSequence applyContent, @Nullable TextRange
+    public void onFormatSucceed(@NonNull final CharSequence applyContent, final @Nullable TextRange
             cursorRange) {
-        postInLifecycle(() -> {
-            int line = cursor.getLeftLine();
-            int column = cursor.getLeftColumn();
-            int x = getOffsetX();
-            int y = getOffsetY();
-            CharSequence string =
-                    (applyContent instanceof Content) ? ((Content) applyContent).toStringBuilder() : applyContent;
-            text.beginBatchEdit();
-            text.delete(0, 0, text.getLineCount() - 1,
-                    text.getColumnCount(text.getLineCount() - 1));
-            text.insert(0, 0, string);
-            text.endBatchEdit();
-            inputConnection.markInvalid();
-            if (cursorRange == null) {
-                setSelectionAround(line, column);
-            } else {
-                try {
-                    CharPosition start = cursorRange.getStart();
-                    CharPosition end = cursorRange.getEnd();
-                    setSelectionRegion(start.line, start.column, end.line, end.column);
-                } catch (IndexOutOfBoundsException e) {
-                    Log.w(LOG_TAG, e);
+        postInLifecycle(new Runnable() {
+            @Override
+            public void run() {
+                int line = cursor.getLeftLine();
+                int column = cursor.getLeftColumn();
+                int x = getOffsetX();
+                int y = getOffsetY();
+                CharSequence string =
+                        (applyContent instanceof Content) ? ((Content) applyContent).toStringBuilder() : applyContent;
+                text.beginBatchEdit();
+                text.delete(0, 0, text.getLineCount() - 1,
+                        text.getColumnCount(text.getLineCount() - 1));
+                text.insert(0, 0, string);
+                text.endBatchEdit();
+                inputConnection.markInvalid();
+                if (cursorRange == null) {
+                    setSelectionAround(line, column);
+                } else {
+                    try {
+                        CharPosition start = cursorRange.getStart();
+                        CharPosition end = cursorRange.getEnd();
+                        setSelectionRegion(start.line, start.column, end.line, end.column);
+                    } catch (IndexOutOfBoundsException e) {
+                        Log.w(LOG_TAG, e);
+                    }
                 }
+                getScroller().forceFinished(true);
+                getScroller().startScroll(x, y, 0, 0, 0);
+                getScroller().abortAnimation();
+                // Ensure the scroll offset is valid
+                touchHandler.scrollBy(0, 0);
+                inputConnection.reset();
+                restartInput();
+                dispatchEvent(new EditorFormatEvent(CodeEditor.this, true));
             }
-            getScroller().forceFinished(true);
-            getScroller().startScroll(x, y, 0, 0, 0);
-            getScroller().abortAnimation();
-            // Ensure the scroll offset is valid
-            touchHandler.scrollBy(0, 0);
-            inputConnection.reset();
-            restartInput();
-            dispatchEvent(new EditorFormatEvent(this, true));
         });
     }
 
     @Override
     public void onFormatFail(final Throwable throwable) {
-        postInLifecycle(() -> {
-            Toast.makeText(getContext(), "Format:" + throwable, Toast.LENGTH_SHORT).show();
-            dispatchEvent(new EditorFormatEvent(this, false));
+        postInLifecycle(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(getContext(), "Format:" + throwable, Toast.LENGTH_SHORT).show();
+                dispatchEvent(new EditorFormatEvent(CodeEditor.this, false));
+            }
         });
     }
 

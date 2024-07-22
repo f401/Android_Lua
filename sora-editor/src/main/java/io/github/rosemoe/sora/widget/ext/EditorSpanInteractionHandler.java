@@ -41,7 +41,7 @@ public class EditorSpanInteractionHandler {
     @LazyInit
     private EventManager mEventManager;
 
-    public EditorSpanInteractionHandler(@NonNull CodeEditor editor) {
+    public EditorSpanInteractionHandler(@NonNull final CodeEditor editor) {
         this.editor = editor;
 
         getEventManager().subscribeAlways(ClickEvent.class, new EventManager.NoUnsubscribeReceiver<ClickEvent>() {
@@ -132,7 +132,7 @@ public class EditorSpanInteractionHandler {
                 span != null && spanRange != null
         ) {
             if (!checkCursorRange || spanRange.isPositionInside(editor.getCursor().left())) {
-                SpanInteractionInfo it = span.<SpanInteractionInfo>getSpanExt(SpanExtAttrs.EXT_INTERACTION_INFO);
+                SpanInteractionInfo it = span.getSpanExt(SpanExtAttrs.EXT_INTERACTION_INFO);
                 if (predicate.apply(it)) {
                     if (handler.handle(span, it, spanRange)) {
                         event.intercept();

@@ -186,7 +186,7 @@ public final class SnippetController {
                     }
                     value = baos.toString("UTF-8");
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Log.e("SnippetController", "Reading", e);
                 }
                 int lastIndex = value.length() - 1;
                 char lastChar = value.charAt(lastIndex);
@@ -390,7 +390,7 @@ public final class SnippetController {
 
     @NonNull
     public List<SnippetItem> getEditingRelatedTabStops() {
-        PlaceholderItem editing = getEditingTabStop();
+        final PlaceholderItem editing = getEditingTabStop();
         if (editing != null) {
             return Lists.newArrayList(Collections2.filter(currentSnippet.getItems(), new Predicate<SnippetItem>() {
                 @Override
@@ -406,7 +406,7 @@ public final class SnippetController {
 
     @NonNull
     public List<SnippetItem> getInactiveTabStops() {
-        PlaceholderItem editing = getEditingTabStop();
+        final PlaceholderItem editing = getEditingTabStop();
         if (editing != null) {
             return Lists.newArrayList(Collections2.filter(currentSnippet.getItems(), new Predicate<SnippetItem>() {
                 @Override

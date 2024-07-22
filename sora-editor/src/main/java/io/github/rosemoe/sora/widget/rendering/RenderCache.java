@@ -16,7 +16,7 @@ public class RenderCache {
     private final ReentrantLock lock;
     private final MutableIntList lines;
     private final List<MeasureCacheItem> cache;
-    private int maxCacheCount = 75;
+    private final int maxCacheCount = 75;
 
     public RenderCache() {
         this.lock = new ReentrantLock();
@@ -87,7 +87,7 @@ public class RenderCache {
         }
     }
 
-    public void updateForDeletion(int startLine, int endLine) {
+    public void updateForDeletion(final int startLine, final int endLine) {
         if (startLine != endLine) {
             lines.removeRange(startLine, endLine);
             lock.lock();

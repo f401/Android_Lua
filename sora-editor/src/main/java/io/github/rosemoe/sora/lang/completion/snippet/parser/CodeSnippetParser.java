@@ -68,7 +68,7 @@ public class CodeSnippetParser {
     }
 
     public static CodeSnippet parse(@NonNull String snippet) {
-        return parse(snippet, new ArrayList<>());
+        return parse(snippet, new ArrayList<PlaceholderDefinition>());
     }
 
     public static CodeSnippet parse(@NonNull String snippet, @NonNull List<PlaceholderDefinition> definitions) {
