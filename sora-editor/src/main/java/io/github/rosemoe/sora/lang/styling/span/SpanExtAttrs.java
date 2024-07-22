@@ -48,16 +48,16 @@ public class SpanExtAttrs {
             return true;
         }
         switch (extType) {
-            case EXT_COLOR_RESOLVER -> {
+            case EXT_COLOR_RESOLVER: {
                 return ext instanceof SpanColorResolver;
             }
-            case EXT_EXTERNAL_RENDERER -> {
+            case EXT_EXTERNAL_RENDERER: {
                 return ext instanceof SpanExternalRenderer;
             }
-            case EXT_INTERACTION_INFO -> {
+            case EXT_INTERACTION_INFO: {
                 return ext instanceof SpanInteractionInfo;
             }
-            case EXT_UNDERLINE_COLOR -> {
+            case EXT_UNDERLINE_COLOR: {
                 return ext instanceof ResolvableColor;
             }
         }
