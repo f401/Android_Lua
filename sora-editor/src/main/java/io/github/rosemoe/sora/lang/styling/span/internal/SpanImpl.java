@@ -25,8 +25,8 @@ package io.github.rosemoe.sora.lang.styling.span.internal;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.collection.MutableIntObjectMap;
 
+import java.util.HashMap;
 import java.util.Objects;
 
 import io.github.rosemoe.sora.lang.styling.Span;
@@ -41,7 +41,7 @@ public class SpanImpl implements Span {
     private int column;
     private long style;
     private Object extra;
-    private MutableIntObjectMap<SpanExt> extMap;
+    private HashMap<Integer, SpanExt> extMap;
 
     SpanImpl() {
 
@@ -109,9 +109,9 @@ public class SpanImpl implements Span {
             return;
         }
         if (extMap == null) {
-            extMap = new MutableIntObjectMap<>();
+            extMap = new HashMap<>();
         }
-        extMap.set(extType, ext);
+        extMap.put(extType, ext);
     }
 
     @Override
@@ -147,7 +147,7 @@ public class SpanImpl implements Span {
         span.setColumn(getColumn());
         span.setStyle(getStyle());
         if (extMap != null) {
-            span.extMap = new MutableIntObjectMap<>();
+            span.extMap = new HashMap<>();
             span.extMap.putAll(extMap);
         }
         return span;

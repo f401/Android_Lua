@@ -42,18 +42,17 @@ public class SnippetDescription {
         return snippet;
     }
 
-    public boolean isDeleteSelected() {
+    public boolean getDeleteSelected() {
         return deleteSelected;
     }
 
     @NonNull
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("SnippetDescription{");
-        sb.append("selectedLength=").append(selectedLength);
-        sb.append(", snippet=").append(snippet);
-        sb.append(", deleteSelected=").append(deleteSelected);
-        sb.append('}');
-        return sb.toString();
+        String sb = "SnippetDescription{" + "selectedLength=" + selectedLength +
+                ", snippet=" + snippet +
+                ", deleteSelected=" + deleteSelected +
+                '}';
+        return sb;
     }
 }
