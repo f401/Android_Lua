@@ -10,7 +10,7 @@ import io.github.rosemoe.sora.text.Content;
 public class ContentTest {
     @Test
     public void testInsert() {
-        Content src = new Content(true);
+        Content src = new Content();
         src.insert(0,0, "Hello\nWorld");
 
         assertEquals("Hello", src.getLine(0).toString());
