@@ -120,7 +120,7 @@ public final class EditorTouchEventHandler implements GestureDetector.OnGestureL
     private long lastTimeMousePrimaryClickUp;
     private boolean mouseDoubleClick;
     private PointF lastContextClickPosition;
-    private float edgeFieldSize;
+    private final float edgeFieldSize;
 
     /**
      * Create an event handler for the given editor
@@ -905,13 +905,13 @@ public final class EditorTouchEventHandler implements GestureDetector.OnGestureL
         if (editor.isFormatting()) {
             return true;
         }
-        long resolved = RegionResolverKt.resolveTouchRegion(editor, e);
+        long resolved = RegionResolver.resolveTouchRegion(editor, e);
         int region = IntPair.getFirst(resolved);
         long res = editor.getPointPositionOnScreen(e.getX(), e.getY());
         int line = IntPair.getFirst(res);
         int column = IntPair.getSecond(res);
         editor.performClick();
-        if (region == RegionResolverKt.REGION_SIDE_ICON) {
+        if (region == RegionResolver.REGION_SIDE_ICON) {
             int row = (int) (e.getY() + editor.getOffsetX()) / editor.getRowHeight();
             row = Math.max(0, Math.min(row, editor.getLayout().getRowCount() - 1));
             Row inf = editor.getLayout().getRowAt(row);
@@ -931,7 +931,7 @@ public final class EditorTouchEventHandler implements GestureDetector.OnGestureL
         editor.showSoftInput();
         notifyLater();
         int lnAction = editor.getProps().actionWhenLineNumberClicked;
-        if (region == RegionResolverKt.REGION_TEXT) {
+        if (region == RegionResolver.REGION_TEXT) {
             if (editor.isInLongSelect()) {
                 Cursor cursor = editor.getCursor();
                 editor.setSelectionRegion(cursor.getLeftLine(), cursor.getLeftColumn(), line, column, false, SelectionChangeEvent.CAUSE_TAP);
@@ -939,7 +939,7 @@ public final class EditorTouchEventHandler implements GestureDetector.OnGestureL
             } else {
                 editor.setSelection(line, column, SelectionChangeEvent.CAUSE_TAP);
             }
-        } else if (region == RegionResolverKt.REGION_LINE_NUMBER) {
+        } else if (region == RegionResolver.REGION_LINE_NUMBER) {
             switch (lnAction) {
                 case DirectAccessProps.LN_ACTION_SELECT_LINE:
                     editor.setSelectionRegion(line, 0, line, editor.getText().getColumnCount(line), false, SelectionChangeEvent.CAUSE_TAP);
@@ -1057,7 +1057,6 @@ public final class EditorTouchEventHandler implements GestureDetector.OnGestureL
                     descriptor = editor.getInsertHandleDescriptor();
                     break;
             }
-            ;
             SelectionHandleStyle.HandleDescriptor anotherDesc = type == LEFT ? editor.getRightHandleDescriptor() : editor.getLeftHandleDescriptor();
             float targetX = scroller.getCurrX() + e.getX() + (descriptor.alignment != SelectionHandleStyle.ALIGN_CENTER ? descriptor.position.width() : 0) * (descriptor.alignment == SelectionHandleStyle.ALIGN_LEFT ? 1 : -1);
             float targetY = scroller.getCurrY() + e.getY() - descriptor.position.height();

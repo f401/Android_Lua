@@ -367,7 +367,7 @@ public final class SnippetController {
     /**
      * Check whether the editor in snippet editing
      */
-    private boolean isInSnippet() {
+    public boolean isInSnippet() {
         return snippetIndex != -1 && currentTabStopIndex != -1;
     }
 
@@ -397,11 +397,28 @@ public final class SnippetController {
                 public boolean apply(SnippetItem it) {
                     return it instanceof PlaceholderItem
                             && ((PlaceholderItem) it).getDefinition()
-                            == editing.getDefinition() && it != editing;
+                            == editing.getDefinition() && !it.equals(editing);
                 }
             }));
         }
         return Lists.newArrayList();
+    }
+
+    @NonNull
+    public List<SnippetItem> getInactiveTabStops() {
+        PlaceholderItem editing = getEditingTabStop();
+        if (editing != null) {
+            return Lists.newArrayList(Collections2.filter(currentSnippet.getItems(), new Predicate<SnippetItem>() {
+                @Override
+                public boolean apply(SnippetItem it) {
+                    return it instanceof PlaceholderItem
+                            && ((PlaceholderItem) it).getDefinition()
+                            != editing.getDefinition();
+                }
+            }));
+        }
+        return Lists.newArrayList();
+
     }
 
     public boolean isEditingRelated(@NonNull SnippetItem it) {
@@ -521,4 +538,5 @@ public final class SnippetController {
     public void setSnippetIndex(int snippetIndex) {
         this.snippetIndex = snippetIndex;
     }
+
 }

@@ -273,7 +273,7 @@ class EditorInputConnection extends BaseInputConnection {
         // Remove composing text first if there is
         if (editor.getProps().trackComposingTextOnCommit) {
             if (composingText.isComposing()) {
-                CharSequence composingText = editor.getText().subSequence(this.composingText.startIndex, this.composingText.endIndex).toString();
+                String composingText = editor.getText().substring(this.composingText.startIndex, this.composingText.endIndex);
                 String commitText = text.toString();
                 if (this.composingText.endIndex == getCursor().getLeft() && !getCursor().isSelected() && commitText.startsWith(composingText) && commitText.length() > composingText.length()) {
                     text = commitText.substring(composingText.length());

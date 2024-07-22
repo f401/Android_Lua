@@ -115,9 +115,9 @@ public class Comparators {
             int overwriteBefore = originItem.prefixLength;
 
             if (word.length() != overwriteBefore) {
-                word = overwriteBefore == 0 ? "" : sourceLine.substring(
-                        sourceLine.length() - overwriteBefore
-                );
+                word = overwriteBefore == 0 ? "" : String.valueOf(sourceLine.subSequence(
+                        sourceLine.length() - overwriteBefore, sourceLine.length()
+                ));
                 wordLow = word.toLowerCase();
             }
 

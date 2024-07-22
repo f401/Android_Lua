@@ -1,5 +1,6 @@
 package io.github.rosemoe.sora.lang.completion;
 
+import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
@@ -9,8 +10,6 @@ import android.os.Build;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
-import net.fred.lua.common.utils.MathUtils;
 
 public final class SimpleCompletionIconDrawer {
 
@@ -43,7 +42,7 @@ public final class SimpleCompletionIconDrawer {
             this.mTextPaint = new Paint();
             this.mTextPaint.setColor(-0x1);
             this.mTextPaint.setAntiAlias(true);
-            this.mTextPaint.setTextSize(MathUtils.dp2px(14));
+            this.mTextPaint.setTextSize(14 * Resources.getSystem().getDisplayMetrics().densityDpi);
             this.mTextPaint.setTextAlign(Paint.Align.CENTER);
         }
 
